@@ -45,16 +45,16 @@ public final class GuiTextures {
         SIZES.clear();
     }
 
-    private static final ResourceLocation WUMPA_SPRITE = ResourceLocation.fromNamespaceAndPath("ctrcraft", "item/wumpa_sprite");
+    private static final ResourceLocation POWER_FRUIT_SPRITE = ResourceLocation.fromNamespaceAndPath("ctrcraft", "item/power_fruit_sprite");
 
     /**
-     * Draws the Wumpa fruit centred on (cx, cy) in a square of {@code size} pixels: the animated spinning fruit of the pickup (the {@code item/wumpa_sprite} of a resource
+     * Draws the Power Fruit centred on (cx, cy) in a square of {@code size} pixels: the animated spinning fruit of the pickup (the {@code item/power_fruit_sprite} of a resource
      * pack, a strip of frames the block atlas plays) when there is one, otherwise the static HUD picture {@code fallback}. The sprite's frame is much larger than the
      * fruit in it, so it is drawn twice the box to make the fruit as large as the static picture.
      */
-    public static void drawWumpa(GuiGraphics g, ResourceLocation fallback, int cx, int cy, int size) {
+    public static void drawPowerFruit(GuiGraphics g, ResourceLocation fallback, int cx, int cy, int size) {
         net.minecraft.client.renderer.texture.TextureAtlasSprite sprite = Minecraft.getInstance()
-                .getTextureAtlas(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS).apply(WUMPA_SPRITE);
+                .getTextureAtlas(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS).apply(POWER_FRUIT_SPRITE);
         if (sprite.contents().name().equals(net.minecraft.client.renderer.texture.MissingTextureAtlasSprite.getLocation())) {
             drawFit(g, fallback, cx - size / 2, cy - size / 2, size, size);
             return;

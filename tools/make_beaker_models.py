@@ -1,5 +1,5 @@
 """
-N. Brio's Beaker, the stand-in 3D model: a round-bottomed flask with a neck and a lip, one green and one red (the juiced beaker), built from boxes.
+N. Brio's Beaker, the stand-in 3D model: a round-bottomed flask with a neck and a lip, one green and one red (the charged beaker), built from boxes.
 
   python tools/make_beaker_models.py
 

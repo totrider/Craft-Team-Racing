@@ -1,5 +1,5 @@
 """
-The explosion starburst and the shine behind the wumpa fruit and held power-up at ten wumpa. Stand-in art, drawn here: a spiky white-grey burst, white in the middle and
+The explosion starburst and the shine behind the power fruit and held power-up at ten power fruit. Stand-in art, drawn here: a spiky white-grey burst, white in the middle and
 darker towards the tips, which the code tints (the bomb's burst: yellow to red).
 
   python tools/make_burst_sprites.py

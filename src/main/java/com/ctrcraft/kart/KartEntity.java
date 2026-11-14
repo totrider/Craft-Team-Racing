@@ -48,6 +48,7 @@ public class KartEntity extends Entity {
     private static final EntityDataAccessor<Integer> DATA_SEAT_COLOUR =
             SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.INT);
     public static final int DEFAULT_SEAT_COLOUR = 0xF0C43C;
+    private static final EntityDataAccessor<Integer> DATA_SHIELD = SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_TILT =
             SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.INT);
     public static final int TILT_FLAT = 0x7F7F;
@@ -69,6 +70,7 @@ public class KartEntity extends Entity {
         builder.define(DATA_FLAGS, 0);
         builder.define(DATA_ENGINE, 0x823C);
         builder.define(DATA_TILT, TILT_FLAT);
+        builder.define(DATA_SHIELD, 0);
         builder.define(DATA_COLOUR, DEFAULT_COLOUR);
         builder.define(DATA_SEAT_COLOUR, DEFAULT_SEAT_COLOUR);
     }
@@ -87,6 +89,18 @@ public class KartEntity extends Entity {
 
     public void setColour(int rgb) {
         entityData.set(DATA_COLOUR, rgb & 0xFFFFFF);
+    }
+
+    /**
+     * The Power Shield round the kart: 0 none, -1 the blue one (it stays), 1 to 41 the green one (41 while it is steady, the ticks it has left in its last 40, when it fades), -2 while
+     * it pops (8 ticks, the 11 frames of RB_ShieldDark_ThTick_Pop). Set by the server.
+     */
+    public int shield() {
+        return entityData.get(DATA_SHIELD);
+    }
+
+    public void setShield(int state) {
+        if (entityData.get(DATA_SHIELD) != state) entityData.set(DATA_SHIELD, state);
     }
 
     public int getTilt() {
@@ -244,7 +258,7 @@ public class KartEntity extends Entity {
         lerpSteps = Math.max(steps, 1);
     }
 
-    /** What the kart carries (wumpa fruit and the held power-up, {@link com.ctrcraft.pickup.ItemManager}): it stays with the kart when the driver gets out. */
+    /** What the kart carries (power fruit and the held power-up, {@link com.ctrcraft.pickup.ItemManager}): it stays with the kart when the driver gets out. */
     private final com.ctrcraft.pickup.ItemManager.State items = new com.ctrcraft.pickup.ItemManager.State();
 
     public com.ctrcraft.pickup.ItemManager.State items() {
@@ -394,7 +408,7 @@ public class KartEntity extends Entity {
         setColour(tag.contains("Colour") ? tag.getInt("Colour") : DEFAULT_COLOUR);
         setSeatColour(tag.contains("SeatColour") ? tag.getInt("SeatColour") : DEFAULT_SEAT_COLOUR);
         canStartRaces = !tag.contains("CanStartRaces") || tag.getBoolean("CanStartRaces");
-        items.wumpa = Math.max(0, Math.min(com.ctrcraft.pickup.ItemManager.MAX_WUMPA, tag.getInt("Wumpa")));
+        items.powerFruit = Math.max(0, Math.min(com.ctrcraft.pickup.ItemManager.MAX_POWER_FRUIT, tag.contains("PowerFruit") ? tag.getInt("PowerFruit") : tag.getInt("Wumpa")));       // "Wumpa": the key older saves used
         items.held = tag.getString("HeldPowerup");
     }
 
@@ -404,7 +418,7 @@ public class KartEntity extends Entity {
         tag.putInt("Colour", colour());
         tag.putInt("SeatColour", seatColour());
         tag.putBoolean("CanStartRaces", canStartRaces);
-        tag.putInt("Wumpa", items.wumpa);
+        tag.putInt("PowerFruit", items.powerFruit);
         tag.putString("HeldPowerup", items.held);
     }
 }

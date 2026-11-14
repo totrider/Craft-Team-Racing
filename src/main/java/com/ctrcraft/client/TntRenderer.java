@@ -25,7 +25,7 @@ import net.minecraft.util.RandomSource;
 /**
  * The TNT power-up's crate: the model {@code item/pickup_tnt} (a Nitro crate: {@code item/pickup_nitro}), which by default is a cube with the Minecraft TNT block's textures
  * (as decided with the author), scaled down so it reads as a power-up and not a placed TNT block, tinted green for Nitro. A resource pack can replace the models: the
- * original's crate picture as a flat single-quad model is turned to face the camera, like the Wumpa fruit. On a kart it flashes.
+ * original's crate picture as a flat single-quad model is turned to face the camera, like the Power Fruit. On a kart it flashes.
  */
 public class TntRenderer extends EntityRenderer<TntEntity> {
     public static final ModelResourceLocation TNT = model("pickup_tnt");

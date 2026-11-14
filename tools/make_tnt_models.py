@@ -1,10 +1,10 @@
 """
-The TNT power-up's crate and the juiced one (the "Nitro", here creeper themed): the jar's stand-in models.
+The TNT power-up's crate and the charged one (the "Nitro", here creeper themed): the jar's stand-in models.
 
   python tools/make_tnt_models.py
 
 The TNT keeps the Minecraft TNT block's own textures (as decided with the author) and gets what makes it a power-up and not a placed block: a steel frame, a rivetted corner
-block at each of the eight corners and a strap along each of the twelve edges. The juiced one is a creeper crate: green with a creeper's face on its four sides and the same steel.
+block at each of the eight corners and a strap along each of the twelve edges. The charged one is a creeper crate: green with a creeper's face on its four sides and the same steel.
 The models are Blockbench's: blockbench/pickups/tnt.bbmodel and nitro.bbmodel are the source (written once from the shapes below if missing, then they are yours; this script only
 reads them). Writes models/item/pickup_tnt.json and pickup_nitro.json, and draws once if missing (yours to repaint) textures/item/tnt_metal.png (16 x 16: the steel plate, the
 top left 4 x 4 is what the frame's pieces show), creeper_face.png and creeper_skin.png (16 x 16). Origin: the bottom centre of the block; 16 px is one block.

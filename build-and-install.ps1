@@ -37,6 +37,8 @@ if (Get-Command python -ErrorAction SilentlyContinue) {
     cmd /c "python tools\make_power_icons.py 2>&1"
     cmd /c "python tools\make_bomb_model.py 2>&1"
     cmd /c "python tools\make_tnt_models.py 2>&1"
+    cmd /c "python tools\make_missile_model.py 2>&1"
+    cmd /c "python tools\make_shield_model.py 2>&1"
     cmd /c "python tools\make_burst_sprites.py 2>&1"
     cmd /c "python tools\make_crate_break.py 2>&1"
     cmd /c "python tools\make_track_overlays.py 2>&1"

@@ -47,9 +47,16 @@ public final class CtrCraftClient {
         for (var flame : KartRenderer.FLAMES) event.register(flame);
         for (var shell : KartRenderer.FLAME_SHELLS) event.register(shell);
         event.register(BombRenderer.MODEL);
+        event.register(MissileRenderer.MODEL);
+        event.register(ShieldBubble.MODEL);
+        for (var layer : ShieldBubble.LAYERS) event.register(layer);
+        for (int m = 0; m < ModelFx.MODELS.length; m++) {
+            for (int f = 0; f < ModelFx.FRAMES[m]; f++) event.register(ModelFx.frame(ModelFx.MODELS[m], f));
+        }
+        event.register(MissileRenderer.FLAME);
         event.register(PotionRenderer.GREEN);
         event.register(PotionRenderer.RED);
-        event.register(PickupRenderer.WUMPA);
+        event.register(PickupRenderer.POWER_FRUIT);
         event.register(PickupRenderer.FRUIT_CRATE);
         event.register(PickupRenderer.POWERUP_CRATE);
     }
@@ -65,6 +72,7 @@ public final class CtrCraftClient {
         event.registerReloadListener((net.minecraft.server.packs.resources.ResourceManagerReloadListener) BeakerBubbles::load);
         event.registerReloadListener((net.minecraft.server.packs.resources.ResourceManagerReloadListener) CrateBreak::load);
         event.registerReloadListener((net.minecraft.server.packs.resources.ResourceManagerReloadListener) BombFuse::load);
+        event.registerReloadListener((net.minecraft.server.packs.resources.ResourceManagerReloadListener) Fx::load);
         event.registerReloadListener((net.minecraft.server.packs.resources.ResourceManagerReloadListener) com.ctrcraft.kart.KartWheels::load);
         event.registerReloadListener((net.minecraft.server.packs.resources.ResourceManagerReloadListener) com.ctrcraft.kart.KartShadow::load);
         event.registerReloadListener((net.minecraft.server.packs.resources.ResourceManagerReloadListener) com.ctrcraft.kart.KartSteering::load);
@@ -94,6 +102,8 @@ public final class CtrCraftClient {
         event.registerEntityRenderer(ModEntities.TNT.get(), TntRenderer::new);
         event.registerEntityRenderer(ModEntities.POTION.get(), PotionRenderer::new);
         event.registerEntityRenderer(ModEntities.BOMB.get(), BombRenderer::new);
+        event.registerEntityRenderer(ModEntities.MISSILE.get(), MissileRenderer::new);
+        event.registerEntityRenderer(ModEntities.SHIELD_BOMB.get(), ShieldBombRenderer::new);
         event.registerBlockEntityRenderer(com.ctrcraft.ModBlockEntities.PICKUP_SPOT.get(), PickupSpotRenderer::new);
     }
 
@@ -113,7 +123,7 @@ public final class CtrCraftClient {
 
     @SubscribeEvent
     public static void captureCamera(net.neoforged.neoforge.client.event.RenderLevelStageEvent event) {
-        WumpaFly.capture(event);
+        PowerFruitFly.capture(event);
     }
 
     @SubscribeEvent

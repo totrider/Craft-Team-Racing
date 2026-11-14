@@ -30,6 +30,8 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> FRUIT_PICKUP = reg("fruit_pickup");
     public static final DeferredHolder<SoundEvent, SoundEvent> FRUIT_ARRIVE = reg("fruit_arrive");
     public static final DeferredHolder<SoundEvent, SoundEvent> GLASS_SHATTER = reg("glass_shatter");
+    /** An event with no sound: what the vanilla explosion is given to play, so the explosion's own (always 0.7 of the pitch, with a random wobble) is not heard. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> SILENT = reg("silent");
     public static final DeferredHolder<SoundEvent, SoundEvent> MINE_DROP = reg("mine_drop");
     public static final DeferredHolder<SoundEvent, SoundEvent> TNT_HIT = reg("tnt_hit");
     public static final DeferredHolder<SoundEvent, SoundEvent> TNT_LAND = reg("tnt_land");
@@ -39,9 +41,16 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> BOMB_LAUNCH = reg("bomb_launch");
     public static final DeferredHolder<SoundEvent, SoundEvent> BOMB_ROLL = reg("bomb_roll");
     public static final DeferredHolder<SoundEvent, SoundEvent> BOMB_EXPLODE = reg("bomb_explode");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHIELD_ON = reg("shield_on");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHIELD_ROLL = reg("shield_roll");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHIELD_POP = reg("shield_pop");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_LAUNCH = reg("missile_launch");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_FLY = reg("missile_fly");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_EXPLODE = reg("missile_explode");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TRACKER_BEEP = reg("tracker_beep");
     public static final DeferredHolder<SoundEvent, SoundEvent> ITEM_ROLL = reg("item_roll");
     public static final DeferredHolder<SoundEvent, SoundEvent> ITEM_GET = reg("item_get");
-    public static final DeferredHolder<SoundEvent, SoundEvent> ITEM_GET_JUICED = reg("item_get_juiced");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ITEM_GET_CHARGED = reg("item_get_charged");
     public static final DeferredHolder<SoundEvent, SoundEvent> CRASH_SOFT = reg("crash_soft");
     public static final DeferredHolder<SoundEvent, SoundEvent> CRASH_MID = reg("crash_mid");
     public static final DeferredHolder<SoundEvent, SoundEvent> CRASH_HARD = reg("crash_hard");

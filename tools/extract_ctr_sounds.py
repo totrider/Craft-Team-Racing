@@ -223,15 +223,23 @@ MAPPING = {
     "bomb_launch": ("other", 0x47, False, 1.0, None, "VehPickupItem.c SOUND_BOMB_LAUNCH: PlaySound3D(0x47) when a bomb is fired"),
     "bomb_roll": ("other", 0x48, True, 1.0, None, "RB_MovingExplosive.c: PlaySound3D_Flags(0x48) every frame a bomb rolls, stopped when it explodes"),
     "bomb_explode": ("other", 0x49, False, 1.0, None, "RB_MovingExplosive.c RB_MovingExplosive_Explode: PlaySound3D(0x49) for a bomb"),
+    "shield_on": ("other", 0x57, False, 1.0, None, "VehPickupItem.c SOUND_SHIELD: OtherFX_Play(0x57, 1) when the shield bubble forms"),
+    "shield_roll": ("other", 0x59, True, 1.0, None, "RB_MovingExplosive.c: PlaySound3D_Flags(0x59) every frame a thrown shield rolls"),
+    "shield_pop": ("other", 0x58, False, 1.0, None, "RB_MaskShieldCloud.c: PlaySound3D(0x58) when the shield pops, runs out or is thrown"),
+    "missile_launch": ("other", 0x4A, False, 1.0, None, "VehPickupItem.c SOUND_MISSILE_LAUNCH: PlaySound3D(0x4a) when a missile is fired"),
+    "missile_fly": ("other", 0x4B, True, 1.0, None, "RB_MovingExplosive.c: PlaySound3D_Flags(0x4b) every frame a missile flies, stopped when it explodes"),
+    "missile_explode": ("other", 0x4C, False, 1.0, None, "RB_MovingExplosive.c RB_MovingExplosive_Explode: PlaySound3D(0x4c) for a missile"),
+    "tracker_beep": ("other", 0x56, False, 1.0, None, "UI_RaceHud.c UI_TRACKER_BEEP_SFX: OtherFX_Play(0x56, 1), the beep of a missile homing in on you, every 5, 10 or 30 frames by its distance"),
     "crate_break": ("other", 0x3C, False, 1.0, None, "RB_Crate.c: PlaySound3D(0x3c) when a crate breaks"),
     "item_roll": ("other", 0x5D, True, 1.0, None, "RB_Crate.c: OtherFX_Play(0x5d, 0) when the weapon roulette starts; the sound loops for the whole roll (MainGameEnd.c stops it): the mod loops it on the client while the roulette runs"),
     "item_get": ("other", 0x5E, False, 1.0, None, "VehPhysProc.c: VEH_PHYS_PROC_ITEM_ROLL_NORMAL_FX, the item is drawn"),
-    "item_get_juiced": ("other", 0x41, False, 1.0, None, "VehPhysProc.c: VEH_PHYS_PROC_ITEM_ROLL_JUICED_FX, with ten wumpa"),
+    "item_get_charged": ("other", 0x41, False, 1.0, None, "VehPhysProc.c: VEH_PHYS_PROC_ITEM_ROLL_JUICED_FX, with ten wumpa"),
     "crash_hard": ("other", 0x0A, False, 1.0, None, "HOWL_OtherFXRecycle.c OtherFX_DriverCrashing: volume 0xDD and up"),
     "crash_mid": ("other", 0x0C, False, 1.0, None, "HOWL_OtherFXRecycle.c OtherFX_DriverCrashing: volume above 0xA0"),
     "crash_soft": ("other", 0x0B, False, 1.0, None, "HOWL_OtherFXRecycle.c OtherFX_DriverCrashing: the rest"),
 }
-# no CTR sound exists for: drift_start, boost_fail (the early boost only puffs smoke), meter_red, spin_out -> placeholders stay.
+# no CTR sound exists for these: the jar has placeholders; the original-sound pack silences them (sounds.json, "replace": true, no sounds), which is what the game does
+INVENTED = ["drift_start", "boost_fail", "meter_red"]        # (spin_out stays: the mod plays it only when the player turns it on in the client config)
 
 MIN_RATE = 22050          # libvorbis encodes down to 8 kHz only; upsampling changes nothing audible
 MIN_LOOP_SECONDS = 0.5    # the engine loop is 78 ms long: repeat it so the game's looping has something to chew on
@@ -322,6 +330,11 @@ def main():
     for name, spec in MAPPING.items():
         x, rate = build(howl, name, spec, report)
         oggenc.write_ogg(os.path.join(sounds_dir, name + ".ogg"), np.clip(x, -1, 1), rate, quality=0.5)
+    # the sounds the mod made up and the game does not have are SILENT in this pack (an event with "replace": true and no sounds plays nothing): the boost bar's pling, the early
+    # boost's fizzle, the drift's start and the spin-out
+    silent = {name: {"replace": True, "sounds": []} for name in INVENTED}
+    with open(os.path.join(pack, "assets", "ctrcraft", "sounds.json"), "w", encoding="utf-8", newline="\n") as f:
+        json.dump(silent, f, indent=2)
     with open(os.path.join(pack, "pack.mcmeta"), "w", encoding="utf-8", newline="\n") as f:
         json.dump({"pack": {"pack_format": 34,
                             "description": "Craft Team Racing: original sounds extracted from your own disc (local use only, do not share)"}}, f, indent=2)

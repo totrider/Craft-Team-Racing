@@ -53,4 +53,58 @@ public final class AdditiveTypes extends RenderType {
                     .setWriteMaskState(COLOR_WRITE)
                     .setOverlayState(OVERLAY)
                     .createCompositeState(false));
+
+    /** The two blends again with no depth test: drawn over whatever is there, whether it is in front of or behind it (the shield bubble is drawn over the kart it is round). */
+    public static final RenderType BLOCK_ATLAS_NODEPTH = create("ctrcraft_additive_atlas_nodepth", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, true, true,
+            CompositeState.builder()
+                    .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
+                    .setTextureState(new RenderStateShard.TextureStateShard(TextureAtlas.LOCATION_BLOCKS, false, false))
+                    .setTransparencyState(ADD)
+                    .setCullState(NO_CULL)
+                    .setDepthTestState(NO_DEPTH_TEST)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .setOverlayState(OVERLAY)
+                    .createCompositeState(false));
+    public static final RenderType BLOCK_ATLAS_SUBTRACT_NODEPTH = create("ctrcraft_subtractive_atlas_nodepth", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, true, true,
+            CompositeState.builder()
+                    .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
+                    .setTextureState(new RenderStateShard.TextureStateShard(TextureAtlas.LOCATION_BLOCKS, false, false))
+                    .setTransparencyState(SUBTRACT)
+                    .setCullState(NO_CULL)
+                    .setDepthTestState(NO_DEPTH_TEST)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .setOverlayState(OVERLAY)
+                    .createCompositeState(false));
+
+    /** The two blends with back faces culled: only the outside of a closed model is drawn (the shield's cone), or, mirrored, only its inside. */
+    public static final RenderType BLOCK_ATLAS_CULL = create("ctrcraft_additive_atlas_cull", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, true, true,
+            CompositeState.builder()
+                    .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
+                    .setTextureState(new RenderStateShard.TextureStateShard(TextureAtlas.LOCATION_BLOCKS, false, false))
+                    .setTransparencyState(ADD)
+                    .setCullState(CULL)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .setOverlayState(OVERLAY)
+                    .createCompositeState(false));
+    public static final RenderType BLOCK_ATLAS_SUBTRACT_CULL = create("ctrcraft_subtractive_atlas_cull", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, true, true,
+            CompositeState.builder()
+                    .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
+                    .setTextureState(new RenderStateShard.TextureStateShard(TextureAtlas.LOCATION_BLOCKS, false, false))
+                    .setTransparencyState(SUBTRACT)
+                    .setCullState(CULL)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .setOverlayState(OVERLAY)
+                    .createCompositeState(false));
+
+    /** Additive, no depth test, back faces culled: the sheen's far side is not added on top of its near side. */
+    public static final RenderType BLOCK_ATLAS_NODEPTH_CULL = create("ctrcraft_additive_atlas_nodepth_cull", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, true, true,
+            CompositeState.builder()
+                    .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
+                    .setTextureState(new RenderStateShard.TextureStateShard(TextureAtlas.LOCATION_BLOCKS, false, false))
+                    .setTransparencyState(ADD)
+                    .setCullState(CULL)
+                    .setDepthTestState(NO_DEPTH_TEST)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .setOverlayState(OVERLAY)
+                    .createCompositeState(false));
 }

@@ -37,7 +37,7 @@ Opt-in by nature (nothing here changes how a kart drives).
 - **Warnings:** nodes whose facing points more than a quarter turn against the course are counted after the lap (`TrackRoutes.facingAgainstCourse`); they still work.
 - **Saved** in `TrackData` (per start node) and checked against the graph whenever it changes (`TrackRoutes.verify`): break a main-path node or unlink two of them and the
   recording is dropped; a broken branch is dropped alone. A lap or branch in progress is not saved (stopping restarts it).
-- **Re-record:** the menu button; `/ctrcraft track reset` (no confirmation) still clears the routes of the start node nearest to you.
+- **Re-record:** the menu button; `/ctr track reset` (no confirmation) still clears the routes of the start node nearest to you.
 - Client: `TestDrivePayload` (candidates, trail, routes) -> `TestDriveClient`; `TrackGhostRenderer` draws main path gold, branches magenta, trail white. The node snapshot is
   also sent while a drive is active, so you do not need to hold a track item.
 - Code: `NodeGeometry`, `TrackRoutes`, `TestDrive` (pure Java, `TestDriveTest`: 13 tests), `TestDriveManager`, `TrackCommands`.
@@ -56,7 +56,7 @@ Opt-in by nature (nothing here changes how a kart drives).
   ties by distance to the next ring. Clock = server ticks (50 ms resolution).
 - **End:** everybody finished, nobody left in a kart, or 60 s after the first finisher. Results go to chat. Leaving the kart, logging out or changing dimension is a DNF.
   Changing the track (breaking a node, unlinking) during a race calls it off.
-- **HUD** (`RaceHud`): the gathering count, the four lamps and the rev bar (red from the acceleration speed up, where a start boost is earned), then the race screen laid out as the original's 512 x 216 HUD (clock and lap times top left, the top four as skin heads below, the place in big digits bottom left, lamps top centre, item and Wumpa top centre-left); only the lap counter is moved, to the right edge above the driving meters. The start grid and the gathering box stay drawn until the race has really started (GO), not just until the countdown begins.
+- **HUD** (`RaceHud`): the gathering count, the four lamps and the rev bar (red from the acceleration speed up, where a start boost is earned), then the race screen laid out as the original's 512 x 216 HUD (clock and lap times top left, the top four as skin heads below, the place in big digits bottom left, lamps top centre, item and Power Fruit top centre-left); only the lap counter is moved, to the right edge above the driving meters. The start grid and the gathering box stay drawn until the race has really started (GO), not just until the countdown begins.
 - Code: `RaceProgress`, `RaceGrid` (pure, `RaceProgressTest`), `RevEngine` (physics, `RevEngineTest`), `RaceManager`, `RacePayload`/`RaceClient`, `RaceHud`, `KartDriver` (hold, placement, boost).
 - **Not yet:** kart-vs-kart bumping, wrong-way detection, respawn when out of bounds, a ready check, time trials, a player-facing start (all step 4 / roadmap).
 

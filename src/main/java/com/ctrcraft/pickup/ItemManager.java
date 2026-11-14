@@ -28,10 +28,10 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * What a driver carries: the wumpa count (0-10) and the held power-up, and what touching a pickup does (server side). CTR's rules, from
- * {@code RB_Fruit.c} and {@code RB_Crate.c}: a fruit is +1 wumpa, a fruit crate 5 + (random mod 4), and a power-up crate only starts the roulette
+ * What a driver carries: the power fruit count (0-10) and the held power-up, and what touching a pickup does (server side). CTR's rules, from
+ * {@code RB_Fruit.c} and {@code RB_Crate.c}: a fruit is +1 power fruit, a fruit crate 5 + (random mod 4), and a power-up crate only starts the roulette
  * (90 frames, 60 game ticks) for a driver who holds nothing and is not already rolling; the crate is used up either way. The item is drawn
- * from the rule set's table when the roulette ends. The wumpa count and the held power-up belong to the <b>kart</b> (saved with it, so getting out and in
+ * from the rule set's table when the roulette ends. The power fruit count and the held power-up belong to the <b>kart</b> (saved with it, so getting out and in
  * again, or driving free-roam, keeps them); a race clears them for its entrants when they are put on the grid.
  */
 @EventBusSubscriber(modid = CtrCraftMod.MODID)
@@ -40,13 +40,13 @@ public final class ItemManager {
 
     /** 90 frames at 30 Hz (VehPhysProc: itemRollTimer = 90) in game ticks. */
     public static final int ROLL_TICKS = 60;
-    public static final int MAX_WUMPA = 10;
+    public static final int MAX_POWER_FRUIT = 10;
     /** DRIVER_WUMPA_JUICED_COUNT. */
-    public static final int JUICED = 10;
+    public static final int CHARGED = 10;
 
     public static final int EFFECT_NONE = 0;
     public static final int EFFECT_TURBO = 1;
-    public static final int EFFECT_TURBO_JUICED = 2;
+    public static final int EFFECT_TURBO_CHARGED = 2;
     /** A TNT crate sits on the kart's head (nothing slows the kart: the decomp has no such effect; this only starts the jump counting that shakes it off). */
     public static final int EFFECT_SLOW = 3;
     /** An explosion hit the kart. */
@@ -66,7 +66,7 @@ public final class ItemManager {
 
     /**
      * RB_RainCloud_Init: a red beaker puts a cloud over the kart. The first one: item roll if the kart holds an item, otherwise slow; a second one restarts the 7.68 s and
-     * draws the effect again ((rng % 400) / 100: slow, item roll, icy ground or jump lockout). Slow is not applied yet (the sim has no damaged speed); heavy friction is
+     * draws the effect again ((rng % 400) / 100: slow, item roll, icy ground or jump lockout). Slow takes the damaged speed off the top speed (KartSim.targetSpeed); heavy friction is
      * not drawn by the game's own code either.
      */
     public static void cloud(ServerPlayer p, boolean fresh) {
@@ -86,31 +86,102 @@ public final class ItemManager {
 
     /** The TNT crate was shaken off: no more slowing. */
     public static final int EFFECT_CLEAR = 5;
-    /** What being blasted costs in wumpa (VEH_TUMBLE_WUMPA_PENALTY). */
-    public static final int BLAST_WUMPA_PENALTY = 3;
+    /** What being blasted costs in power fruit (VEH_TUMBLE_WUMPA_PENALTY). */
+    public static final int BLAST_POWER_FRUIT_PENALTY = 3;
 
     /** The driver's kart loses fruit (CTR: not while the mask is on, which is not built yet). */
-    public static void loseWumpa(ServerPlayer p, int count) {
+    public static void losePowerFruit(ServerPlayer p, int count) {
         State s = state(p);
-        if (s == null || s.wumpa == 0) return;
-        s.wumpa = Math.max(0, s.wumpa - count);
+        if (s == null || s.powerFruit == 0) return;
+        s.powerFruit = Math.max(0, s.powerFruit - count);
         sync(p, s);
     }
 
     /** Sends the driver's client an effect to apply to its kart (the client sim is the one that moves it). */
-    public static void applyEffect(ServerPlayer p, int effect) {
+    public static boolean applyEffect(ServerPlayer p, int effect) {
         State s = state(p);
-        if (s == null) return;
+        if (s == null) return true;
+        if (harmful(effect)) {
+            // a hit pops the shield and does nothing else (VehPickState: SHIELD_FLAG_POP_ON_DAMAGE, then invincibleTimer 0x2a0 ms), and the driver cannot be hit again for that moment
+            // (VehPickState_NewState returns 0: the hazard's own side effects, the power fruit lost, the rain cloud, a TNT crate landing on the head, do not happen)
+            if (s.immune > 0) return false;
+            if (s.shield != 0) {
+                popShield(p, s);
+                return false;
+            }
+        }
         s.effect = effect;
         s.effectSeq++;
         sync(p, s);
         // RB_Hazard_HurtDriver sets damageColorTimer: every racer's HUD portrait of this driver flashes red
         if (effect == EFFECT_SPIN || effect == EFFECT_BLAST) PacketDistributor.sendToAllPlayers(new HitFlashPayload(p.getUUID()));
+        return true;
     }
 
-    /** What a kart carries. {@code wumpa} and {@code held} are saved with the kart; the rest is the roulette and the effect in progress. */
+    /** The effects that hurt: slow, blast, spin and the rain cloud's. */
+    private static boolean harmful(int effect) {
+        return effect == EFFECT_SLOW || effect == EFFECT_BLAST || effect == EFFECT_SPIN || effect >= EFFECT_CLOUD;
+    }
+
+    private static final int SHIELD_TICKS = 240;            // SHIELD_DURATION_NORMAL 0x2d00 ms at 32 ms a frame: 360 frames, 12 seconds
+    private static final int SHIELD_FADE_TICKS = 40;        // the last 60 frames fade
+    private static final int SHIELD_POP_TICKS = 8;          // RB_SHIELD_POP_SCALE: 11 frames
+    private static final int SHIELD_IMMUNE_TICKS = 14;      // VEH_PICK_SHIELD_DAMAGE_INVINCIBLE_TIMER 0x2a0 ms
+
+    private static void setKartShield(ServerPlayer p, State s) {
+        if (!(p.getVehicle() instanceof KartEntity kart)) return;
+        kart.setShield(s.shieldPop > 0 ? -2 : s.shield < 0 ? -1 : s.shield == 0 ? 0 : Math.min(s.shield, SHIELD_FADE_TICKS + 1));
+    }
+
+    /** A driver who finishes the race loses the bubble (RB_ShieldDark_ThTick_Grow: ACTION_RACE_FINISHED pops it). */
+    public static void onRaceFinished(ServerPlayer p) {
+        State s = state(p);
+        if (s != null && s.shield != 0 && s.shieldPop == 0) popShield(p, s);
+    }
+
+    /**
+     * The crash attack (VehPhysCrash_Attack): a kart with its bubble up that runs into a kart without one pops its bubble (SHIELD_FLAG_CRASH_ATTACK: the screen fades from black and the
+     * pop sound plays) and blasts the other kart (damage type 2). Both with a bubble up, or neither, do nothing.
+     */
+    private static void crashAttack(ServerPlayer p, State s) {
+        if (!(p.getVehicle() instanceof KartEntity kart)) return;
+        for (KartEntity other : p.serverLevel().getEntitiesOfClass(KartEntity.class, kart.getBoundingBox().inflate(0.4))) {
+            if (other == kart || !(other.getControllingPassenger() instanceof ServerPlayer victim) || victim == p) continue;
+            State vs = other.items();
+            if (vs.shield != 0 || vs.immune > 0) continue;
+            popShield(p, s);
+            applyEffect(victim, EFFECT_BLAST);
+            return;
+        }
+    }
+
+    /** A hit pops the shield: the animation, the sound (0x58) and a moment's immunity. */
+    private static void popShield(ServerPlayer p, State s) {
+        s.shield = 0;
+        s.shieldPop = SHIELD_POP_TICKS;
+        s.immune = SHIELD_IMMUNE_TICKS;
+        setKartShield(p, s);
+        p.serverLevel().playSound(null, p.blockPosition(), ModSounds.SHIELD_POP.get(), SoundSource.PLAYERS, 2.0F, 1.0F);
+    }
+
+    /** The use key with the bubble round the kart: it is thrown forward as a small explosive (RB_ShieldDark_ThTick_Grow, SHIELD_FLAG_SHOOT). */
+    private static void throwShield(ServerPlayer p, State s) {
+        KartEntity kart = (KartEntity) p.getVehicle();
+        boolean blue = s.shield < 0;
+        ShieldBombEntity bomb = com.ctrcraft.ModEntities.SHIELD_BOMB.get().create(p.serverLevel());
+        if (bomb != null && BombEntity.canLaunch()) {
+            bomb.setBlue(blue);
+            bomb.launch(p, kart, false, false);
+            p.serverLevel().addFreshEntity(bomb);
+        }
+        s.shield = 0;
+        setKartShield(p, s);
+        p.serverLevel().playSound(null, p.blockPosition(), ModSounds.SHIELD_POP.get(), SoundSource.PLAYERS, 2.0F, 1.0F);
+    }
+
+    /** What a kart carries. {@code power fruit} and {@code held} are saved with the kart; the rest is the roulette and the effect in progress. */
     public static final class State {
-        public int wumpa;
+        public int powerFruit;
         public String held = "";
         int roll;
         String fixed = "";
@@ -119,14 +190,27 @@ public final class ItemManager {
         int cloudTicks;
         int cloudPending;
         int cloudDelay;
+        /** HELD_ITEM_STACK_COUNT: the shots a bomb_3x / missile_3x still has (numHeldItems), 0 for every other item. */
+        int count;
+        /** The cooldown between two shots of a stack, game ticks (noItemTimer: 5 frames). */
+        int cooldown;
         /** The bomb this kart's driver last fired, while it may still be rolling (the use key detonates it). */
         UUID bomb;
+        /** The Power Shield round the kart: ticks left (green), -1 (blue: it stays), 0 none; the ticks its pop animation has left; and the ticks of immunity after it popped. */
+        int shield;
+        int shieldPop;
+        int immune;
 
         void clear() {
             cloudTicks = 0;
             bomb = null;
-            wumpa = 0;
+            powerFruit = 0;
             held = "";
+            count = 0;
+            cooldown = 0;
+            shield = 0;
+            shieldPop = 0;
+            immune = 0;
             roll = 0;
             fixed = "";
             effect = EFFECT_NONE;
@@ -165,11 +249,11 @@ public final class ItemManager {
         ServerLevel level = (ServerLevel) pickup.level();
         switch (pickup.kind()) {
             case FRUIT -> {
-                s.wumpa = Math.min(MAX_WUMPA, s.wumpa + 1);
+                s.powerFruit = Math.min(MAX_POWER_FRUIT, s.powerFruit + 1);
                 level.playSound(null, pickup.blockPosition(), ModSounds.FRUIT_PICKUP.get(), SoundSource.PLAYERS, 0.8F, 1.0F);
             }
             case FRUIT_CRATE -> {
-                s.wumpa = Math.min(MAX_WUMPA, s.wumpa + 5 + RANDOM.nextInt(4));
+                s.powerFruit = Math.min(MAX_POWER_FRUIT, s.powerFruit + 5 + RANDOM.nextInt(4));
                 crateBreak(level, pickup);
             }
             case POWERUP_CRATE -> {
@@ -186,7 +270,7 @@ public final class ItemManager {
 
     private static void crateBreak(ServerLevel level, PickupEntity pickup) {
         level.playSound(null, pickup.blockPosition(), ModSounds.CRATE_BREAK.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
-        level.sendParticles(net.minecraft.core.particles.ParticleTypes.POOF, pickup.getX(), pickup.getY() + 0.5, pickup.getZ(), 6, 0.3, 0.3, 0.3, 0.02);
+        com.ctrcraft.net.FxPayload.send(level, "crate_break", pickup.getX(), pickup.getY(), pickup.getZ());
     }
 
     /** The use key. */
@@ -202,20 +286,27 @@ public final class ItemManager {
                 return;
             }
         }
-        if (s.held.isEmpty() || s.roll > 0) return;
-        if (s.held.equals(HeldItem.TURBO.id())) {
-            // VehPickupItem_ShootNow: VehFire_Increment(0x960, ..., 0x80), 0x100 with ten wumpa
-            s.effect = s.wumpa >= JUICED ? EFFECT_TURBO_JUICED : EFFECT_TURBO;
+        // the bubble round the kart is shot (VehPhysProc: instBubbleHold, after the bomb's check and before anything else)
+        if (s.shield != 0 && s.shieldPop == 0) {
+            throwShield(p, s);
+            return;
+        }
+        if (s.held.isEmpty() || s.roll > 0 || s.cooldown > 0) return;
+        // the 3x items are fired one at a time as the plain bomb or missile (VehPickupItem_Shoot: Bomb3x and Missile3x become the one-shot weapons)
+        String id = s.held.equals(HeldItem.BOMB_3X.id()) ? HeldItem.BOMB.id() : s.held.equals(HeldItem.MISSILE_3X.id()) ? HeldItem.MISSILE.id() : s.held;
+        if (id.equals(HeldItem.TURBO.id())) {
+            // VehPickupItem_ShootNow: VehFire_Increment(0x960, ..., 0x80), 0x100 with ten power fruit
+            s.effect = s.powerFruit >= CHARGED ? EFFECT_TURBO_CHARGED : EFFECT_TURBO;
             s.effectSeq++;
             s.held = "";
             sync(p, s);
-        } else if (s.held.equals(HeldItem.POTION.id())) {
-            // VehPickupItem_ShootNow, beaker: a green one, a red one with ten wumpa; dropped behind, or thrown forward with the forward key held
+        } else if (id.equals(HeldItem.POTION.id())) {
+            // VehPickupItem_ShootNow, beaker: a green one, a red one with ten power fruit; dropped behind, or thrown forward with the forward key held
             KartEntity kart = (KartEntity) p.getVehicle();
             PotionEntity potion = com.ctrcraft.ModEntities.POTION.get().create(p.serverLevel());
             if (potion != null) {
                 double yaw = Math.toRadians(kart.getYRot());
-                potion.setRed(s.wumpa >= JUICED);
+                potion.setRed(s.powerFruit >= CHARGED);
                 potion.setOwner(p.getUUID());
                 potion.setYRot(kart.getYRot());
                 if (forward) {
@@ -229,26 +320,46 @@ public final class ItemManager {
             }
             s.held = "";
             sync(p, s);
-        } else if (s.held.equals(HeldItem.BOMB.id())) {
-            // VehPickupItem_ShootNow, WEAPON_ID_BOMB_MISSILE: rolls forward, or backward (back key held, 0.3 of the speed); bigger blast with ten wumpa
+        } else if (id.equals(HeldItem.BOMB.id())) {
+            // VehPickupItem_ShootNow, WEAPON_ID_BOMB_MISSILE: rolls forward, or backward (back key held, 0.3 of the speed); bigger blast with ten power fruit
             if (!BombEntity.canLaunch()) return;          // ACTIVE_MISSILE_LIMIT: the item is kept
             KartEntity kart = (KartEntity) p.getVehicle();
             BombEntity bomb = com.ctrcraft.ModEntities.BOMB.get().create(p.serverLevel());
             if (bomb != null) {
-                bomb.launch(p, kart, s.wumpa >= JUICED, back);
+                bomb.launch(p, kart, s.powerFruit >= CHARGED, back);
                 p.serverLevel().addFreshEntity(bomb);
                 s.bomb = bomb.getUUID();
                 p.serverLevel().playSound(null, p.blockPosition(), ModSounds.BOMB_LAUNCH.get(), SoundSource.PLAYERS, 3.5F, 1.0F);       // SOUND_BOMB_LAUNCH 0x47
             }
-            s.held = "";
+            consume(s);
             sync(p, s);
-        } else if (s.held.equals(HeldItem.TNT.id())) {
-            // VehPickupItem_ShootNow, TNT: the crate is dropped behind the kart; with ten wumpa it is a Nitro crate
+        } else if (id.equals(HeldItem.SHIELD.id())) {
+            // VehPickupItem_ShootNow, WEAPON_ID_SHIELD: the bubble grows round the kart; green for 360 frames, blue (ten power fruit) until it is hit or thrown
+            s.shield = s.powerFruit >= CHARGED ? -1 : SHIELD_TICKS;
+            s.shieldPop = 0;
+            s.held = "";
+            setKartShield(p, s);
+            p.serverLevel().playSound(null, p.blockPosition(), ModSounds.SHIELD_ON.get(), SoundSource.PLAYERS, 1.0F, 1.0F);          // SOUND_SHIELD 0x57
+            sync(p, s);
+        } else if (id.equals(HeldItem.MISSILE.id())) {
+            // VehPickupItem_ShootNow, WEAPON_ID_BOMB_MISSILE with the rocket: flies ahead after the nearest kart in front; faster and sharper with ten power fruit
+            if (!BombEntity.canLaunch()) return;          // ACTIVE_MISSILE_LIMIT: the item is kept
+            KartEntity kart = (KartEntity) p.getVehicle();
+            MissileEntity missile = com.ctrcraft.ModEntities.MISSILE.get().create(p.serverLevel());
+            if (missile != null) {
+                missile.launch(p, kart, s.powerFruit >= CHARGED, false);
+                p.serverLevel().addFreshEntity(missile);
+                p.serverLevel().playSound(null, p.blockPosition(), ModSounds.MISSILE_LAUNCH.get(), SoundSource.PLAYERS, 3.5F, 1.0F);       // SOUND_MISSILE_LAUNCH 0x4a
+            }
+            consume(s);
+            sync(p, s);
+        } else if (id.equals(HeldItem.TNT.id())) {
+            // VehPickupItem_ShootNow, TNT: the crate is dropped behind the kart; with ten power fruit it is a Nitro crate
             KartEntity kart = (KartEntity) p.getVehicle();
             double yaw = Math.toRadians(kart.getYRot());
             TntEntity tnt = com.ctrcraft.ModEntities.TNT.get().create(p.serverLevel());
             if (tnt != null) {
-                tnt.setNitro(s.wumpa >= JUICED);
+                tnt.setNitro(s.powerFruit >= CHARGED);
                 tnt.setOwner(p.getUUID());
                 tnt.setYRot(kart.getYRot());
                 tnt.setPos(kart.getX() + Math.sin(yaw) * 1.9, kart.getY() + 0.1, kart.getZ() - Math.cos(yaw) * 1.9);
@@ -265,8 +376,22 @@ public final class ItemManager {
         }
     }
 
+    /** A shot of a stack is used: one fewer left and a short cooldown (noItemTimer 5 frames); the last one takes the item away. A plain item goes at once. */
+    private static void consume(State s) {
+        if (s.count > 1) {
+            s.count--;
+            s.cooldown = 4;
+        } else {
+            s.count = 0;
+            s.held = "";
+        }
+    }
+
+    /** HELD_ITEM_STACK_COUNT. */
+    public static final int STACK_COUNT = 3;
+
     private static void sync(ServerPlayer p, State s) {
-        PacketDistributor.sendToPlayer(p, new ItemStatePayload(s.wumpa, s.held, s.roll, s.effect, s.effectSeq));
+        PacketDistributor.sendToPlayer(p, new ItemStatePayload(s.powerFruit, s.held, s.roll, s.effect, s.effectSeq, s.count));
     }
 
 
@@ -288,6 +413,17 @@ public final class ItemManager {
                 s.effectSeq = 0;
                 sync(p, s);
             }
+            if (s.cooldown > 0) s.cooldown--;
+            if (s.immune > 0) s.immune--;
+            if (s.shieldPop > 0 && --s.shieldPop == 0) setKartShield(p, s);
+            if (s.shield != 0 && s.shieldPop == 0) crashAttack(p, s);
+            if (s.shield > 0) {
+                if (--s.shield == 0) {
+                    // it ran out: it goes with the pop sound and no animation (duration == 0)
+                    p.serverLevel().playSound(null, p.blockPosition(), ModSounds.SHIELD_POP.get(), SoundSource.PLAYERS, 2.0F, 1.0F);
+                }
+                setKartShield(p, s);
+            }
             if (s.cloudTicks > 0) s.cloudTicks--;
             if (s.cloudDelay > 0 && --s.cloudDelay == 0) applyEffect(p, s.cloudPending);
             if (s.roll > 0 && --s.roll == 0) {
@@ -297,8 +433,9 @@ public final class ItemManager {
                     RaceManager.Standing st = RaceManager.standing(p);
                     s.held = st == null ? RULES.powerups().draw(1, 0, 1, RANDOM) : RULES.powerups().draw(st.field(), st.rank(), st.lapIndex(), RANDOM);
                 }
-                // VehPhysProc: the item is announced with OtherFX 0x5E, or 0x41 for a kart with ten wumpa
-                p.serverLevel().playSound(null, p.blockPosition(), s.wumpa >= JUICED ? ModSounds.ITEM_GET_JUICED.get() : ModSounds.ITEM_GET.get(),
+                s.count = s.held.equals(HeldItem.BOMB_3X.id()) || s.held.equals(HeldItem.MISSILE_3X.id()) ? STACK_COUNT : 0;       // VehPhysGeneral: numHeldItems = HELD_ITEM_STACK_COUNT
+                // VehPhysProc: the item is announced with OtherFX 0x5E, or 0x41 for a kart with ten power fruit
+                p.serverLevel().playSound(null, p.blockPosition(), s.powerFruit >= CHARGED ? ModSounds.ITEM_GET_CHARGED.get() : ModSounds.ITEM_GET.get(),
                         SoundSource.PLAYERS, 0.8F, 1.0F);
                 sync(p, s);
             }

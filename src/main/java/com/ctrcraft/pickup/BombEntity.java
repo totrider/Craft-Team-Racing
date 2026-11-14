@@ -37,14 +37,15 @@ import net.minecraft.world.phys.Vec3;
  * <li>It explodes on a wall (it climbs a block like a kart does), when it has fallen 0x900 lu (46 blocks) without finding ground, on any kart other than the
  * owner's whose centre comes within 96 lu (sqrt 0x2400) horizontally, on a mine, or when the owner presses the use key again ({@code tw->flags |= 2}).</li>
  * <li>The owner is spared for 60 frames; after that the bomb explodes on the owner's kart too, but the burst never hurts the owner.</li>
- * <li>The burst blasts every other driven kart within 320 lu (6.4 blocks), 512 lu (10.24 blocks) when the owner had ten wumpa: {@link ItemManager#EFFECT_BLAST}
- * and the wumpa penalty. Mines in the blast go off too. Other entities are hurt and thrown by a vanilla explosion of the same reach, without breaking blocks.</li>
+ * <li>The burst blasts every other driven kart within 320 lu (6.4 blocks), 512 lu (10.24 blocks) when the owner had ten power fruit: {@link ItemManager#EFFECT_BLAST}
+ * and the power fruit penalty. Mines in the blast go off too. Other entities are hurt and thrown by a vanilla explosion of the same reach, without breaking blocks.</li>
  * </ul>
  * <b>Stand-ins, not in the decomp:</b> the target is the nearest other driven kart in a 45 degree cone ahead of the launching kart (the original tests the screen
  * rectangle, which a mod cannot know), and a bomb goes away after 20 s ({@link #LIFETIME_TICKS}) so a bomb cannot roll for ever; the original has no time limit.
  */
 public class BombEntity extends Entity {
     private static final EntityDataAccessor<Boolean> DATA_POWERED = SynchedEntityData.defineId(BombEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_TILT = SynchedEntityData.defineId(BombEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_BACKWARD = SynchedEntityData.defineId(BombEntity.class, EntityDataSerializers.BOOLEAN);
 
     /** TRACKER_LAUNCH_VELOCITY: 4096 * 3 >> 7 = 96 lu per frame; backwards (v / 2) * 3 / 5. */
@@ -59,6 +60,7 @@ public class BombEntity extends Entity {
     private static final int SUBSTEPS = 10;
     private static final double SUB = FRAMES_PER_TICK / SUBSTEPS;
     /** RB_Hazard_InterpolateValue(.., 4): 4 of 4096 per frame. */
+    protected static final double TURN_UNIT = Math.PI * 2.0 / 4096.0;
     private static final double TURN_PER_FRAME = 4.0 * Math.PI * 2.0 / 4096.0;
     /** The hit test of RB_Hazard_CollideWithDrivers: 0x2400 squared radius, horizontally; the vertical bound is twice the radius (dy^2 < 0x2400 * 4). */
     private static final double HIT_RADIUS = 96.0 / LU;
@@ -68,6 +70,16 @@ public class BombEntity extends Entity {
     private static final double BLAST_RADIUS_POWERED = 512.0 / LU;
     /** TRACKER_PARENT_SAFETY_FRAMES 60, in game ticks. */
     private static final int OWNER_SPARED_TICKS = 40;
+
+    /** How long the owner's own kart is spared (60 frames; a thrown shield's is 10). */
+    protected int ownerSparedTicks() {
+        return OWNER_SPARED_TICKS;
+    }
+
+    /** Whether the blast plays the missile's sound (RB_MovingExplosive_Explode: anything that is not a bomb). */
+    protected boolean missileSound() {
+        return isMissile();
+    }
     /** No ground for 0x900 lu below: it explodes. */
     private static final double MAX_FALL = 0x900 / LU;
     private static final int LIFETIME_TICKS = 400;
@@ -78,6 +90,8 @@ public class BombEntity extends Entity {
     private static final double TARGET_HALF_CONE = Math.toRadians(45.0);
     private static final double TARGET_RANGE = 80.0;
 
+    /** /ctr debug spawn: the entity stands where it was put, for ever and harmless, and plays its client side animation and effects. */
+    public boolean debug;
     private UUID owner;
     private UUID target;
     private String raceId;
@@ -92,6 +106,9 @@ public class BombEntity extends Entity {
     private static final double STEP_DOWN = 1.0;
     /** Half the width of the column in front of the bomb that is tested for a wall (the ball is about 64 lu across). */
     private static final double WALL_HALF = 0.3;
+    /** A missile aims at a mine its target has just put down for ten frames instead of at the target (framesSeekTargetTnt): the crate, and the ticks left. */
+    private UUID seekMine;
+    private int seekTicks;
     private TerrainField field;
     private double prepX;
     private double prepY;
@@ -107,8 +124,37 @@ public class BombEntity extends Entity {
         return ACTIVE.get() < ACTIVE_LIMIT;
     }
 
+    /** The tracking missile (MissileEntity) overrides these: the two weapons share RB_MovingExplosive_ThTick and differ in what the game's tables say. */
+    protected boolean isMissile() {
+        return false;
+    }
+
+    /** Lu per frame along its heading. */
+    protected double baseSpeed() {
+        return backward() ? SPEED_BACKWARD : SPEED;
+    }
+
+    /** RB_Hazard_InterpolateValue's step towards the target, in 4096ths of a turn per frame. */
+    protected double turnPerFrame() {
+        return TURN_PER_FRAME;
+    }
+
+    /** Lu per frame per frame (a missile falls twice as hard: elapsed << 3 against << 2). */
+    protected double gravity() {
+        return GRAVITY;
+    }
+
+    public void setPowered(boolean powered) {
+        entityData.set(DATA_POWERED, powered);
+    }
+
     public boolean powered() {
         return entityData.get(DATA_POWERED);
+    }
+
+    /** The slope the missile lies on (GroundTilt's packing): the rocket is turned onto the ground's normal (VehPhysForce_RotAxisAngle with the hit plane's normal). */
+    public int tilt() {
+        return entityData.get(DATA_TILT);
     }
 
     public boolean backward() {
@@ -136,7 +182,7 @@ public class BombEntity extends Entity {
         counted = true;
     }
 
-    private UUID chooseTarget(ServerPlayer driver, KartEntity from) {
+    protected UUID chooseTarget(ServerPlayer driver, KartEntity from) {
         ServerPlayer best = null;
         double bestDist = TARGET_RANGE * TARGET_RANGE;
         for (ServerPlayer p : ((ServerLevel) level()).getServer().getPlayerList().getPlayers()) {
@@ -172,20 +218,37 @@ public class BombEntity extends Entity {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(DATA_POWERED, false);
         builder.define(DATA_BACKWARD, false);
+        builder.define(DATA_TILT, GroundTilt.FLAT);
     }
 
     @Override
     public void tick() {
         super.tick();
         if (level().isClientSide) {
+            if (this instanceof ShieldBombEntity) {
+                if (!soundStarted) {
+                    soundStarted = true;
+                    com.ctrcraft.client.BombRollSound.start(this, ModSounds.SHIELD_ROLL.get());        // 0x59, looped while a thrown shield rolls
+                }
+                return;                                                       // no fuse
+            }
+            if (isMissile()) {
+                if (!soundStarted) {
+                    soundStarted = true;
+                    com.ctrcraft.client.BombRollSound.start(this, ModSounds.MISSILE_FLY.get());      // 0x4b, looped while it flies
+                }
+                com.ctrcraft.client.MissileFx.tick(this);                    // the exhaust (emSet_Missile)
+                return;
+            }
             if (!soundStarted) {
                 soundStarted = true;
-                com.ctrcraft.client.BombRollSound.start(this);               // 0x48, looped while it rolls
+                com.ctrcraft.client.BombRollSound.start(this, ModSounds.BOMB_ROLL.get());               // 0x48, looped while it rolls
             }
             com.ctrcraft.client.BombFx.tick(this);                           // the little fire off the fuse's tip
             return;
         }
         if (!(level() instanceof ServerLevel level)) return;
+        if (debug) return;
         if (detonate || tickCount > LIFETIME_TICKS || (raceId != null && !raceId.equals(RaceManager.raceIdOf(owner)))) {
             if (detonate) explode(level, "the use key"); else vanish();
             return;
@@ -194,14 +257,39 @@ public class BombEntity extends Entity {
         ServerPlayer chased = target == null ? null : level.getServer().getPlayerList().getPlayer(target);
         if (chased != null && !(chased.getVehicle() instanceof KartEntity)) chased = null;
         if (chased == null) target = null;
-        double speed = (backward() ? SPEED_BACKWARD : SPEED) * com.ctrcraft.CtrConfig.WEAPON_SPEED_SCALE.get();
+        if (isMissile() && chased != null) {
+            // the warning on the chased driver's screen (UI_RaceHud: the distance in 50 lu, the beep rate follows it)
+            double ddx = chased.getX() - getX();
+            double ddz = chased.getZ() - getZ();
+            net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(chased, new TrackerPayload((int) (Math.sqrt(ddx * ddx + ddz * ddz) * LU / 50.0)));
+            // a mine the target has just put down distracts the missile for ten frames (RB_MovingExplosive_ThTick: ACTION_DROPPING_MINE, framesSeekTargetTnt)
+            if (seekTicks > 0) {
+                seekTicks--;
+            } else {
+                for (TntEntity tnt : level.getEntitiesOfClass(TntEntity.class, getBoundingBox().inflate(40.0))) {
+                    if (tnt.owner() != null && tnt.owner().equals(chased.getUUID()) && tnt.tickCount <= 2) {
+                        seekMine = tnt.getUUID();
+                        seekTicks = 7;
+                        break;
+                    }
+                }
+            }
+        }
+        double speed = baseSpeed() * com.ctrcraft.CtrConfig.WEAPON_SPEED_SCALE.get();
+        double turn = turnPerFrame();
         for (int i = 0; i < SUBSTEPS; i++) {
             if (chased != null) {
-                double dx = chased.getX() - getX();
-                double dz = chased.getZ() - getZ();
+                double aimX = chased.getX();
+                double aimZ = chased.getZ();
+                if (seekTicks > 0 && seekMine != null && level.getEntity(seekMine) instanceof TntEntity mine) {
+                    aimX = mine.getX();
+                    aimZ = mine.getZ();
+                }
+                double dx = aimX - getX();
+                double dz = aimZ - getZ();
                 double diff = wrap(Math.atan2(-dx, dz) - heading);
-                double step = TURN_PER_FRAME * SUB;
-                heading += Math.abs(diff) < TURN_PER_FRAME ? diff : Math.copySign(step, diff);
+                double step = turn * SUB;
+                heading += Math.abs(diff) < turn ? diff : Math.copySign(step, diff);
             }
             // a bomb thrown backwards (TRACKER_FLAG_BOMB_BACKWARD) travels the OPPOSITE way along its heading, at 0.3 of the speed: its velocity is negated (RB_MovingExplosive_ThTick)
             double step = speed * SUB / LU * (backward() ? -1.0 : 1.0);
@@ -225,7 +313,7 @@ public class BombEntity extends Entity {
                 fell = 0;
             } else {
                 grounded = false;
-                vy = Math.max(TERMINAL, vy - GRAVITY * SUB);
+                vy = Math.max(TERMINAL, vy - gravity() * SUB);
                 double ny = y + vy * SUB / LU;
                 fell += Math.max(0.0, y - ny);
                 if (!Double.isNaN(ground) && ny <= ground) {
@@ -255,6 +343,11 @@ public class BombEntity extends Entity {
             }
             setPos(nx, y, nz);
             setYRot((float) Math.toDegrees(heading));
+            if (isMissile() && i == SUBSTEPS - 1) {
+                double[] n = field.normal(nx, nz);
+                int packed = (((int) Math.round(n[0] * 127.0) + 127) & 0xFF) | ((((int) Math.round(n[2] * 127.0) + 127) & 0xFF) << 8);
+                if (packed != entityData.get(DATA_TILT)) entityData.set(DATA_TILT, packed);
+            }
             breakCrates(level);
             if (fell > MAX_FALL || getY() < level.getMinBuildHeight() - 8) {
                 explode(level, String.format("no ground below: fell %.1f blocks, at %.2f %.2f %.2f", fell, getX(), getY(), getZ()));              // 0x900 lu
@@ -274,12 +367,23 @@ public class BombEntity extends Entity {
         AABB reach = getBoundingBox().inflate(HIT_RADIUS + 0.5, HIT_HEIGHT, HIT_RADIUS + 0.5);
         for (KartEntity kart : level.getEntitiesOfClass(KartEntity.class, reach)) {
             if (!(kart.getControllingPassenger() instanceof ServerPlayer driver)) continue;
-            if (driver.getUUID().equals(owner) && tickCount < OWNER_SPARED_TICKS) continue;
+            if (driver.getUUID().equals(owner) && tickCount < ownerSparedTicks()) continue;
             double dx = kart.getX() - getX();
             double dz = kart.getZ() - getZ();
             if (dx * dx + dz * dz < HIT_RADIUS * HIT_RADIUS && Math.abs(kart.getY() - getY()) < HIT_HEIGHT) {
                 hitWhat = "a kart (" + driver.getGameProfile().getName() + (driver.getUUID().equals(owner) ? ", its own driver" : "") + ")";
                 return true;
+            }
+        }
+        if (!isMissile()) {
+            // a bomb hits a missile (RB_Hazard_CollideWithBucket on the TRACKING bucket) and both go off; the owner's own missile is spared for the safety frames
+            for (MissileEntity m : level.getEntitiesOfClass(MissileEntity.class, reach)) {
+                if (m.isRemoved() || (m.owner() != null && m.owner().equals(owner) && tickCount < OWNER_SPARED_TICKS)) continue;
+                if (m.distanceToSqr(this) < HIT_RADIUS * HIT_RADIUS) {
+                    m.explodeFromCollision(level, "a bomb hit it");
+                    hitWhat = "a missile";
+                    return true;
+                }
             }
         }
         for (Entity e : level.getEntities(this, reach)) {
@@ -324,17 +428,21 @@ public class BombEntity extends Entity {
         }
     }
 
+    /** RB_MovingExplosive_NotifyCollision: a bomb that hit this missile sets it off too. */
+    void explodeFromCollision(ServerLevel level, String cause) {
+        explode(level, cause);
+    }
+
     /** RB_MovingExplosive_Explode + RB_Burst_Init. */
     private void explode(ServerLevel level, String cause) {
-        com.ctrcraft.CtrCraftMod.LOGGER.info("Bomb exploded: {}", cause);
+        com.ctrcraft.CtrCraftMod.LOGGER.info("{} exploded: {}", isMissile() ? "Missile" : "Bomb", cause);
         double radius = powered() ? BLAST_RADIUS_POWERED : BLAST_RADIUS;
         AABB blast = new AABB(position(), position()).inflate(radius);
         List<KartEntity> karts = level.getEntitiesOfClass(KartEntity.class, blast);
         for (KartEntity kart : karts) {
             if (!(kart.getControllingPassenger() instanceof ServerPlayer driver) || driver.getUUID().equals(owner)) continue;   // "the firing driver is excluded"
             if (kart.distanceToSqr(this) >= radius * radius) continue;
-            ItemManager.applyEffect(driver, ItemManager.EFFECT_BLAST);
-            ItemManager.loseWumpa(driver, ItemManager.BLAST_WUMPA_PENALTY);
+            if (ItemManager.applyEffect(driver, ItemManager.EFFECT_BLAST)) ItemManager.losePowerFruit(driver, ItemManager.BLAST_POWER_FRUIT_PENALTY);        // a shielded kart loses nothing
         }
         // the burst sets off the mines it reaches (PROC_CollideHitboxWithBucket on the MINE bucket)
         for (Entity e : level.getEntities(this, blast)) {
@@ -342,13 +450,13 @@ public class BombEntity extends Entity {
         }
         hurtOthers(level, blast, radius);
         // the burst: a starburst sized to the blast (its size rides in the particle's x velocity), and the explosion's sound (PlaySound3D 0x49)
-        level.sendParticles(ModParticles.BURST.get(), getX(), getY() + 0.4, getZ(), 0, radius, 0.0, 0.0, 1.0);
-        level.playSound(null, getX(), getY(), getZ(), ModSounds.BOMB_EXPLODE.get(), SoundSource.PLAYERS, 4.0F, 1.0F);
+        com.ctrcraft.net.FxPayload.send(level, "bomb_burst", getX(), getY(), getZ(), 0.0F, (float) radius);
+        level.playSound(null, getX(), getY(), getZ(), (missileSound() ? ModSounds.MISSILE_EXPLODE : ModSounds.BOMB_EXPLODE).get(), SoundSource.PLAYERS, 4.0F, 1.0F);
         discard();
     }
 
     private void vanish() {
-        ((ServerLevel) level()).sendParticles(ParticleTypes.POOF, getX(), getY() + 0.3, getZ(), 8, 0.3, 0.3, 0.3, 0.02);
+        com.ctrcraft.net.FxPayload.send((ServerLevel) level(), "vanish_bomb", getX(), getY(), getZ());
         discard();
     }
 

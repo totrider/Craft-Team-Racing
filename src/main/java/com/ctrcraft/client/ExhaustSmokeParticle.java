@@ -50,18 +50,15 @@ public class ExhaustSmokeParticle extends TextureSheetParticle {
     /** The puff's world place from the kart's frame at {@code partialTick}: the kart's own (interpolated) position and drawn yaw turn its frame. */
     private void place(float partialTick) {
         if (anchor == null || anchor.isRemoved()) return;
-        double yaw = Math.toRadians(anchor.renderYawDegrees(partialTick));
-        double fx = -Math.sin(yaw);
-        double fz = Math.cos(yaw);
-        double lx = Math.cos(yaw);
-        double lz = Math.sin(yaw);
         double mx = px + vlx * partialTick;
         double my = py + vly * partialTick;
         double mz = pz + vlz * partialTick;
         net.minecraft.world.phys.Vec3 k = anchor.getPosition(partialTick);
-        this.x = k.x - lx * mx - fx * mz;                  // the model's frame: x to the kart's right (minus left), z to the back (minus forward)
-        this.y = k.y + my;
-        this.z = k.z - lz * mx - fz * mz;
+        // the kart's body pose (yaw, ground lean, the jump's tilt, the wheelie, the tumble) takes the puff's place in the kart's frame to the world
+        org.joml.Vector3f at = KartRenderer.bodyMatrix(anchor, partialTick).transformPosition((float) mx, (float) my, (float) mz, new org.joml.Vector3f());
+        this.x = k.x + at.x;
+        this.y = k.y + at.y;
+        this.z = k.z + at.z;
         this.xo = this.x;
         this.yo = this.y;
         this.zo = this.z;

@@ -8,12 +8,12 @@ import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.sounds.SoundSource;
 
-/** The rolling bomb's sound: PlaySound3D_Flags(0x48) every frame it moves, a loop that follows the bomb until it explodes (RB_MovingExplosive_ThTick). */
+/** The rolling bomb's sound (and the missile's flight sound, 0x4b): PlaySound3D_Flags(0x48) every frame it moves, a loop that follows the bomb until it explodes (RB_MovingExplosive_ThTick). */
 public final class BombRollSound extends AbstractTickableSoundInstance {
     private final BombEntity bomb;
 
-    private BombRollSound(BombEntity bomb) {
-        super(ModSounds.BOMB_ROLL.get(), SoundSource.PLAYERS, SoundInstance.createUnseededRandom());
+    private BombRollSound(BombEntity bomb, net.minecraft.sounds.SoundEvent sound) {
+        super(sound, SoundSource.PLAYERS, SoundInstance.createUnseededRandom());
         this.bomb = bomb;
         this.looping = true;
         this.delay = 0;
@@ -34,7 +34,7 @@ public final class BombRollSound extends AbstractTickableSoundInstance {
         this.z = bomb.getZ();
     }
 
-    public static void start(BombEntity bomb) {
-        Minecraft.getInstance().getSoundManager().play(new BombRollSound(bomb));
+    public static void start(BombEntity bomb, net.minecraft.sounds.SoundEvent sound) {
+        Minecraft.getInstance().getSoundManager().play(new BombRollSound(bomb, sound));
     }
 }

@@ -20,7 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 
 /**
- * N. Brio's Beaker: the model {@code item/pickup_beaker_green} (or {@code _red}, the one a kart with ten wumpa throws), built in Blockbench
+ * N. Brio's Beaker: the model {@code item/pickup_beaker_green} (or {@code _red}, the one a kart with ten power fruit throws), built in Blockbench
  * ({@code blockbench/pickups/beaker_*.bbmodel}, written by tools/make_beaker_models.py): a round-bottomed flask from boxes. A resource pack can replace the models, for
  * instance with the original's mesh. It turns slowly, lies on the slope it came to rest on, and pops in from half size over four frames as the original's does
  * ({@code RB_GenericMine_ThTick}: scale 0x800, plus 0x200 a frame up to 0x1000). The bubbles that rise in it are billboards ({@link BeakerBubbles}).

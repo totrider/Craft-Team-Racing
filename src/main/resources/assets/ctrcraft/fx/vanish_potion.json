@@ -1,0 +1,28 @@
+{
+  "emitters": [
+    {
+      "particle": "minecraft:poof",
+      "count": 6,
+      "pos": [
+        0,
+        0.3,
+        0
+      ],
+      "pos_spread": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "velocity_spread": [
+        0.02,
+        0.02,
+        0.02
+      ]
+    }
+  ]
+}

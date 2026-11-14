@@ -29,7 +29,7 @@ import net.minecraft.util.RandomSource;
  * fruit with its pre-rendered, animated spin): it is turned to face the camera instead of spinning.
  */
 public class PickupRenderer extends EntityRenderer<PickupEntity> {
-    public static final ModelResourceLocation WUMPA = model("pickup_wumpa");
+    public static final ModelResourceLocation POWER_FRUIT = model("pickup_power_fruit");
     public static final ModelResourceLocation FRUIT_CRATE = model("pickup_fruit_crate");
     public static final ModelResourceLocation POWERUP_CRATE = model("pickup_powerup_crate");
     private static final Direction[] SIDES = { Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST, null };
@@ -50,7 +50,7 @@ public class PickupRenderer extends EntityRenderer<PickupEntity> {
     public void render(PickupEntity entity, float yaw, float partialTick, PoseStack pose, MultiBufferSource buffers, int light) {
         PickupKind kind = entity.kind();
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(
-                kind == PickupKind.FRUIT ? WUMPA : kind == PickupKind.FRUIT_CRATE ? FRUIT_CRATE : POWERUP_CRATE);
+                kind == PickupKind.FRUIT ? POWER_FRUIT : kind == PickupKind.FRUIT_CRATE ? FRUIT_CRATE : POWERUP_CRATE);
         float t = entity.tickCount + partialTick;
         pose.pushPose();
         // the models are in the original's size already: a crate stands on the spot, the fruit floats a little

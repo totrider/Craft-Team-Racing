@@ -80,7 +80,7 @@ public final class KartSim {
     private static final int SIDE_SPEED_CLAMP = 2560;
     private static final int MAX_SPEED = 25600;
     private static final int MAX_BASE_SPEED = 0x6400;
-    private static final long WUMPA_NET_STAT = ((1500 << 12) / 5) - 1;
+    private static final long POWER_FRUIT_NET_STAT = ((1500 << 12) / 5) - 1;
     private static final int WALL_RUB_MS = 240;
     private static final int WALL_RUB_SPEED_LIMIT = 3328;
     private static final int COYOTE_MS = 160;
@@ -150,8 +150,8 @@ public final class KartSim {
     public State state = State.NORMAL;
     /** The ground under the kart: the host's to set before a tick (CTR reads the touched quad's terrain). */
     public Terrain groundType = Terrain.ASPHALT;
-    /** Wumpa fruit held, 0 to 10 (top-speed bonus). */
-    public int wumpa = 0;
+    /** Power Fruit held, 0 to 10 (top-speed bonus). */
+    public int powerFruit = 0;
 
     private Terrain terrain = Terrain.ASPHALT;
     private Terrain speedTerrain = Terrain.ASPHALT;
@@ -499,10 +499,10 @@ public final class KartSim {
 
     /**
      * The Turbo power-up (VehPickupItem_ShootNow): {@code VehFire_Increment(0x960 reserves, FREEZE type, fire level 0x80)}, 0x100 with ten
-     * wumpa (TURBO_ITEM_RESERVES, TURBO_ITEM_BOOST_NORMAL / _JUICED).
+     * power fruit (TURBO_ITEM_RESERVES, TURBO_ITEM_BOOST_NORMAL / _JUICED).
      */
-    public void itemTurbo(boolean juiced) {
-        if (fireIncrement(0x960, FireKind.FREEZE, juiced ? 0x100 : 0x80)) {
+    public void itemTurbo(boolean charged) {
+        if (fireIncrement(0x960, FireKind.FREEZE, charged ? 0x100 : 0x80)) {
             events.add(new KartEvent(KartEvent.Type.BOOST, 2));
         }
     }
@@ -938,16 +938,26 @@ public final class KartSim {
 
     /** VehPhysGeneral_GetBaseSpeed (VehPhysGeneral.c:1979-2116, spec 3.2): the top speed this frame. */
     private int targetSpeed() {
-        long w = Math.min(wumpa, 9);
-        int bonus = (int) ((w * WUMPA_NET_STAT / 10) >> 12);
+        long w = Math.min(powerFruit, 9);
+        int bonus = (int) ((w * POWER_FRUIT_NET_STAT / 10) >> 12);
         int b = kartClass.speed;
         if (reserves != 0) {
             b += fireSpeedCap;
             int cap = SINGLE_TURBO_SPEED + 2 * (SACRED_FIRE_SPEED - SINGLE_TURBO_SPEED) - fireSpeedCap;
             bonus = Math.min(bonus, Math.max(cap, 0));
         }
-        return Math.min(b + bonus, MAX_BASE_SPEED);
+        // VehPhysGeneral_GetBaseSpeed: a crate on the head takes const_DamagedSpeed >> 1 off the top speed, a rain cloud's slow effect (like burning or a squish) all of it (0x1000
+        // in every engine class); taken after the power fruit and the reserves, before the cap
+        int subtract = 0;
+        if (tntOnHead) subtract = DAMAGED_SPEED >> 1;
+        if (cloudMs > 0 && cloudEffect == CLOUD_SLOW) subtract = DAMAGED_SPEED;
+        return Math.min(b + bonus - subtract, MAX_BASE_SPEED);
     }
+
+    /** MetaPhys DAMAGED_SPEED_OFFSET: the same 4096 for the four engine classes (zGlobal_DATA.c). */
+    private static final int DAMAGED_SPEED = 4096;
+    /** A TNT crate sits on the kart's head (set by the host each frame: instTntRecv != NULL). */
+    public boolean tntOnHead;
 
     // ---- PHYS_ANGULAR (VehPhysGeneral_PhysAngular, spec 4.2-4.6) ----
 

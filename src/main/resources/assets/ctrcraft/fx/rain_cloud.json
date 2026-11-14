@@ -1,0 +1,42 @@
+{
+  "emitters": [
+    {
+      "particle": "minecraft:cloud",
+      "count": 3,
+      "pos": [
+        0,
+        2.4,
+        0
+      ],
+      "pos_spread": [
+        0.8,
+        0,
+        0.8
+      ],
+      "velocity": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "particle": "minecraft:rain",
+      "count": 3,
+      "pos": [
+        0,
+        1.6,
+        0
+      ],
+      "pos_spread": [
+        0.8,
+        0,
+        0.8
+      ],
+      "velocity": [
+        0,
+        0,
+        0
+      ]
+    }
+  ]
+}

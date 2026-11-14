@@ -1,10 +1,10 @@
 """
-The HUD pictures: the power-up icons, the Wumpa fruit and the four start lamps. Stand-in pixel art in the original game's size, proportions and style (drawn
+The HUD pictures: the power-up icons, the Power Fruit and the four start lamps. Stand-in pixel art in the original game's size, proportions and style (drawn
 from memory as look-alikes, not the original game's art).
 
   python tools/make_power_icons.py
 
-Writes textures/gui/power/<id>.png (32 x 48, portrait, as the original's; one per power-up in com.ctrcraft.items.HeldItem), textures/gui/wumpa.png (48 x 32)
+Writes textures/gui/power/<id>.png (32 x 48, portrait, as the original's; one per power-up in com.ctrcraft.items.HeldItem), textures/gui/power_fruit.png (48 x 32)
 and textures/gui/lights/{red,green}_{on,off}.png (48 x 32). Placeholder art: a file that exists is yours and is not overwritten, so repaint them (delete one to
 have it drawn again). Run from the project folder.
 """
@@ -280,8 +280,8 @@ def super_engine():
     return im
 
 
-def wumpa():
-    """The Wumpa fruit sprite, 32 x 32: red on top, through orange and yellow to green below, a leaf on top."""
+def power_fruit():
+    """The Power Fruit sprite, 32 x 32: red on top, through orange and yellow to green below, a leaf on top."""
     im, d = canvas(32, 32)
     mask = Image.new("L", (32, 32), 0)
     ImageDraw.Draw(mask).ellipse([3, 5, 29, 31], fill=255)
@@ -303,8 +303,8 @@ def wumpa():
     return im
 
 
-def tnt_juiced():
-    """The juiced TNT: the creeper-themed crate (green, with the face), corner-on like the plain one."""
+def tnt_charged():
+    """The charged TNT: the creeper-themed crate (green, with the face), corner-on like the plain one."""
     im, d = canvas()
     d.polygon([(16, 6), (30, 13), (16, 20), (2, 13)], fill=(150, 225, 120, 255), outline=OUT)
     d.polygon([(2, 13), (16, 20), (16, 44), (2, 36)], fill=DGREEN, outline=OUT)
@@ -318,8 +318,8 @@ def tnt_juiced():
     return im
 
 
-def potion_juiced():
-    """The juiced beaker: the same flask with red potion."""
+def potion_charged():
+    """The charged beaker: the same flask with red potion."""
     im, d = canvas()
     d.polygon([(12, 6), (20, 6), (20, 18), (28, 40), (4, 40), (12, 18)], fill=(215, 235, 245, 255), outline=OUT)
     d.polygon([(10, 26), (22, 26), (28, 40), (4, 40)], fill=RED)
@@ -331,8 +331,8 @@ def potion_juiced():
     return im
 
 
-def shield_juiced():
-    """The juiced shield: a bigger, glossy red bubble with a glint."""
+def shield_charged():
+    """The charged shield: a bigger, glossy red bubble with a glint."""
     im, d = canvas()
     d.ellipse([1, 2, 31, 47], fill=(170, 40, 40, 255), outline=OUT)
     d.ellipse([4, 6, 28, 43], fill=(235, 80, 70, 255))
@@ -362,7 +362,7 @@ def lamp(colour, lit):
 ICONS = {
     "turbo": turbo, "bomb": bomb, "missile": missile, "tnt": tnt, "potion": potion, "spring": spring, "shield": shield, "mask": mask,
     "clock": clock, "warpball": warpball, "bomb_3x": bomb_3x, "missile_3x": missile_3x, "invisibility": invisibility, "super_engine": super_engine,
-    "tnt_juiced": tnt_juiced, "potion_juiced": potion_juiced, "shield_juiced": shield_juiced,
+    "tnt_charged": tnt_charged, "potion_charged": potion_charged, "shield_charged": shield_charged,
 }
 
 
@@ -373,9 +373,9 @@ def main():
         path = os.path.join(GUI, "power", name + ".png")
         if not os.path.exists(path):
             make().save(path)
-    path = os.path.join(GUI, "wumpa.png")
+    path = os.path.join(GUI, "power_fruit.png")
     if not os.path.exists(path):
-        wumpa().save(path)
+        power_fruit().save(path)
     for colour in ("red", "green"):
         for lit in (True, False):
             path = os.path.join(GUI, "lights", "%s_%s.png" % (colour, "on" if lit else "off"))

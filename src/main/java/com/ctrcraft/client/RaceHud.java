@@ -21,7 +21,7 @@ import net.minecraft.resources.ResourceLocation;
 /**
  * The race HUD, laid out where the original game puts things. CTR draws on a 512 x 216 screen; positions below are those and are scaled to the window
  * (x by width / 512, y by height / 216). The clock and lap times are top left, the first four racers' portraits (here: skin heads) below them, your
- * place in big digits bottom left, the four start lamps top centre. The item and Wumpa count are in {@link ItemHud}. The one difference: the lap
+ * place in big digits bottom left, the four start lamps top centre. The item and Power Fruit count are in {@link ItemHud}. The one difference: the lap
  * counter, which the original puts top right, sits at the right edge above the driving meters, where the original shows its map.
  */
 public final class RaceHud {

@@ -19,8 +19,13 @@ public final class ItemClient {
         lastSeq = 0;
     }
 
-    public static int wumpa() {
-        return state.wumpa();
+    public static int powerFruit() {
+        return state.powerFruit();
+    }
+
+    /** The shots a stack still has (the digit the HUD shows beside the icon), 0 when not a stack. */
+    public static int count() {
+        return state.count();
     }
 
     public static String held() {

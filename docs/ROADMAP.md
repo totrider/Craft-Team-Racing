@@ -75,7 +75,7 @@ Status: **core done and played** (steps, slabs, stairs, mixed stairs smoothed; b
   scale an arrow to the group (it only sees the 8 neighbours; continuous textures are world-grid aligned), so it would be either multi-block
   2x2 / 3x3 large pads (exact), or "long arrows" along the direction with Fusion's `simple` layout (head, shaft, tail), or own rendering.
 
-### M2.5 - Racers, pad families, Wumpa (agreed 2026-11-12; faithful by default, extensions opt-in)
+### M2.5 - Racers, pad families, Power Fruit (agreed 2026-11-12; faithful by default, extensions opt-in)
 Principle: see the fidelity policy in [../CLAUDE.md](../CLAUDE.md). PS1 behaviour is the default; anything else is a separate block/item/data entry.
 - **Fruit, crates, power-ups, rule sets:** design in [DESIGN_ITEMS.md](DESIGN_ITEMS.md); the pure core (item tables, `RuleSet`) is built.
 - **Boost pad families.** The regular Boost Pad family stays exactly the PS1 turbo pad (cap 4096, reserves 960 frozen, accel 8000).
@@ -89,9 +89,9 @@ Principle: see the fidelity policy in [../CLAUDE.md](../CLAUDE.md). PS1 behaviou
   physics are identical. We have the four classes (`KartClass`). Plan: make the stats data-driven (`KartStats`, one datapack JSON per class,
   defaults = the four PS1 classes), a class id on the kart (synced, kept in the item), choose it when spawning in creative and later by crafted
   parts in M3. Custom tunings are extra datapack entries, clearly not PS1. Racer names can be presets ("Crash" -> Balanced).
-- **Wumpa fruit.** In PS1 each fruit (0-10) raises top speed a little (see below) and 10 = "juiced" upgrades items (turbo item fire level 128 -> 256,
+- **Power Fruit.** In PS1 each fruit (0-10) raises top speed a little (see below) and 10 = "charged" upgrades items (turbo item fire level 128 -> 256,
   Super Engine) and sounds. A spin-out costs 1 fruit, a blast 3. Needs: fruit pickups in the world (an item/entity or crates, opt-in
-  how they appear), the kart's fruit count (synced), the counter on the HUD, the losses on hits. `KartSim.wumpa` already feeds the speed.
+  how they appear), the kart's fruit count (synced), the counter on the HUD, the losses on hits. `KartSim.powerFruit` already feeds the speed.
 
 ### M2.6 - Tracks and races (design: [DESIGN_TRACKS.md](DESIGN_TRACKS.md)) - step 1 built, needs an in-game test
 A node graph you build (start and checkpoint node blocks, linked with a Track Tool), then test-drive to record the main path and branches; a race starts when karts
@@ -117,7 +117,7 @@ Replaces the old "checkpoints / laps / timer / race manager" line in M2.
 ### M5+ (ideas, unscheduled)
 - **Map integration (decided 2026-11-12):** no track display of our own. Show the track and the racers through Xaero's Minimap / World Map
   (an integration or extension if the mods allow it; how is still to be researched, including their licences and whether they offer an API).
-- Weapons/items (crates, wumpa), AI karts, race manager block, track editor, custom character skins, sounds/music
+- Weapons/items (crates, power fruit), AI karts, race manager block, track editor, custom character skins, sounds/music
   (original), more kart classes, replay/ghosts.
 
 ## Open decisions

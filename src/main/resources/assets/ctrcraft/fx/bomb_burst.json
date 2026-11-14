@@ -1,0 +1,18 @@
+{
+  "emitters": [
+    {
+      "particle": "ctrcraft:burst",
+      "count": 1,
+      "pos": [
+        0,
+        0.4,
+        0
+      ],
+      "velocity": [
+        "$radius",
+        0,
+        0
+      ]
+    }
+  ]
+}

@@ -33,6 +33,9 @@ public final class ModParticles {
     /** A piece of a skidmark under a skidding wheel (client/SkidMarkParticle): a flat strip from where the wheel was to where it is. */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SKID_MARK = PARTICLES.register("skid_mark", () -> new SimpleParticleType(true));
 
+    /** A particle that is never shown (no provider): what a vanilla call that insists on one is given, so the look is the effect profile's alone (client/Fx). */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> NONE = PARTICLES.register("none", () -> new SimpleParticleType(false));
+
     private ModParticles() {}
 
     public static void register(IEventBus modEventBus) {

@@ -1,0 +1,38 @@
+{
+  "emitters": [
+    {
+      "particle": "minecraft:small_flame",
+      "count": 1,
+      "pos": [
+        0,
+        0,
+        0
+      ],
+      "velocity": [
+        0,
+        0.035,
+        0
+      ],
+      "velocity_spread": [
+        0.015,
+        0.015,
+        0.015
+      ]
+    },
+    {
+      "particle": "minecraft:smoke",
+      "count": 1,
+      "every": 3,
+      "pos": [
+        0,
+        0,
+        0
+      ],
+      "velocity": [
+        0,
+        0.03,
+        0
+      ]
+    }
+  ]
+}

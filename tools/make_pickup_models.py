@@ -1,5 +1,5 @@
 """
-The pickups in the world: the Wumpa fruit, the fruit crate and the power-up ("?") crate. Stand-in models, original art in the original game's style and size.
+The pickups in the world: the Power Fruit, the fruit crate and the power-up ("?") crate. Stand-in models, original art in the original game's style and size.
 
   python tools/make_pickup_models.py
 
@@ -214,7 +214,7 @@ def crate(face_uv):
                        "faces": {f: dict(face) for f in ("north", "east", "south", "west", "up", "down")}}])]
 
 
-# --- the Wumpa fruit -------------------------------------------------------------------------------------------------------------------------------
+# --- the Power Fruit -------------------------------------------------------------------------------------------------------------------------------
 # Like the giant crops of vanilla-style mods: the body is ONE box, and the roundness is painted on it (a vertical colour gradient from the original's colour
 # table, dark olive at the bottom through yellow-green, yellow-orange and orange to red at the top, shaded darker towards the edges of every face with a soft
 # highlight, so the cube reads as a round fruit). The leaves are four flat planes, two for each of the original's two leaves (a leaf is two bent triangles):
@@ -370,8 +370,8 @@ def _leaf_plane(shade, tri, fourth, right_angle, y):
             "rotation": {"origin": [round(cx, 3), round(y, 3), round(cz, 3)], "axis": "y", "angle": phi}}
 
 
-def wumpa():
-    """The first version of the Wumpa fruit (one box with the roundness painted on it, four leaf planes on top, see the notes above). blockbench/pickups/wumpa.bbmodel is
+def power_fruit():
+    """The first version of the Power Fruit (one box with the roundness painted on it, four leaf planes on top, see the notes above). blockbench/pickups/power_fruit.bbmodel is
     the model now: it was reshaped by hand (three stacked boxes and four leaf planes) and this function only writes the file if it is missing."""
     hw, hd = FRUIT_W / 2.0, FRUIT_D / 2.0
     face = lambda uv: {"uv": list(uv), "texture": "#pickups"}
@@ -384,7 +384,7 @@ def wumpa():
 
 def models():
     return {
-        "wumpa": wumpa(),
+        "power_fruit": power_fruit(),
         "fruit_crate": crate(PLANKS_UV),
         "powerup_crate": crate(QUESTION_UV),
     }

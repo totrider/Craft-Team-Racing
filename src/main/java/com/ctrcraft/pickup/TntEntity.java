@@ -22,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * The TNT power-up's crate, dropped behind the kart (docs/POWERUPS.md): the first kart to run into it gets it on its head and is slowed, and it explodes three seconds
- * later, spinning that kart out. A Nitro crate (dropped by a driver with ten wumpa) explodes at the slightest contact. The one who dropped it is spared for a moment, so it
+ * later, spinning that kart out. A Nitro crate (dropped by a driver with ten power fruit) explodes at the slightest contact. The one who dropped it is spared for a moment, so it
  * is not hit by its own drop. The explosion hurts and throws other entities too (like the rest of the mod's entity interaction), and breaks no blocks.
  */
 public class TntEntity extends Entity implements MinePool.Mine {
@@ -85,6 +85,10 @@ public class TntEntity extends Entity implements MinePool.Mine {
         return entityData.get(DATA_TARGET);
     }
 
+    public UUID owner() {
+        return owner;
+    }
+
     public void setOwner(UUID owner) {
         this.owner = owner;
     }
@@ -97,10 +101,14 @@ public class TntEntity extends Entity implements MinePool.Mine {
         builder.define(DATA_TILT, GroundTilt.FLAT);
     }
 
+    /** /ctr debug spawn: it stands where it was put, for ever and harmless. */
+    public boolean debug;
+
     @Override
     public void tick() {
         super.tick();
         if (!(level() instanceof ServerLevel level)) return;
+        if (debug) return;
         int fuse = fuse();
         if (fuse >= 0) {
             ServerPlayer driver = victim == null ? null : level.getServer().getPlayerList().getPlayer(victim);
@@ -134,7 +142,7 @@ public class TntEntity extends Entity implements MinePool.Mine {
             airTicks++;
             // up and down again: it explodes when it comes down on something (or, if it never does, after five seconds)
             if ((airTicks > 6 && (onGround() || getY() < fallFromY - 8.0)) || airTicks > 100) {
-                level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, getX(), getY() + 0.4, getZ(), 1, 0, 0, 0, 0);
+                com.ctrcraft.net.FxPayload.send(level, "tnt_explode", getX(), getY(), getZ());
                 level.playSound(null, blockPosition(), (nitro() ? ModSounds.GLASS_SHATTER : ModSounds.TNT_EXPLODE).get(), SoundSource.PLAYERS, 4.0F, 1.0F);
                 discard();
             }
@@ -177,10 +185,18 @@ public class TntEntity extends Entity implements MinePool.Mine {
             } else {
                 // RB_GenericMine_ThTick: the crate is thrown onto the head (the "bounce" sound), lands there a moment later and the fuse starts
                 victim = driver.getUUID();
+                if (!ItemManager.applyEffect(driver, ItemManager.EFFECT_SLOW)) {
+                    // RB_GenericMine_ThTick: VehPickState_NewState returned 0 (the shield took the hit and popped, or the moment after one): the crate is destroyed on the spot
+                    // (RB_GenericMine_ThDestroy: the explosion sound and picture, no damage) and never lands on the head
+                    MinePool.remove(pool, this);
+                    level.playSound(null, blockPosition(), ModSounds.TNT_EXPLODE.get(), SoundSource.PLAYERS, 4.0F, 1.0F);
+                    com.ctrcraft.net.FxPayload.send(level, "tnt_explode", getX(), getY(), getZ());
+                    discard();
+                    return;
+                }
                 MinePool.remove(pool, this);                 // RB_MinePool_Remove: a crate that has landed on a head is no longer a mine on the track
                 entityData.set(DATA_TARGET, kart.getId());
                 entityData.set(DATA_FUSE, FUSE_TICKS + LAND_TICKS);
-                ItemManager.applyEffect(driver, ItemManager.EFFECT_SLOW);
                 level.playSound(null, blockPosition(), ModSounds.TNT_HIT.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
             }
             return;
@@ -221,13 +237,13 @@ public class TntEntity extends Entity implements MinePool.Mine {
     public void overflow(ServerLevel level) {
         if (fuse() >= 0) return;
         level.playSound(null, blockPosition(), (nitro() ? ModSounds.GLASS_SHATTER : ModSounds.TNT_EXPLODE).get(), SoundSource.PLAYERS, 4.0F, 1.0F);
-        level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, getX(), getY() + 0.4, getZ(), 1, 0, 0, 0, 0);
+        com.ctrcraft.net.FxPayload.send(level, "tnt_explode", getX(), getY(), getZ());
         discard();
     }
 
     @Override
     public void vanish(ServerLevel level) {
-        level.sendParticles(ParticleTypes.POOF, getX(), getY() + 0.4, getZ(), 8, 0.3, 0.3, 0.3, 0.02);
+        com.ctrcraft.net.FxPayload.send(level, "vanish_tnt", getX(), getY(), getZ());
         discard();
     }
 
@@ -238,11 +254,14 @@ public class TntEntity extends Entity implements MinePool.Mine {
 
     private void explode(ServerLevel level, ServerPlayer driver) {
         if (driver != null && driver.getVehicle() instanceof KartEntity) {
-            ItemManager.applyEffect(driver, ItemManager.EFFECT_BLAST);
-            ItemManager.loseWumpa(driver, ItemManager.BLAST_WUMPA_PENALTY);
+            if (ItemManager.applyEffect(driver, ItemManager.EFFECT_BLAST)) ItemManager.losePowerFruit(driver, ItemManager.BLAST_POWER_FRUIT_PENALTY);     // a shielded kart loses nothing
         }
-        level.explode(this, null, null, getX(), getY() + 0.5, getZ(), nitro() ? 3.0F : 2.0F, false, Level.ExplosionInteraction.NONE, ParticleTypes.EXPLOSION,
-                ParticleTypes.EXPLOSION_EMITTER, nitro() ? ModSounds.GLASS_SHATTER : ModSounds.TNT_EXPLODE);
+        // the original's sound (RB_GenericMine_ThDestroy: 0x3f, glass, for a Nitro crate; RB_TNT: 0x3d for a TNT crate) at its own pitch: a vanilla explosion plays whatever sound it is given at
+        // 0.7 of the pitch with a random wobble, which is why it sounded wrong, so it is given a silent one and the sound is played here
+        level.playSound(null, blockPosition(), (nitro() ? ModSounds.GLASS_SHATTER : ModSounds.TNT_EXPLODE).get(), SoundSource.PLAYERS, 4.0F, 1.0F);
+        level.explode(this, null, null, getX(), getY() + 0.5, getZ(), nitro() ? 3.0F : 2.0F, false, Level.ExplosionInteraction.NONE, com.ctrcraft.ModParticles.NONE.get(),
+                com.ctrcraft.ModParticles.NONE.get(), ModSounds.SILENT);
+        com.ctrcraft.net.FxPayload.send(level, "tnt_explode", getX(), getY(), getZ());
         discard();
     }
 

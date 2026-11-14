@@ -5,7 +5,7 @@ package com.ctrcraft.items;
  * is the original game's experience. No Minecraft imports.
  *
  * @param powerups        what power-up crates give
- * @param fruit           loose wumpa fruit are spawned
+ * @param fruit           loose power fruit are spawned
  * @param fruitCrates     fruit crates are spawned
  * @param powerupCrates   power-up (weapon) crates are spawned
  * @param boostPads       boost blocks act on karts

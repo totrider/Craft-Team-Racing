@@ -420,6 +420,7 @@ public final class RaceManager {
             rc.finishPlace = ++r.finished;
             rc.finishMs = (now - r.goTick) * TICK_MS;
             if (r.firstFinishTick < 0) r.firstFinishTick = now;
+            com.ctrcraft.pickup.ItemManager.onRaceFinished(player);
             level.playSound(null, player.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0F, 1.0F);
             for (Racer other : r.racers.values()) {
                 ServerPlayer op = level.getServer().getPlayerList().getPlayer(other.id);

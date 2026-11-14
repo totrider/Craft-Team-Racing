@@ -21,7 +21,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * N. Brio's Beaker (docs/POWERUPS.md): a green one, a red one (a kart with ten wumpa). It is dropped behind the kart, where it stays, or thrown forward in an arc
+ * N. Brio's Beaker (docs/POWERUPS.md): a green one, a red one (a kart with ten power fruit). It is dropped behind the kart, where it stays, or thrown forward in an arc
  * (RB_Potion_ThTick_InAir): it bursts on a wall, and lands as a beaker on the ground. Any other kart than the dropper's (for the first 10 frames) whose centre comes within
  * 80 lu (1.6 blocks) of it spins out (RB_GenericMine_ThTick, damage type SPIN) and the beaker bursts with the glass sound; the red one also puts a rain cloud over the kart
  * ({@link ItemManager#cloud}). Speeds are the game's, in lu per frame of 30 Hz, with 50 lu to the block.
@@ -87,10 +87,14 @@ public class PotionEntity extends Entity implements MinePool.Mine {
         builder.define(DATA_TILT, GroundTilt.FLAT);
     }
 
+    /** /ctr debug spawn: it stands where it was put, for ever and harmless. */
+    public boolean debug;
+
     @Override
     public void tick() {
         super.tick();
         if (!(level() instanceof ServerLevel level)) return;
+        if (debug) return;
         if (pool == null) {
             pool = MinePool.poolOf(owner != null ? owner : getUUID());
             MinePool.add(pool, this, level);
@@ -131,9 +135,10 @@ public class PotionEntity extends Entity implements MinePool.Mine {
             if (!(kart.getControllingPassenger() instanceof ServerPlayer driver)) continue;
             if (driver.getUUID().equals(owner) && tickCount < OWNER_SPARED_TICKS) continue;
             if (kart.distanceToSqr(getX(), getY() + 0.3, getZ()) >= HIT_RADIUS * HIT_RADIUS) continue;
-            ItemManager.applyEffect(driver, ItemManager.EFFECT_SPIN);
-            ItemManager.loseWumpa(driver, 1);                 // VehPhysProc_SpinFirst_Init: a spin costs a wumpa
-            if (red()) ItemManager.cloud(driver, !ItemManager.hasCloud(driver));
+            if (ItemManager.applyEffect(driver, ItemManager.EFFECT_SPIN)) {          // false: the shield (or the moment after it) took the hit
+                ItemManager.losePowerFruit(driver, 1);                 // VehPhysProc_SpinFirst_Init: a spin costs a power fruit
+                if (red()) ItemManager.cloud(driver, !ItemManager.hasCloud(driver));
+            }
             shatter(level);
             return;
         }
@@ -146,7 +151,7 @@ public class PotionEntity extends Entity implements MinePool.Mine {
 
     @Override
     public void vanish(ServerLevel level) {
-        level.sendParticles(ParticleTypes.POOF, getX(), getY() + 0.3, getZ(), 6, 0.2, 0.2, 0.2, 0.02);
+        com.ctrcraft.net.FxPayload.send(level, "vanish_potion", getX(), getY(), getZ());
         discard();
     }
 
@@ -157,7 +162,7 @@ public class PotionEntity extends Entity implements MinePool.Mine {
 
     private void shatter(ServerLevel level) {
         level.playSound(null, blockPosition(), ModSounds.GLASS_SHATTER.get(), SoundSource.PLAYERS, 4.0F, 1.0F);
-        level.sendParticles(red() ? ParticleTypes.CRIMSON_SPORE : ParticleTypes.HAPPY_VILLAGER, getX(), getY() + 0.3, getZ(), 24, 0.4, 0.3, 0.4, 0.05);
+        com.ctrcraft.net.FxPayload.send(level, red() ? "potion_shatter_red" : "potion_shatter_green", getX(), getY(), getZ());
         discard();
     }
 

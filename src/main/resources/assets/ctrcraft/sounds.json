@@ -134,6 +134,41 @@
       "ctrcraft:bomb_explode"
     ]
   },
+  "shield_on": {
+    "sounds": [
+      "ctrcraft:shield_on"
+    ]
+  },
+  "shield_pop": {
+    "sounds": [
+      "ctrcraft:shield_pop"
+    ]
+  },
+  "shield_roll": {
+    "sounds": [
+      "ctrcraft:shield_roll"
+    ]
+  },
+  "missile_launch": {
+    "sounds": [
+      "ctrcraft:missile_launch"
+    ]
+  },
+  "missile_fly": {
+    "sounds": [
+      "ctrcraft:missile_fly"
+    ]
+  },
+  "missile_explode": {
+    "sounds": [
+      "ctrcraft:missile_explode"
+    ]
+  },
+  "tracker_beep": {
+    "sounds": [
+      "ctrcraft:tracker_beep"
+    ]
+  },
   "item_roll": {
     "sounds": [
       "ctrcraft:item_roll"
@@ -144,9 +179,9 @@
       "ctrcraft:item_get"
     ]
   },
-  "item_get_juiced": {
+  "item_get_charged": {
     "sounds": [
-      "ctrcraft:item_get_juiced"
+      "ctrcraft:item_get_charged"
     ]
   },
   "crash_soft": {

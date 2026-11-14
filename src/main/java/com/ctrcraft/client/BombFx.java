@@ -43,10 +43,6 @@ public final class BombFx {
         if (!bomb.level().isClientSide) return;
         Vector3f t = tip(bomb, 0.0F);
         Vec3 p = bomb.position().add(t.x, t.y, t.z);
-        var rnd = bomb.level().random;
-        bomb.level().addParticle(ParticleTypes.SMALL_FLAME, p.x, p.y, p.z, (rnd.nextDouble() - 0.5) * 0.03, 0.02 + rnd.nextDouble() * 0.03, (rnd.nextDouble() - 0.5) * 0.03);
-        if (bomb.tickCount % 3 == 0) {
-            bomb.level().addParticle(ParticleTypes.SMOKE, p.x, p.y, p.z, 0.0, 0.03, 0.0);
-        }
+        Fx.play("bomb_fuse", p.x, p.y, p.z, bomb.getYRot(), 0.0F, bomb.tickCount);
     }
 }

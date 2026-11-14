@@ -164,19 +164,14 @@ public final class KartDriver {
             }
             if (sim.cloudActive() && mc.level != null) {
                 // the rain cloud over the kart (the original's is a 3D cloud model with a rain emitter; these particles stand in for it)
-                for (int i = 0; i < 3; i++) {
-                    double ox = (mc.level.random.nextDouble() - 0.5) * 1.6;
-                    double oz = (mc.level.random.nextDouble() - 0.5) * 1.6;
-                    mc.level.addParticle(net.minecraft.core.particles.ParticleTypes.CLOUD, kart.getX() + ox, kart.getY() + 2.4, kart.getZ() + oz, 0.0, 0.0, 0.0);
-                    mc.level.addParticle(net.minecraft.core.particles.ParticleTypes.RAIN, kart.getX() + ox, kart.getY() + 1.6, kart.getZ() + oz, 0.0, 0.0, 0.0);
-                }
+                Fx.play("rain_cloud", kart.getX(), kart.getY(), kart.getZ(), 0.0F, 0.0F, kart.tickCount);
             }
             if (sim.cloudIce()) sim.groundType = com.ctrcraft.physics.Terrain.ICE;          // RAIN_CLOUD_EFFECT_ICE_TERRAIN
             sim.setOthers(nearbyKarts(mc, kart));
-            sim.wumpa = com.ctrcraft.pickup.ItemClient.wumpa();
+            sim.powerFruit = com.ctrcraft.pickup.ItemClient.powerFruit();
             int itemEffect = com.ctrcraft.pickup.ItemClient.takeEffect();
-            if (itemEffect == com.ctrcraft.pickup.ItemManager.EFFECT_TURBO || itemEffect == com.ctrcraft.pickup.ItemManager.EFFECT_TURBO_JUICED) {
-                sim.itemTurbo(itemEffect == com.ctrcraft.pickup.ItemManager.EFFECT_TURBO_JUICED);
+            if (itemEffect == com.ctrcraft.pickup.ItemManager.EFFECT_TURBO || itemEffect == com.ctrcraft.pickup.ItemManager.EFFECT_TURBO_CHARGED) {
+                sim.itemTurbo(itemEffect == com.ctrcraft.pickup.ItemManager.EFFECT_TURBO_CHARGED);
             } else if (itemEffect == com.ctrcraft.pickup.ItemManager.EFFECT_SLOW) {
                 tntUntilMs = System.currentTimeMillis() + (com.ctrcraft.pickup.TntEntity.FUSE_TICKS + 12) * 50L;
             } else if (itemEffect == com.ctrcraft.pickup.ItemManager.EFFECT_SPIN) {
@@ -188,7 +183,10 @@ public final class KartDriver {
                 tntUntilMs = 0;
             } else if (itemEffect == com.ctrcraft.pickup.ItemManager.EFFECT_BLAST) {
                 sim.itemBlast();
+                tntUntilMs = 0;                       // the crate on the head is gone
+                ScreenFlash.start();                  // RB_Burst_CollThread: the victim's screen flashes white (fadeFromBlack 0x1fff)
             }
+            sim.tntOnHead = System.currentTimeMillis() < tntUntilMs;
             sim.tick(world, input);
             sendHits(mc, kart, sim.drainBumps());
             playEvents(mc, sim.drainEvents());
@@ -402,7 +400,7 @@ public final class KartDriver {
                         volume = Math.min(1.0F, 0.35F + e.value() / 900.0F);
                     }
                 }
-                case DRIFT_START -> sound = ModSounds.DRIFT_START.get();
+                case DRIFT_START -> { }                 // no sound: the original has none (the mod's placeholder is not played)
                 case BOOST -> {
                     // VehFire_Audio: boost 1 plays higher and quiet (distortion 0x94, volume 0x80), boost 2 plain (0xC0),
                     // boost 3 lower and full (0x6C, 0xFF); the pitch factor is 2^((d - 0x80) / 128)
@@ -413,7 +411,7 @@ public final class KartDriver {
                         default -> { pitch = 0.897F; volume = 1.0F; }
                     }
                 }
-                case BOOST_EARLY -> sound = ModSounds.BOOST_FAIL.get();
+                case BOOST_EARLY -> { }                 // no sound: the original's early boost only puffs smoke
                 case METER_RED -> sound = ModSounds.METER_RED.get();
                 case METER_FULL -> sound = ModSounds.METER_FULL.get();
                 case HANG_TIME -> {
@@ -427,7 +425,9 @@ public final class KartDriver {
                     sound = e.value() >= 0xDD ? ModSounds.CRASH_HARD.get() : e.value() > 0xA0 ? ModSounds.CRASH_MID.get() : ModSounds.CRASH_SOFT.get();
                     volume = e.value() / 255.0F;
                 }
-                case SPIN_OUT -> sound = ModSounds.SPIN_OUT.get();
+                case SPIN_OUT -> {
+                    if (com.ctrcraft.CtrClientConfig.SPIN_OUT_SOUND.get()) sound = ModSounds.SPIN_OUT.get();         // the mod's own, off unless the player wants it
+                }
                 default -> { }
             }
             if (sound != null) {

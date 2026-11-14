@@ -49,12 +49,13 @@ public final class KartEffects {
 
         // the exhaust pipes (KartExhausts, the open ends of the exhaust_* cubes of kart_ctr.bbmodel): the model's frame is x to the kart's right (minus the left vector), z to the back (minus forward)
         int exhaustMode = KartFlags.exhaust(flags);          // 0 none, 1 bright additive, 2 dark: from the sim's powerslide meter and flame, or the grid's revving engine
+        org.joml.Matrix4f bodyPose = KartRenderer.bodyMatrix(kart, 1.0F);
         for (com.ctrcraft.kart.KartExhausts.Pipe pipe : com.ctrcraft.kart.KartExhausts.get()) {
-            double ex = x - lx * pipe.x() - fx * pipe.z();
-            double ey = y + pipe.y();
-            double ez = z - lz * pipe.x() - fz * pipe.z();
-            double dxw = -lx * pipe.dx() - fx * pipe.dz();
-            double dzw = -lz * pipe.dx() - fz * pipe.dz();
+            // through the body's own pose (KartRenderer.applyBodyPose: the ground lean, the jump's tilt, the wheelie, the tumble), so the smoke leaves the pipes where they are
+            org.joml.Vector3f tip = bodyPose.transformPosition((float) pipe.x(), (float) pipe.y(), (float) pipe.z(), new org.joml.Vector3f());
+            double ex = x + tip.x;
+            double ey = y + tip.y;
+            double ez = z + tip.z;
             // the smoke of VehEmitter_Exhaust: one puff from each pipe every game frame (1.5 to a tick), moving up and back at 4 + 4 units a frame (0.117 block a tick along the pipe, a
             // little spread), in the draw mode the sim says: bright additive or dark (and none in the cases where the original has none)
             if (exhaustMode != 0) {

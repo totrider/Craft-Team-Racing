@@ -25,7 +25,7 @@ import org.joml.Vector3f;
 /**
  * The Bomb as a 3D model ({@code item/pickup_bomb}: the jar's stand-in from blockbench/pickups/bomb.bbmodel, the original's ball and fuse in the local resource pack) that rolls about its
  * x axis through the ball's middle and faces where it is heading, with its spark as a camera-facing glow at the tip of the fuse (textures/entity/bomb_spark.png, the tip from
- * {@link BombFuse}), pulsing; {@link BombFx} throws little flames off the tip. The juiced bomb is tinted red (the original's bomb is the same model; the blast is what changes).
+ * {@link BombFuse}), pulsing; {@link BombFx} throws little flames off the tip. The charged bomb is tinted red (the original's bomb is the same model; the blast is what changes).
  */
 public class BombRenderer extends EntityRenderer<BombEntity> {
     public static final ModelResourceLocation MODEL = ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(CtrCraftMod.MODID, "item/pickup_bomb"));

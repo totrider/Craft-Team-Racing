@@ -154,9 +154,9 @@ def _gouraud_cell(colours, size=GOURAUD_CELL):
     return np.dstack([rgb, np.full((size, size), 255, dtype=np.uint8)])
 
 
-def mesh_pack_files(vram, model, name, blocks_per_unit, frame=0, up=UP, animated=True, honour_cull=False, exclude=(), pivot_ids=None, shade=None, translucent=True, kart_frame=False, pivot_point=None, additive=False, smooth=0, rim_zero=None, tri_override=None, gain=None):
+def mesh_pack_files(vram, model, name, blocks_per_unit, frame=0, up=UP, animated=True, honour_cull=False, exclude=(), pivot_ids=None, shade=None, translucent=True, kart_frame=False, pivot_point=None, additive=False, smooth=0, rim_zero=None, tri_override=None, gain=None, z_flip=False, weld_smooth=0.0):
     """{up}: the coordinate the model's height is in (1: the shared pack's models, 2: the level files', Wumpa fruit and crates; then the horizontal pair is turned and x flipped so
-    the left handed game frame becomes Minecraft's right handed one). {animated}: False takes one frame of the model whole (the fruit's spin is a turn the renderer does itself). {exclude}: triangle indices left out (the bomb's spark is a billboard). {pivot_ids}: when given, the model's origin is the middle of those triangles' vertices, put at (0.5, 0.5, 0.5) of the block (a thing that rolls: the bomb), not the base; {translucent}: False ignores the textures' semi-transparency bit (the bomb is solid); {shade}: True bakes the colour table's Gouraud shading (default SHADE_FROM_TABLE). {kart_frame}: the model is in the kart's frame (the game's +z forward becomes the mod's -z forward: taken as it is: the first guess, z flipped, drew the flame's wide end into the kart). {pivot_point}: a point of the model (before turning) that becomes the origin, at (0.5, 0.5, 0.5) of the block. {additive}: the game adds the model's picture to the screen (the boost flame): black is nothing, so the baked alpha is the brightness and the colour is brought up to full. {smooth}: a picture smaller than this many texels is blown up (nearest) to about this size before its vertex colours are baked, so a flat 4 texel picture can carry a smooth gradient (the flame's soft edge). {tri_override}: {triangle index: (texture number to use instead, [three corner colours, 0-255 scale of the game's 128 = 1])}: a triangle drawn with another triangle's picture and colours of its own (the flame's shell, to cover the gaps its own triangles leave). {gain}: (triangle indices, factor): those triangles' vertex colours are multiplied by the factor (a brighter flame cone). {rim_zero}: (vertex indices, triangle indices): in those triangles those vertices' colours are black (a soft rim; the flame's outer ring). {honour_cull}: the game's per-triangle "cull" flag is obeyed, a triangle without it is written both ways round."""
+    the left handed game frame becomes Minecraft's right handed one). {animated}: False takes one frame of the model whole (the fruit's spin is a turn the renderer does itself). {exclude}: triangle indices left out (the bomb's spark is a billboard). {pivot_ids}: when given, the model's origin is the middle of those triangles' vertices, put at (0.5, 0.5, 0.5) of the block (a thing that rolls: the bomb), not the base; {translucent}: False ignores the textures' semi-transparency bit (the bomb is solid); {shade}: True bakes the colour table's Gouraud shading (default SHADE_FROM_TABLE). {kart_frame}: the model is in the kart's frame (the game's +z forward becomes the mod's -z forward: taken as it is: the first guess, z flipped, drew the flame's wide end into the kart). {pivot_point}: a point of the model (before turning) that becomes the origin, at (0.5, 0.5, 0.5) of the block. {additive}: the game adds the model's picture to the screen (the boost flame): black is nothing, so the baked alpha is the brightness and the colour is brought up to full. {smooth}: a picture smaller than this many texels is blown up (nearest) to about this size before its vertex colours are baked, so a flat 4 texel picture can carry a smooth gradient (the flame's soft edge). {tri_override}: {triangle index: (texture number to use instead, [three corner colours, 0-255 scale of the game's 128 = 1])}: a triangle drawn with another triangle's picture and colours of its own (the flame's shell, to cover the gaps its own triangles leave). {z_flip}: with {kart_frame}, the length axis is turned the other way (the missile's nose to -z). {gain}: (triangle indices, factor): those triangles' vertex colours are multiplied by the factor (a brighter flame cone). {rim_zero}: (vertex indices, triangle indices): in those triangles those vertices' colours are black (a soft rim; the flame's outer ring). {weld_smooth}: 0..1, the vertices at one place are welded and each vertex's colour is blended toward the mean of its neighbours' by this much (the shield's sheen: smooth shading across its separate triangles). {honour_cull}: the game's per-triangle "cull" flag is obeyed, a triangle without it is written both ways round."""
     nframes = ct.frame_count(model)
     frames = [ct.mesh_vertices(model, f) for f in range(nframes)] if (animated and nframes > 1) else [ct.mesh_vertices(model, frame)]
     tris = ct.mesh_triangles(model)
@@ -166,7 +166,7 @@ def mesh_pack_files(vram, model, name, blocks_per_unit, frame=0, up=UP, animated
     def to_xyz(v):
         # the game's frame is left handed (the crate lettering and the bomb in the footage show it), Minecraft's is right handed: x is flipped
         if kart_frame and up == 1:
-            return np.array([v[0], v[1], v[2]], dtype=np.float64)
+            return np.array([v[0], v[1], -v[2] if z_flip else v[2]], dtype=np.float64)
         if up == 2:
             return np.array([-v[0], v[2], -v[1]], dtype=np.float64)            # a reflection, as x flipped is for the pack's models (det -1)
         return np.array([-v[axes[0]], v[up], v[axes[1]]], dtype=np.float64)
@@ -202,6 +202,20 @@ def mesh_pack_files(vram, model, name, blocks_per_unit, frame=0, up=UP, animated
     # a textured triangle is shaded smoothly between its three corners (Gouraud), the texel times that colour / 128; every texel of the beaker has the semi-transparency bit, so
     # the flask is see-through, in the blend mode of its texture page: half and half (alpha 0.5) or added (the light adds to what is behind: approximated by alpha 0.7).
     vcols = ct.mesh_vertex_colours(model)
+    vshade = lambda k: _shade(table, vcols[k]) if use_shade else np.ones(3)
+    if weld_smooth and use_shade:
+        key = {k: tuple(np.round(np.asarray(pts_all[0][k], dtype=np.float64), 1)) for k in range(len(pts_all[0]))}
+        base, near = {}, {}
+        for i in static_ids:
+            cs = tris[i][0]
+            for a in cs:
+                base.setdefault(key[a], []).append(_shade(table, vcols[a]))
+                for b in cs:
+                    if key[b] != key[a]:
+                        near.setdefault(key[a], set()).add(key[b])
+        mean = {g: np.mean(v, axis=0) for g, v in base.items()}
+        blended = {g: (1 - weld_smooth) * mean[g] + weld_smooth * np.mean([mean[n] for n in near[g]], axis=0) if g in near else mean[g] for g in mean}
+        vshade = lambda k: blended[key[k]] if key[k] in blended else (_shade(table, vcols[k]))
     cells = []
     for i in static_ids:
         f = 1
@@ -227,6 +241,9 @@ def mesh_pack_files(vram, model, name, blocks_per_unit, frame=0, up=UP, animated
             c = struct.unpack("<BBHBBHBBBB", lay)
             umin, vmin = min(c[0], c[3], c[6], c[8]), min(c[1], c[4], c[7], c[9])
             uv_local = [(c[0] - umin, c[1] - vmin), (c[3] - umin, c[4] - vmin), (c[6] - umin, c[7] - vmin)]
+            (ax_, ay_), (bx_, by_), (cx_, cy_) = uv_local
+            degenerate = abs((by_ - cy_) * (ax_ - cx_) + (cx_ - bx_) * (ay_ - cy_)) < 1e-9       # the uv triangle has no area (the sheen's: a point or a line of texels)
+            corner_uv = list(uv_local)
             if additive:
                 uv_local = [(a + 0.5, b + 0.5) for a, b in uv_local]         # the model's uv put a corner at the middle of its texel (see the vt lines below): shade where it is sampled
             if smooth:
@@ -236,7 +253,20 @@ def mesh_pack_files(vram, model, name, blocks_per_unit, frame=0, up=UP, animated
                     stp = np.kron(stp, np.ones((f, f), dtype=stp.dtype))
                     uv_local = [(a * f, b * f) for a, b in uv_local]
             g = gain[1] if (gain and i in gain[0]) else 1.0
-            cell = _bake(img, stp, uv_local, [x * g for x in ([np.array(x, dtype=np.float64) / 128.0 for x in tri_override[i][1]] if (tri_override and i in tri_override) else [np.zeros(3) if (rim_zero and i in rim_zero[1] and k in rim_zero[0]) else (_shade(table, vcols[k]) if use_shade else np.ones(3)) for k in corner])], (c[5] >> 5) & 3, additive)
+            cell = _bake(img, stp, uv_local, [x * g for x in ([np.array(x, dtype=np.float64) / 128.0 for x in tri_override[i][1]] if (tri_override and i in tri_override) else [np.zeros(3) if (rim_zero and i in rim_zero[1] and k in rim_zero[0]) else vshade(k) for k in corner])], (c[5] >> 5) & 3, additive)
+            if degenerate:
+                # all three corners sit on ONE texel (the sheen: a flat colour per triangle in the picture): the shading cannot be baked by position in the picture, so the cell is a small
+                # Gouraud picture of that texel times each corner's colour, as an untextured triangle's is; the triangle's uv then maps onto it
+                raw = got[0]
+                texels = [raw[min(max(int(vv), 0), raw.shape[0] - 1), min(max(int(uu), 0), raw.shape[1] - 1)] for uu, vv in corner_uv]
+                shades_ = [np.zeros(3) if (rim_zero and i in rim_zero[1] and k in rim_zero[0]) else vshade(k) for k in corner]
+                corners = [np.minimum(t_[:3].astype(np.float64) * x * g, 255) for t_, x in zip(texels, shades_)]
+                cell = _gouraud_cell(corners)
+                texel_a = max(int(t_[3]) for t_ in texels)
+                cell[:, :, 3] = 255 if (additive and texel_a > 0) else (0 if texel_a == 0 else (176 if (c[5] >> 5) & 3 == 1 else 128) if not additive else 0)
+                img = cell
+                f = 1
+                c = (0, 0, 0, GOURAUD_CELL - 1, 0, 0, 0, GOURAUD_CELL - 1, 0, 0)
         cells.append((np.pad(cell, ((1, 1), (1, 1), (0, 0)), mode="edge"), c, f, img.shape[0]))
     width = 256
     x = y = row_h = 0

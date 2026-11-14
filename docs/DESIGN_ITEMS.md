@@ -1,15 +1,15 @@
 # Fruit, crates, power-ups and rule sets - design
 
 Status: design agreed in outline 2026-11-12. Built: the pure core (`com.ctrcraft.items`: `HeldItem`, `ItemTables`, `PowerupTable`, `RuleSet`), the three
-pickup spot blocks with their pickup entities, the wumpa count, the roulette, the held-item HUD and the use key (`com.ctrcraft.pickup`), and the
+pickup spot blocks with their pickup entities, the power fruit count, the roulette, the held-item HUD and the use key (`com.ctrcraft.pickup`), and the
 Turbo power-up. The other power-ups are not built (using one says so). Fidelity policy: the original's behaviour is the default rule set; everything else is a rule set choice.
 
 ## What CTR does (ctr-native, read in the source)
 
 | Thing | Behaviour | Source |
 |---|---|---|
-| **Wumpa fruit** | Picked up by touching it (players and bots); gone afterwards; +1 wumpa, the count is 0-10; a full 10 "juices" the kart (a top-speed bonus, and its items are stronger: `*_JUICED` values for the turbo boost, mask, clock, invisibility and super engine in `Vehicle/VehPickupItem.c`). | `231/RB_Fruit.c` |
-| **Fruit crate** | Breaks on touch, gives 5 + (random mod 4) wumpa (5 to 8). Comes back: a cooldown of 30 frames (1 s) that waits while something blocks the crate, then it grows back over 16 frames. | `231/RB_Crate.c` (`RB_CrateFruit_ThCollide`, `RB_CrateAny_ThTick_Grow`) |
+| **Power Fruit** | Picked up by touching it (players and bots); gone afterwards; +1 power fruit, the count is 0-10; a full 10 "juices" the kart (a top-speed bonus, and its items are stronger: `*_CHARGED` values for the turbo boost, mask, clock, invisibility and super engine in `Vehicle/VehPickupItem.c`). | `231/RB_Fruit.c` |
+| **Fruit crate** | Breaks on touch, gives 5 + (random mod 4) power fruit (5 to 8). Comes back: a cooldown of 30 frames (1 s) that waits while something blocks the crate, then it grows back over 16 frames. | `231/RB_Crate.c` (`RB_CrateFruit_ThCollide`, `RB_CrateAny_ThTick_Grow`) |
 | **Weapon crate** ("?" crate) | Breaks on touch, same respawn. It only gives something if the kart holds no item, is not already rolling one and is not firing; then it starts a 90-frame roulette and the item is drawn from the place-based set. A kart that cannot take it still breaks the crate. | `231/RB_Crate.c` (`RB_CrateWeapon_ThCollide`), `Vehicle/VehPhysProc.c:580` |
 | **Time crate** | A time trial's crate: breaking it freezes the clock for 1, 2 or 3 s (0x3C0 / 0x780 / 0xB40 ms; three crate models); it never grows back (`STATIC_TIME_CRATE_01..03`). | `231/RB_Crate.c` (`RB_CrateTime_ThCollide`) |
 | **Item roulette** | `VehPhysGeneral_SetHeldItem`: the item set follows the number of karts and the driver's place; an entry is drawn by `table[(roll * count) / 200]`. Last place's set is replaced by the third on lap 1. | `Vehicle/VehPhysGeneral.c:1681`, tables in `zGlobal_DATA.c:8154` |
@@ -33,12 +33,12 @@ state (taken, respawn timers). Crates respawn as in CTR; fruit does not come bac
 
 ## Sizes
 The stand-ins keep the original's proportions, normalised so a crate is exactly one block (the unit Minecraft works in; the kart, which already feels
-right, is the other reference): a cube with a bevelled frame. A loose Wumpa fruit is 54.8 x 60.6 x 67.5 level units against the crate's 108.8, about
-0.5 x 0.56 x 0.62 blocks (all measured from the models on the disc). Icons are 32 x 48, the Wumpa sprite and the lamps 48 x 32, as the original's. The pickup's
+right, is the other reference): a cube with a bevelled frame. A loose Power Fruit is 54.8 x 60.6 x 67.5 level units against the crate's 108.8, about
+0.5 x 0.56 x 0.62 blocks (all measured from the models on the disc). Icons are 32 x 48, the Power Fruit sprite and the lamps 48 x 32, as the original's. The pickup's
 reach for a kart is its own size plus the kart's half width.
 
 ## Original art
-`tools/extract_ctr_textures.py` builds local resource packs from the player's own disc with the original crate faces, power-up icons, Wumpa fruit
+`tools/extract_ctr_textures.py` builds local resource packs from the player's own disc with the original crate faces, power-up icons, Power Fruit
 sprite and start lamps (Minecraft size, and original size). The disc formats it reads are in `tools/ctr_disc_textures.py`. Models stay the mod's own;
 the packs replace the pickup sheet (`textures/item/pickups.png`: palette, "?" face, fruit crate side) and the two crate models with plain cubes.
 
@@ -59,7 +59,7 @@ Goal: as little friction as possible, with real flexibility. Proposal, to be bui
 
 1. A power-up is a **data pack entry** (`data/<ns>/ctrcraft_powerup/<name>.json`): id, icon, name, how many uses, and an **effect**.
 2. An effect is a **list of built-in actions** (boost for N frames, shield, fire a projectile of a chosen kind, drop a hazard, hit the kart in
-   front, give wumpa ...) with parameters; most power-ups are a combination of these.
+   front, give power fruit ...) with parameters; most power-ups are a combination of these.
 3. For anything the actions cannot do, an effect may call a **function** (`"function": "pack:my_effect"`) that runs as the driver at the kart;
    command functions are the data pack world's own way to script, so no new language is needed.
 4. Ids from packs go into a rule set's table exactly like the built-in ones (`mypack:banana`).
@@ -68,7 +68,7 @@ Each built-in power-up is then also expressible this way, which keeps the built-
 
 ## Build order
 1. **Pure core** - done (item ids, CTR's tables and place rules, `PowerupTable`, `RuleSet`).
-2. **Fruit spot + fruit crate spot**: blocks, items, ghost display, race-time spawning, collision, the wumpa count in the HUD and its top-speed effect.
+2. **Fruit spot + fruit crate spot**: blocks, items, ghost display, race-time spawning, collision, the power fruit count in the HUD and its top-speed effect.
 3. **Power-up crate spot**: the roulette (90 frames, the HUD slot) and a first few items (turbo and shield are the simplest, then the potion and TNT hazards).
 4. **Rulebook item and its screen**, applied to a Start; temporary vs default; permissions.
 5. The remaining items one at a time (bomb, missile, mask, warp orb, clock ...), then the data pack format.
@@ -84,7 +84,7 @@ Each built-in power-up is then also expressible this way, which keeps the built-
 - Spots **react to redstone**: with a signal the pickup is there without any track or race. A fruit that was taken stays gone until the signal is off and on again; crates come back as in a race.
 
 ## Carried items, spots and leaving a race (2026-11-12)
-- **The wumpa count and the held power-up belong to the kart**, not to the driver's seat: they are saved with the kart (`Wumpa`, `HeldPowerup`), stay when the driver gets out and are shown again when anybody gets in. A race clears them for its entrants when it puts them on the grid (`ItemManager.reset`), so every race starts with nothing.
+- **The power fruit count and the held power-up belong to the kart**, not to the driver's seat: they are saved with the kart (`PowerFruit` (older saves: `Wumpa`), `HeldPowerup`), stay when the driver gets out and are shown again when anybody gets in. A race clears them for its entrants when it puts them on the grid (`ItemManager.reset`), so every race starts with nothing.
 - **Pickup spot blocks are invisible** and drawn (`PickupSpotRenderer`) only while an editing item is in hand: a spot block, the Track Tool, a node block or the Wrench.
 - **The power-up roulette sound** loops on the driver's client for the whole roll (`RouletteSound`; CTR starts OtherFX 0x5D and stops it when the item is drawn).
 - **Redstone and fruit:** a spot with a redstone signal behaves as if a race were on near it. A fruit spot keeps at most one fruit (it holds the id of the one it spawned and spawns again only when that is gone). A fruit that is taken does not come back while the signal stays on (CTR: fruit does not respawn in a race); switching the signal off and on again resets the spot, so a clock or a lever makes it return. Crates respawn after their CTR delay while powered.

@@ -87,7 +87,7 @@ public class PickupEntity extends Entity {
 
     /**
      * A bomb rolled into this crate (RB_CrateWeapon_ThCollide / RB_CrateFruit_ThCollide with a DYNAMIC_BOMB hitter): the crate breaks and its driver gets what a kart
-     * touching it would, the wumpa or the roulette. Returns whether it was used up.
+     * touching it would, the power fruit or the roulette. Returns whether it was used up.
      */
     public boolean breakBy(ServerPlayer driver) {
         if (!(level() instanceof ServerLevel level) || spot == null || !(level.getBlockEntity(spot) instanceof PickupSpotBlockEntity be) || !be.owns(this)) return false;

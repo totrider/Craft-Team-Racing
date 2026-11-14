@@ -43,6 +43,16 @@ public final class ModEntities {
             EntityType.Builder.<com.ctrcraft.pickup.BombEntity>of(com.ctrcraft.pickup.BombEntity::new, MobCategory.MISC)
                     .sized(0.6F, 0.6F).clientTrackingRange(10).updateInterval(1).noSave().build("bomb"));
 
+    /** The Tracking Missile power-up's missile (never saved). */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.ctrcraft.pickup.MissileEntity>> MISSILE = ENTITIES.register("missile", () ->
+            EntityType.Builder.<com.ctrcraft.pickup.MissileEntity>of(com.ctrcraft.pickup.MissileEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 0.6F).clientTrackingRange(10).updateInterval(1).noSave().build("missile"));
+
+    /** A thrown Power Shield (never saved). */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.ctrcraft.pickup.ShieldBombEntity>> SHIELD_BOMB = ENTITIES.register("shield_bomb", () ->
+            EntityType.Builder.<com.ctrcraft.pickup.ShieldBombEntity>of(com.ctrcraft.pickup.ShieldBombEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 0.6F).clientTrackingRange(10).updateInterval(1).noSave().build("shield_bomb"));
+
     private ModEntities() {}
 
     public static void register(IEventBus modEventBus) {

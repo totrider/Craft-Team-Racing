@@ -33,6 +33,7 @@ from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ctr_disc_textures as ct  # noqa: E402
 import ctr_bomb  # noqa: E402  (the bomb as a 3D model)
+import sheen_frames
 import ctr_mesh_pack  # noqa: E402  (a model as an OBJ for a local pack)
 import render_ctr_model as rm  # noqa: E402
 import extract_ctr_sounds as sounds  # noqa: E402  (the disc reader)
@@ -46,9 +47,16 @@ POWER_ICONS = {
     "turbo": "turbonew", "bomb": "bomb", "bomb_3x": "bomb3", "missile": "bomb-tracker", "missile_3x": "bomb-tracker3",
     "tnt": "nitro", "potion": "poison", "shield": "shield", "mask": "doctor", "clock": "clock", "warpball": "missile",
 }
-JUICED_ICONS = {"tnt_juiced": "nitroj", "potion_juiced": "poisonj", "shield_juiced": "shieldj"}
+JUICED_ICONS = {"tnt_charged": "nitroj", "potion_charged": "poisonj", "shield_charged": "shieldj"}      # the mod calls the original's "juiced" state "charged" (the pack's lang file translates the words back)
 LAMPS = {"red_on": "lightredon", "red_off": "lightredoff", "green_on": "lightgreenon", "green_off": "lightgreenoff"}
 WUMPA_ICON = "wumpaposter"
+# The mod's own words are "Power Fruit" and "charged"; the local pack translates them back into the original game's ("Wumpa", "juiced") with a lang file (a pack's lang keys override the jar's).
+TRANSLATION = {"lang/en_us.json": {
+    "block.ctrcraft.fruit_spot": "Wumpa Fruit Spot",
+    "block.ctrcraft.fruit_crate_spot": "Wumpa Fruit Crate Spot",
+    "ctrcraft.term.power_fruit": "Wumpa",
+    "ctrcraft.term.charged": "juiced",
+}}
 
 
 def to_image(arr):
@@ -268,12 +276,12 @@ def sprite_files(model, size):
     """The Wumpa fruit as a sprite: the model's spin rendered as an animated texture (a vertical strip of {size} px frames, one tick each) on a flat one-block quad. The
     pickup renderer draws a flat single-quad model as a billboard that always faces the camera."""
     strip, count = sprite.render_strip(model, size)
-    quad = {"textures": {"sprite": "ctrcraft:item/wumpa_sprite", "particle": "ctrcraft:item/wumpa_sprite"},
+    quad = {"textures": {"sprite": "ctrcraft:item/power_fruit_sprite", "particle": "ctrcraft:item/power_fruit_sprite"},
             "elements": [{"from": [0, 0, 8], "to": [16, 16, 8], "faces": {"south": {"uv": [0, 0, 16, 16], "texture": "#sprite"}}}],
             "display": stand_in.display()}
-    return {"textures/item/wumpa_sprite.png": strip,
-            "textures/item/wumpa_sprite.png.mcmeta": {"animation": {"frametime": 1, "interpolate": False}},
-            "models/item/pickup_wumpa.json": quad}
+    return {"textures/item/power_fruit_sprite.png": strip,
+            "textures/item/power_fruit_sprite.png.mcmeta": {"animation": {"frametime": 1, "interpolate": False}},
+            "models/item/pickup_power_fruit.json": quad}
 
 
 def cube(quadrant_uv):
@@ -423,7 +431,55 @@ def main():
         beaker_files.update(ctr_mesh_pack.mesh_pack_files(vram, pack["beaker" + key], "beaker_" + key, 1.0 / 108.8))
     # the Wumpa fruit placed in the world as a 3D model, too (Crash Cove's level file; untextured, Gouraud shaded: baked into the atlas): the leaves are double sided. It replaces the
     # animated sprite in the pickup model; the sprite strip stays for the HUD
-    wumpa_files = ctr_mesh_pack.mesh_pack_files(vram, models["fruit"], "wumpa", 1.0 / 108.8, up=2, animated=False, honour_cull=True)
+    wumpa_files = ctr_mesh_pack.mesh_pack_files(vram, models["fruit"], "power_fruit", 1.0 / 108.8, up=2, animated=False, honour_cull=True)
+    # the Tracking Missile (DYNAMIC_ROCKET, the pack's `rocket`): a thin body (a pointed nose, white with a red band and green fins) and the flame fans behind it, which wobble over ten
+    # frames; the steady triangles are the model (animated=True leaves the moving sparks out), turned so its nose points to -z, its middle at the block's middle, crate scale
+    # the effects' looks (assets/ctrcraft/fx, read by the mod's client/Fx): the jar's defaults are vanilla particles; this pack shows none of them, only the mod's own particles or nothing
+    def _fx(*emitters):
+        return {"emitters": list(emitters)}
+
+    def _dust(count, spread, y):
+        return {"particle": "ctrcraft:dust_puff", "count": count, "pos": [0, y, 0], "pos_spread": [spread, 0.0, spread], "velocity": [0, 0, 0], "velocity_spread": [0.02, 0.02, 0.02]}
+
+    fx_files = {
+        "fx/bomb_fuse.json": _fx(),                                                  # the spark at the fuse's tip is the effect
+        "fx/vanish_bomb.json": _fx(_dust(4, 0.3, 0.3)),
+        "fx/vanish_tnt.json": _fx(_dust(4, 0.3, 0.4)),
+        "fx/vanish_potion.json": _fx(_dust(3, 0.2, 0.3)),
+        "fx/crate_break.json": _fx(),                                                # the crate's own break-up pieces are the effect
+        "fx/potion_shatter_green.json": _fx(),
+        "fx/potion_shatter_red.json": _fx(),
+        "fx/bomb_burst.json": _fx({"model": "burst", "frames": 30, "pos": [0, 0.3, 0]}, {"model": "burst", "frames": 30, "roll": 90, "pos": [0, 0.3, 0]},
+                                  {"model": "shockwave", "frames": 17, "billboard": False, "pos": [0, 0.05, 0]}),
+        "fx/tnt_explode.json": _fx({"model": "burst", "frames": 30, "pos": [0, 0.3, 0]}, {"model": "burst", "frames": 30, "roll": 90, "pos": [0, 0.3, 0]},
+                                   {"model": "shockwave", "frames": 17, "billboard": False, "pos": [0, 0.05, 0]}),
+        "fx/rain_cloud.json": _fx(_dust(2, 0.8, 2.4)),
+    }
+    # the original's explosion (RB_Burst_Init): two copies of `warpedburst` (a 30 frame starburst, the second turned a quarter about the view axis) that face the camera, and the red
+    # `shockwave` (17 frames) on the ground: every frame baked as a model of its own (item/pickup_burst_<n>, pickup_shockwave_<n>), added to the screen; the fx profile plays them
+    burst_files = {}
+    for f in range(30):
+        burst_files.update(ctr_mesh_pack.mesh_pack_files(vram, pack["warpedburst"], "burst_%d" % f, 1.0 / 108.8, frame=f, up=1, animated=False, honour_cull=False, kart_frame=True,
+                                                         pivot_point=(0.0, 0.0, 0.0), shade=True, additive=True))
+    for f in range(17):
+        burst_files.update(ctr_mesh_pack.mesh_pack_files(vram, pack["shockwavered"], "shockwave_%d" % f, 1.0 / 108.8, frame=f, up=1, animated=False, honour_cull=False, kart_frame=True,
+                                                         pivot_point=(0.0, 0.0, 0.0), shade=True, additive=True))
+    # the Power Shield's bubble (RB_ShieldDark_ThTick_Grow): `shield` (blue) or `shield_green`, added to the screen, `shielddark` taken from it and the `highlight` that sweeps round it.
+    # The model is a cone, 320 x 321 x 117 units (x, y its apex axis, z the short one) with the apex toward the camera it is a circle once z is stretched (client/ShieldBubble). Baked at the
+    # resting scale 0x700 / 0x1000 in the kart's scale with its origin at the middle of the cone (x 0, y 33, z 58), which is the middle of the circle.
+    shield_files = {}
+    for src, name in (("shield", "shield_blue"), ("shield_green", "shield_green"), ("shielddark", "shield_dark"), ("highlight", "shield_highlight")):
+        shield_files.update(ctr_mesh_pack.mesh_pack_files(vram, pack[src], name, 0.4375 / 72.53, up=1, animated=False, honour_cull=(src == "highlight"), kart_frame=True, pivot_point=(0.0, 33.5, 58.5),
+                                                          shade=True, additive=True, smooth=32, weld_smooth=0.0))
+    shield_files.update(sheen_frames.frames(shield_files))        # the sheen's eight frames, wrapped onto the bubble (an approximation of the footage)
+    rk = pack["rocket"]
+    rk_abr = [((struct.unpack("<BBHBBHBBBB", ct.layout_bytes(rk, tx))[5] >> 5) & 3) if tx else 0 for (cn, tx, cl, fl) in ct.mesh_triangles(rk)]
+    flame_ids = [i for i, a in enumerate(rk_abr) if a == 1]
+    body_ids = [i for i, a in enumerate(rk_abr) if a != 1]
+    # the body (drawn as it is) and the flame fans (added to the screen, as the boost flame is: a second model, drawn bright)
+    missile_files = ctr_mesh_pack.mesh_pack_files(vram, rk, "missile", 1.0 / 108.8, up=1, animated=True, honour_cull=False, kart_frame=True, z_flip=True, pivot_point=(0.0, 0.0, 48.0), shade=True, exclude=flame_ids)
+    missile_files.update(ctr_mesh_pack.mesh_pack_files(vram, rk, "missile_flame", 1.0 / 108.8, up=1, animated=True, honour_cull=False, kart_frame=True, z_flip=True, pivot_point=(0.0, 0.0, 48.0),
+                                                       shade=True, additive=True, exclude=body_ids))
     # the boost flame (VehTurbo): eight models (STATIC_TURBO_EFFECT and the seven after it, the same shape with another picture each: a flame that crawls), a cone of rays that the game draws
     # in the kart's frame at the exhausts, the second one mirrored. Origin at the middle of the cone's base ring (9, 56, 0); added to the screen in the game (additive): see ctr_mesh_pack.
     flame_files = {}
@@ -459,11 +515,16 @@ def main():
         files = {"textures/item/pickups.png": sheet(scaled(question_96, (32, 32)), scaled(planks_96, (32, 32)), None, fruit, 32),
                  "models/item/pickup_powerup_crate.json": cube([8, 0, 16, 8]),
                  "models/item/pickup_fruit_crate.json": cube([0, 8, 8, 16]),
-                 "textures/gui/wumpa.png": scaled(wumpa, (24, 16))}
+                 "textures/gui/power_fruit.png": scaled(wumpa, (24, 16))}
         files.update(bomb_files)
         files.update(beaker_files)
         files.update(sprite_files(models["fruit"], 32))
         files.update(wumpa_files)
+        files.update(TRANSLATION)
+        files.update(missile_files)
+        files.update(burst_files)
+        files.update(shield_files)
+        files.update(fx_files)
         files.update(crate_break_files)
         files.update(flame_files)
         files.update(crate_cube_files(crates, 2))
@@ -482,11 +543,16 @@ def main():
         files = {"textures/item/pickups.png": sheet(question_96, planks_96, None, fruit, 96),
                  "models/item/pickup_powerup_crate.json": cube([8, 0, 16, 8]),
                  "models/item/pickup_fruit_crate.json": cube([0, 8, 8, 16]),
-                 "textures/gui/wumpa.png": wumpa}
+                 "textures/gui/power_fruit.png": wumpa}
         files.update(bomb_files)
         files.update(beaker_files)
         files.update(sprite_files(models["fruit"], 96))
         files.update(wumpa_files)
+        files.update(TRANSLATION)
+        files.update(missile_files)
+        files.update(burst_files)
+        files.update(shield_files)
+        files.update(fx_files)
         files.update(crate_break_files)
         files.update(flame_files)
         files.update(crate_cube_files(crates, 1))

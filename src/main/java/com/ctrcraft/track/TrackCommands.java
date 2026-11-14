@@ -12,14 +12,14 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
-/** {@code /ctrcraft track reset}: clears what test drives recorded for the start node nearest to you (to record the main lap again). */
+/** {@code /ctr track reset}: clears what test drives recorded for the start node nearest to you (to record the main lap again). */
 @EventBusSubscriber(modid = CtrCraftMod.MODID)
 public final class TrackCommands {
     private TrackCommands() {}
 
     @SubscribeEvent
     public static void register(RegisterCommandsEvent event) {
-        event.getDispatcher().register(Commands.literal("ctrcraft").then(Commands.literal("track").then(Commands.literal("reset").executes(ctx -> {
+        event.getDispatcher().register(Commands.literal("ctr").then(Commands.literal("track").then(Commands.literal("reset").executes(ctx -> {
             ServerPlayer player = ctx.getSource().getPlayerOrException();
             ServerLevel level = player.serverLevel();
             TrackGraph graph = TrackData.get(level).graph();

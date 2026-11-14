@@ -1,880 +1,2614 @@
 {
   "textures": {
-    "kart": "ctrcraft:item/kart",
-    "particle": "ctrcraft:item/kart"
+    "kart": "ctrcraft:item/kart_ctr",
+    "wheel_art": "ctrcraft:item/kart_ctr_wheel",
+    "particle": "ctrcraft:item/kart_ctr",
+    "wheel": "ctrcraft:item/kart_wheel"
   },
   "elements": [
     {
       "from": [
-        3,
+        5,
         2,
-        -2
-      ],
-      "to": [
-        13,
-        5,
-        18
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            5,
-            1,
-            7,
-            3
-          ],
-          "texture": "#kart"
-        },
-        "east": {
-          "uv": [
-            5,
-            1,
-            7,
-            3
-          ],
-          "texture": "#kart"
-        },
-        "south": {
-          "uv": [
-            5,
-            1,
-            7,
-            3
-          ],
-          "texture": "#kart"
-        },
-        "west": {
-          "uv": [
-            5,
-            1,
-            7,
-            3
-          ],
-          "texture": "#kart"
-        },
-        "up": {
-          "uv": [
-            5,
-            1,
-            7,
-            3
-          ],
-          "texture": "#kart"
-        },
-        "down": {
-          "uv": [
-            5,
-            1,
-            7,
-            3
-          ],
-          "texture": "#kart"
-        }
-      },
-      "name": "chassis_0"
-    },
-    {
-      "from": [
-        4,
-        3,
-        -4
-      ],
-      "to": [
-        12,
-        6,
-        4
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ],
-          "texture": "#kart"
-        },
-        "east": {
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ],
-          "texture": "#kart"
-        },
-        "south": {
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ],
-          "texture": "#kart"
-        },
-        "west": {
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ],
-          "texture": "#kart"
-        },
-        "up": {
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ],
-          "texture": "#kart"
-        },
-        "down": {
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ],
-          "texture": "#kart"
-        }
-      },
-      "name": "nose_0"
-    },
-    {
-      "from": [
-        3,
-        5,
-        4
-      ],
-      "to": [
-        13,
-        7,
-        12
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ],
-          "texture": "#kart"
-        },
-        "east": {
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ],
-          "texture": "#kart"
-        },
-        "south": {
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ],
-          "texture": "#kart"
-        },
-        "west": {
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ],
-          "texture": "#kart"
-        },
-        "up": {
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ],
-          "texture": "#kart"
-        },
-        "down": {
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ],
-          "texture": "#kart"
-        }
-      },
-      "name": "body_0"
-    },
-    {
-      "from": [
-        5,
-        5,
-        10
+        -3
       ],
       "to": [
         11,
-        6,
+        3,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            0.25,
+            8,
+            1.25
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0.25,
+            8,
+            1.25
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#kart",
+          "tintindex": 0,
+          "rotation": 90
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#kart",
+          "tintindex": 0,
+          "rotation": 90
+        }
+      },
+      "name": "tub_0"
+    },
+    {
+      "from": [
+        2,
+        2,
+        9
+      ],
+      "to": [
+        14,
+        3,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            8,
+            1
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            8,
+            1
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            2
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            8,
+            2
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        }
+      },
+      "name": "tub_1"
+    },
+    {
+      "from": [
+        2,
+        2.1,
+        1
+      ],
+      "to": [
+        8,
+        2.9,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.8
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            8,
+            0.8
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.8
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            8,
+            0.8
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            6,
+            8
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            6,
+            8
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        }
+      },
+      "name": "tub_1",
+      "rotation": {
+        "origin": [
+          2,
+          2.1,
+          9
+        ],
+        "axis": "y",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        8,
+        2.1,
+        1
+      ],
+      "to": [
+        14,
+        2.9,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.8
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            8,
+            0.8
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.8
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            8,
+            0.8
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "up": {
+          "uv": [
+            2,
+            0,
+            8,
+            8
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "down": {
+          "uv": [
+            2,
+            0,
+            8,
+            8
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        }
+      },
+      "name": "tub_2",
+      "rotation": {
+        "origin": [
+          14,
+          2.1,
+          9
+        ],
+        "axis": "y",
+        "angle": 22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        4.5,
+        5,
+        11
+      ],
+      "to": [
+        11.5,
+        9,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            8,
+            12,
+            12
+          ],
+          "texture": "#kart"
+        },
+        "east": {
+          "uv": [
+            8,
+            8,
+            12,
+            12
+          ],
+          "texture": "#kart"
+        },
+        "south": {
+          "uv": [
+            8,
+            8,
+            12,
+            12
+          ],
+          "texture": "#kart"
+        },
+        "west": {
+          "uv": [
+            8,
+            8,
+            12,
+            12
+          ],
+          "texture": "#kart"
+        },
+        "up": {
+          "uv": [
+            8,
+            8,
+            12,
+            12
+          ],
+          "texture": "#kart"
+        },
+        "down": {
+          "uv": [
+            8,
+            8,
+            12,
+            12
+          ],
+          "texture": "#kart"
+        }
+      },
+      "name": "engine_1",
+      "rotation": {
+        "origin": [
+          8,
+          5,
+          11
+        ],
+        "axis": "x",
+        "angle": 22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        1.5,
+        1,
+        -4
+      ],
+      "to": [
+        14.5,
+        5,
+        -2
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            8,
+            8,
+            12
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            8,
+            2,
+            12
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            8,
+            8,
+            12
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            8,
+            2,
+            12
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            8,
+            8,
+            10
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        },
+        "down": {
+          "uv": [
+            0,
+            8,
+            8,
+            10
+          ],
+          "texture": "#kart",
+          "tintindex": 0
+        }
+      },
+      "name": "strut_0",
+      "rotation": {
+        "origin": [
+          8,
+          3,
+          -3
+        ],
+        "axis": "x",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        1.5,
+        2,
+        11
+      ],
+      "to": [
+        14.5,
+        5,
         15
       ],
       "faces": {
         "north": {
           "uv": [
-            13,
-            1,
-            15,
-            3
+            0,
+            8,
+            8,
+            11
           ],
-          "texture": "#kart"
+          "texture": "#kart",
+          "tintindex": 0
         },
         "east": {
           "uv": [
-            13,
-            1,
-            15,
-            3
+            0,
+            8,
+            4,
+            11
           ],
-          "texture": "#kart"
+          "texture": "#kart",
+          "tintindex": 0
         },
         "south": {
           "uv": [
-            13,
-            1,
-            15,
-            3
+            0,
+            8,
+            8,
+            11
           ],
-          "texture": "#kart"
+          "texture": "#kart",
+          "tintindex": 0
         },
         "west": {
           "uv": [
-            13,
-            1,
-            15,
-            3
+            0,
+            8,
+            4,
+            11
           ],
-          "texture": "#kart"
+          "texture": "#kart",
+          "tintindex": 0
         },
         "up": {
           "uv": [
-            13,
-            1,
-            15,
-            3
+            0,
+            8,
+            8,
+            12
           ],
-          "texture": "#kart"
+          "texture": "#kart",
+          "tintindex": 0
         },
         "down": {
           "uv": [
-            13,
-            1,
-            15,
-            3
+            0,
+            8,
+            8,
+            12
           ],
-          "texture": "#kart"
+          "texture": "#kart",
+          "tintindex": 0
+        }
+      },
+      "name": "strut_1"
+    },
+    {
+      "from": [
+        4,
+        3,
+        4
+      ],
+      "to": [
+        12,
+        4,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            0,
+            16,
+            0.75
+          ],
+          "texture": "#kart",
+          "tintindex": 1
+        },
+        "east": {
+          "uv": [
+            8.5,
+            0,
+            15.5,
+            0.75
+          ],
+          "texture": "#kart",
+          "tintindex": 1
+        },
+        "south": {
+          "uv": [
+            8,
+            0,
+            16,
+            1
+          ],
+          "texture": "#kart",
+          "tintindex": 1
+        },
+        "west": {
+          "uv": [
+            8.5,
+            0,
+            15.5,
+            0.75
+          ],
+          "texture": "#kart",
+          "tintindex": 1
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            16,
+            7
+          ],
+          "texture": "#kart",
+          "tintindex": 1
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            16,
+            7
+          ],
+          "texture": "#kart",
+          "tintindex": 1
         }
       },
       "name": "seat_0"
     },
     {
       "from": [
-        5,
-        6,
-        14
+        3,
+        4,
+        10
       ],
       "to": [
+        13,
         11,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            0,
+            16,
+            7
+          ],
+          "texture": "#kart",
+          "tintindex": 1
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            8.75,
+            7
+          ],
+          "texture": "#kart",
+          "tintindex": 1
+        },
+        "south": {
+          "uv": [
+            8,
+            0,
+            16,
+            7
+          ],
+          "texture": "#kart",
+          "tintindex": 1
+        },
+        "west": {
+          "uv": [
+            15.25,
+            0,
+            16,
+            7
+          ],
+          "texture": "#kart",
+          "tintindex": 1
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            16,
+            0.75
+          ],
+          "texture": "#kart",
+          "tintindex": 1
+        },
+        "down": {
+          "uv": [
+            8,
+            7.25,
+            16,
+            8
+          ],
+          "texture": "#kart",
+          "tintindex": 1
+        }
+      },
+      "name": "seat_1",
+      "rotation": {
+        "origin": [
+          8,
+          4,
+          10
+        ],
+        "axis": "x",
+        "angle": 22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        7,
+        2.5,
+        -1
+      ],
+      "to": [
+        9,
+        4.5,
+        7
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            12,
+            10,
+            14
+          ],
+          "texture": "#kart"
+        },
+        "east": {
+          "uv": [
+            8,
+            12,
+            10,
+            14
+          ],
+          "texture": "#kart",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            8,
+            12,
+            10,
+            14
+          ],
+          "texture": "#kart"
+        },
+        "west": {
+          "uv": [
+            8,
+            12,
+            10,
+            14
+          ],
+          "texture": "#kart"
+        },
+        "up": {
+          "uv": [
+            8,
+            12,
+            10,
+            14
+          ],
+          "texture": "#kart",
+          "rotation": 90
+        },
+        "down": {
+          "uv": [
+            8,
+            12,
+            10,
+            14
+          ],
+          "texture": "#kart",
+          "rotation": 270
+        }
+      },
+      "name": "steering_0",
+      "rotation": {
+        "origin": [
+          7.5,
+          2.5,
+          -1
+        ],
+        "axis": "x",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        3.5,
+        7.5,
+        4.7
+      ],
+      "to": [
+        12.5,
+        11.5,
+        4.7
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            14.125,
+            10.125,
+            15.875,
+            11.875
+          ],
+          "texture": "#kart"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            6,
+            4
+          ],
+          "texture": "#wheel_art"
+        },
+        "west": {
+          "uv": [
+            14.125,
+            10.125,
+            15.875,
+            11.875
+          ],
+          "texture": "#kart"
+        },
+        "up": {
+          "uv": [
+            14.125,
+            10.125,
+            15.875,
+            11.875
+          ],
+          "texture": "#kart"
+        },
+        "down": {
+          "uv": [
+            14.125,
+            10.125,
+            15.875,
+            11.875
+          ],
+          "texture": "#kart"
+        }
+      },
+      "name": "steering_1",
+      "rotation": {
+        "origin": [
+          8,
+          8.5,
+          6
+        ],
+        "axis": "x",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        3.6,
+        9,
+        3.9
+      ],
+      "to": [
+        12.4,
+        10,
+        4.6
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            14,
+            10,
+            15
+          ],
+          "texture": "#kart"
+        },
+        "east": {
+          "uv": [
+            8,
+            14,
+            9.2,
+            15
+          ],
+          "texture": "#kart"
+        },
+        "south": {
+          "uv": [
+            8,
+            14,
+            10,
+            15
+          ],
+          "texture": "#kart"
+        },
+        "west": {
+          "uv": [
+            8,
+            14,
+            9.2,
+            15
+          ],
+          "texture": "#kart"
+        },
+        "up": {
+          "uv": [
+            8,
+            14,
+            10,
+            15.2
+          ],
+          "texture": "#kart"
+        },
+        "down": {
+          "uv": [
+            8,
+            14,
+            10,
+            15.2
+          ],
+          "texture": "#kart"
+        }
+      },
+      "name": "steering_2",
+      "rotation": {
+        "origin": [
+          8,
+          8.5,
+          6
+        ],
+        "axis": "x",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        6.8,
+        8.3,
+        3.8
+      ],
+      "to": [
+        9.2,
+        10.6,
+        4.6
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            12,
+            10,
+            13.6
+          ],
+          "texture": "#kart"
+        },
+        "east": {
+          "uv": [
+            8,
+            12,
+            10,
+            13.6
+          ],
+          "texture": "#kart"
+        },
+        "south": {
+          "uv": [
+            8,
+            12,
+            10,
+            13.6
+          ],
+          "texture": "#kart"
+        },
+        "west": {
+          "uv": [
+            8,
+            12,
+            10,
+            13.6
+          ],
+          "texture": "#kart"
+        },
+        "up": {
+          "uv": [
+            8,
+            12,
+            10,
+            14
+          ],
+          "texture": "#kart",
+          "rotation": 90
+        },
+        "down": {
+          "uv": [
+            8,
+            12,
+            10,
+            14
+          ],
+          "texture": "#kart",
+          "rotation": 270
+        }
+      },
+      "name": "steering_3",
+      "rotation": {
+        "origin": [
+          8,
+          8.5,
+          6
+        ],
+        "axis": "x",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        3.5,
+        7.5,
+        4.67
+      ],
+      "to": [
+        12.5,
+        11.5,
+        4.67
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            4,
+            6,
+            8
+          ],
+          "texture": "#wheel_art"
+        }
+      },
+      "name": "steering_4",
+      "rotation": {
+        "origin": [
+          8,
+          8.5,
+          6
+        ],
+        "axis": "x",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        2,
+        4,
+        12
+      ],
+      "to": [
+        5,
         11,
         15
       ],
       "faces": {
         "north": {
           "uv": [
-            13,
-            1,
-            15,
-            3
+            12,
+            8,
+            14,
+            12
           ],
           "texture": "#kart"
         },
         "east": {
           "uv": [
-            13,
-            1,
-            15,
-            3
+            12,
+            8,
+            14,
+            12
           ],
           "texture": "#kart"
         },
         "south": {
           "uv": [
-            13,
-            1,
-            15,
-            3
+            12,
+            8,
+            14,
+            12
           ],
           "texture": "#kart"
         },
         "west": {
           "uv": [
-            13,
-            1,
-            15,
-            3
+            12,
+            8,
+            14,
+            12
           ],
           "texture": "#kart"
         },
         "up": {
           "uv": [
-            13,
-            1,
-            15,
-            3
+            14,
+            8,
+            16,
+            10
           ],
           "texture": "#kart"
         },
         "down": {
           "uv": [
-            13,
-            1,
-            15,
-            3
+            14,
+            8,
+            16,
+            10
           ],
           "texture": "#kart"
         }
       },
-      "name": "seat_1"
+      "name": "exhaust_left_0",
+      "rotation": {
+        "origin": [
+          5,
+          5,
+          13
+        ],
+        "axis": "x",
+        "angle": 45,
+        "rescale": false
+      }
     },
     {
       "from": [
-        7.5,
-        6,
-        5
+        11,
+        4,
+        12
       ],
       "to": [
-        8.5,
-        9,
-        6
+        14,
+        11,
+        15
       ],
       "faces": {
         "north": {
           "uv": [
-            1,
-            5,
-            3,
-            7
+            12,
+            8,
+            14,
+            12
           ],
           "texture": "#kart"
         },
         "east": {
           "uv": [
-            1,
-            5,
-            3,
-            7
+            12,
+            8,
+            14,
+            12
           ],
           "texture": "#kart"
         },
         "south": {
           "uv": [
-            1,
-            5,
-            3,
-            7
+            12,
+            8,
+            14,
+            12
           ],
           "texture": "#kart"
         },
         "west": {
           "uv": [
-            1,
-            5,
-            3,
-            7
+            12,
+            8,
+            14,
+            12
           ],
           "texture": "#kart"
         },
         "up": {
           "uv": [
-            1,
-            5,
-            3,
-            7
+            14,
+            8,
+            16,
+            10
           ],
           "texture": "#kart"
         },
         "down": {
           "uv": [
-            1,
-            5,
-            3,
-            7
+            14,
+            8,
+            16,
+            10
           ],
           "texture": "#kart"
         }
       },
-      "name": "steering_0"
+      "name": "exhaust_right_0",
+      "rotation": {
+        "origin": [
+          11,
+          5,
+          13
+        ],
+        "axis": "x",
+        "angle": 45,
+        "rescale": false
+      }
     },
     {
       "from": [
-        6,
-        9,
-        4
+        -1.5,
+        0.0,
+        -4.4497
       ],
       "to": [
-        10,
-        10,
-        6
+        1.5,
+        7.0,
+        -1.5503
       ],
       "faces": {
         "north": {
           "uv": [
-            9,
-            5,
-            11,
-            7
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "east": {
           "uv": [
-            9,
-            5,
-            11,
-            7
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "south": {
           "uv": [
-            9,
-            5,
-            11,
-            7
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "west": {
           "uv": [
-            9,
-            5,
-            11,
-            7
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "up": {
           "uv": [
-            9,
-            5,
-            11,
-            7
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "down": {
           "uv": [
-            9,
-            5,
-            11,
-            7
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         }
       },
-      "name": "steering_1"
+      "name": "wheel_front_left_tyre_0"
     },
     {
       "from": [
-        0.5,
-        0,
-        0
+        -1.49,
+        2.0503,
+        -6.5
       ],
       "to": [
-        3.5,
-        6,
-        6
+        1.49,
+        4.9497,
+        0.5
       ],
       "faces": {
         "north": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            4,
+            12,
+            0
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "east": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "south": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "west": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "up": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "down": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         }
       },
-      "name": "wheel_front_left_0"
+      "name": "wheel_front_left_tyre_1"
     },
     {
       "from": [
-        12.5,
-        0,
-        0
+        -1.48,
+        0.0,
+        -4.4497
       ],
       "to": [
-        15.5,
-        6,
-        6
+        1.48,
+        7.0,
+        -1.5503
       ],
       "faces": {
         "north": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "east": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "south": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "west": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "up": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "down": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         }
       },
-      "name": "wheel_front_right_0"
+      "name": "wheel_front_left_tyre_2",
+      "rotation": {
+        "origin": [
+          0.0,
+          3.5,
+          -3.0
+        ],
+        "axis": "x",
+        "angle": 45,
+        "rescale": false
+      }
     },
     {
       "from": [
-        0,
-        0,
-        10
+        -1.47,
+        0.0,
+        -4.4497
       ],
       "to": [
-        3.5,
-        7,
-        17
+        1.47,
+        7.0,
+        -1.5503
       ],
       "faces": {
         "north": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "east": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "south": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "west": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "up": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "down": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         }
       },
-      "name": "wheel_rear_left_0"
+      "name": "wheel_front_left_tyre_3",
+      "rotation": {
+        "origin": [
+          0.0,
+          3.5,
+          -3.0
+        ],
+        "axis": "x",
+        "angle": -45,
+        "rescale": false
+      }
     },
     {
       "from": [
-        12.5,
-        0,
-        10
+        1.52,
+        0.0,
+        -6.5
       ],
       "to": [
-        16,
-        7,
-        17
+        1.52,
+        7.0,
+        0.5
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_front_left_faces_0"
+    },
+    {
+      "from": [
+        -1.52,
+        0.0,
+        -6.5
+      ],
+      "to": [
+        -1.52,
+        7.0,
+        0.5
+      ],
+      "faces": {
+        "west": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_front_left_faces_1"
+    },
+    {
+      "from": [
+        14.5,
+        0.0,
+        -4.4497
+      ],
+      "to": [
+        17.5,
+        7.0,
+        -1.5503
       ],
       "faces": {
         "north": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "east": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "south": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "west": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "up": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "down": {
           "uv": [
-            9,
-            1,
-            11,
-            3
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         }
       },
-      "name": "wheel_rear_right_0"
+      "name": "wheel_front_right_tyre_0"
     },
     {
       "from": [
-        6,
-        3,
-        17
+        14.51,
+        2.0503,
+        -6.5
       ],
       "to": [
-        10,
-        5,
-        20
+        17.49,
+        4.9497,
+        0.5
       ],
       "faces": {
         "north": {
           "uv": [
-            1,
-            5,
-            3,
-            7
+            8,
+            4,
+            12,
+            0
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "east": {
           "uv": [
-            1,
-            5,
-            3,
-            7
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "south": {
           "uv": [
-            1,
-            5,
-            3,
-            7
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "west": {
           "uv": [
-            1,
-            5,
-            3,
-            7
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "up": {
           "uv": [
-            1,
-            5,
-            3,
-            7
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         },
         "down": {
           "uv": [
-            1,
-            5,
-            3,
-            7
+            8,
+            0,
+            12,
+            4
           ],
-          "texture": "#kart"
+          "texture": "#wheel"
         }
       },
-      "name": "exhaust_0"
+      "name": "wheel_front_right_tyre_1"
+    },
+    {
+      "from": [
+        14.52,
+        0.0,
+        -4.4497
+      ],
+      "to": [
+        17.48,
+        7.0,
+        -1.5503
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "south": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_front_right_tyre_2",
+      "rotation": {
+        "origin": [
+          16.0,
+          3.5,
+          -3.0
+        ],
+        "axis": "x",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        14.53,
+        0.0,
+        -4.4497
+      ],
+      "to": [
+        17.47,
+        7.0,
+        -1.5503
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "south": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_front_right_tyre_3",
+      "rotation": {
+        "origin": [
+          16.0,
+          3.5,
+          -3.0
+        ],
+        "axis": "x",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        17.52,
+        0.0,
+        -6.5
+      ],
+      "to": [
+        17.52,
+        7.0,
+        0.5
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_front_right_faces_0"
+    },
+    {
+      "from": [
+        14.48,
+        0.0,
+        -6.5
+      ],
+      "to": [
+        14.48,
+        7.0,
+        0.5
+      ],
+      "faces": {
+        "west": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_front_right_faces_1"
+    },
+    {
+      "from": [
+        -1.5,
+        0.0,
+        11.5503
+      ],
+      "to": [
+        1.5,
+        7.0,
+        14.4497
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "south": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_rear_left_tyre_0"
+    },
+    {
+      "from": [
+        -1.49,
+        2.0503,
+        9.5
+      ],
+      "to": [
+        1.49,
+        4.9497,
+        16.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            4,
+            12,
+            0
+          ],
+          "texture": "#wheel"
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "south": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_rear_left_tyre_1"
+    },
+    {
+      "from": [
+        -1.48,
+        0.0,
+        11.5503
+      ],
+      "to": [
+        1.48,
+        7.0,
+        14.4497
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "south": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_rear_left_tyre_2",
+      "rotation": {
+        "origin": [
+          0.0,
+          3.5,
+          13.0
+        ],
+        "axis": "x",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        -1.47,
+        0.0,
+        11.5503
+      ],
+      "to": [
+        1.47,
+        7.0,
+        14.4497
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "south": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_rear_left_tyre_3",
+      "rotation": {
+        "origin": [
+          0.0,
+          3.5,
+          13.0
+        ],
+        "axis": "x",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        1.52,
+        0.0,
+        9.5
+      ],
+      "to": [
+        1.52,
+        7.0,
+        16.5
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_rear_left_faces_0"
+    },
+    {
+      "from": [
+        -1.52,
+        0.0,
+        9.5
+      ],
+      "to": [
+        -1.52,
+        7.0,
+        16.5
+      ],
+      "faces": {
+        "west": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_rear_left_faces_1"
+    },
+    {
+      "from": [
+        14.5,
+        0.0,
+        11.5503
+      ],
+      "to": [
+        17.5,
+        7.0,
+        14.4497
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "south": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_rear_right_tyre_0"
+    },
+    {
+      "from": [
+        14.51,
+        2.0503,
+        9.5
+      ],
+      "to": [
+        17.49,
+        4.9497,
+        16.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            4,
+            12,
+            0
+          ],
+          "texture": "#wheel"
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "south": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_rear_right_tyre_1"
+    },
+    {
+      "from": [
+        14.52,
+        0.0,
+        11.5503
+      ],
+      "to": [
+        17.48,
+        7.0,
+        14.4497
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "south": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_rear_right_tyre_2",
+      "rotation": {
+        "origin": [
+          16.0,
+          3.5,
+          13.0
+        ],
+        "axis": "x",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        14.53,
+        0.0,
+        11.5503
+      ],
+      "to": [
+        17.47,
+        7.0,
+        14.4497
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "south": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            12,
+            4
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_rear_right_tyre_3",
+      "rotation": {
+        "origin": [
+          16.0,
+          3.5,
+          13.0
+        ],
+        "axis": "x",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        17.52,
+        0.0,
+        9.5
+      ],
+      "to": [
+        17.52,
+        7.0,
+        16.5
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_rear_right_faces_0"
+    },
+    {
+      "from": [
+        14.48,
+        0.0,
+        9.5
+      ],
+      "to": [
+        14.48,
+        7.0,
+        16.5
+      ],
+      "faces": {
+        "west": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#wheel"
+        }
+      },
+      "name": "wheel_rear_right_faces_1"
     }
   ],
   "display": {
-    "gui": {
-      "rotation": [
-        30,
-        225,
-        0
-      ],
-      "translation": [
-        0,
-        0,
-        0
-      ],
-      "scale": [
-        0.55,
-        0.55,
-        0.55
-      ]
-    },
-    "ground": {
-      "translation": [
-        0,
-        2,
-        0
-      ],
-      "scale": [
-        0.4,
-        0.4,
-        0.4
-      ]
-    },
-    "fixed": {
-      "rotation": [
-        0,
-        180,
-        0
-      ],
-      "scale": [
-        0.55,
-        0.55,
-        0.55
-      ]
-    },
     "thirdperson_righthand": {
       "rotation": [
         0,
@@ -907,6 +2641,42 @@
         0.4,
         0.4,
         0.4
+      ]
+    },
+    "ground": {
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "gui": {
+      "rotation": [
+        30,
+        -135,
+        0
+      ],
+      "scale": [
+        0.55,
+        0.55,
+        0.55
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        -180,
+        0
+      ],
+      "scale": [
+        0.55,
+        0.55,
+        0.55
       ]
     }
   }

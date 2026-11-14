@@ -24,6 +24,7 @@ public class CtrCraftMod {
         ModSounds.register(modEventBus);
         ModComponents.register(modEventBus);
         modContainer.registerConfig(net.neoforged.fml.config.ModConfig.Type.SERVER, CtrConfig.SPEC);
+        modContainer.registerConfig(net.neoforged.fml.config.ModConfig.Type.CLIENT, CtrClientConfig.SPEC);
         ModCreativeTabs.register(modEventBus);
         modEventBus.addListener(CtrCraftMod::registerPayloads);
         ModBlockEntities.register(modEventBus);
@@ -37,6 +38,9 @@ public class CtrCraftMod {
         registrar.playToServer(KartDismountPayload.TYPE, KartDismountPayload.STREAM_CODEC, KartDismountPayload::handle);
         registrar.playToClient(com.ctrcraft.pickup.ItemStatePayload.TYPE, com.ctrcraft.pickup.ItemStatePayload.STREAM_CODEC,
                 com.ctrcraft.pickup.ItemStatePayload::handle);
+        registrar.playToClient(com.ctrcraft.net.FxPayload.TYPE, com.ctrcraft.net.FxPayload.STREAM_CODEC, com.ctrcraft.net.FxPayload::handle);
+        registrar.playToClient(com.ctrcraft.pickup.TrackerPayload.TYPE, com.ctrcraft.pickup.TrackerPayload.STREAM_CODEC,
+                com.ctrcraft.pickup.TrackerPayload::handle);
         registrar.playToClient(com.ctrcraft.pickup.HitFlashPayload.TYPE, com.ctrcraft.pickup.HitFlashPayload.STREAM_CODEC,
                 com.ctrcraft.pickup.HitFlashPayload::handle);
         registrar.playToServer(com.ctrcraft.pickup.UseItemPayload.TYPE, com.ctrcraft.pickup.UseItemPayload.STREAM_CODEC,

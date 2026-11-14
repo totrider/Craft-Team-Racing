@@ -11,15 +11,15 @@ import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
 /**
- * The Wumpa fruits flying to the HUD, as the original does it (UI_RenderFrame.c, RB_Fruit.c, RB_Crate.c, UI_Lerp2D_HUD): taking fruit queues them. The fruit's picture
+ * The Power Fruits flying to the HUD, as the original does it (UI_RenderFrame.c, RB_Fruit.c, RB_Crate.c, UI_Lerp2D_HUD): taking fruit queues them. The fruit's picture
  * flies one at a time from where the pickup was on the screen (the kart's position, 20 reference pixels higher) to the fruit on the HUD in 5 steps of the game's
  * 30 Hz, and the count on the HUD only goes up when each one arrives (so 5 to 8 fruit from a crate count up one after the other, 6 frames each). Taking
- * more while one is flying restarts it from the new place. The real count (the juiced state) is the server's and is not delayed: this only delays what the HUD shows.
+ * more while one is flying restarts it from the new place. The real count (the charged state) is the server's and is not delayed: this only delays what the HUD shows.
  * Each arrival plays the original's sound for it (OtherFX 0x42). Difference: the original starts a loose fruit's flight at the fruit's own screen position, here it
  * is the kart's (the fruit is within a block of it).
  */
-public final class WumpaFly {
-    private WumpaFly() {}
+public final class PowerFruitFly {
+    private PowerFruitFly() {}
 
     /** The HUD's fruit, the flight's end, in the 512 x 216 reference screen the original's numbers are in. */
     private static final int END_X = 316;
@@ -31,7 +31,7 @@ public final class WumpaFly {
     private static Vec3 camera = Vec3.ZERO;
     private static boolean haveCamera;
 
-    private static int lastWumpa = -1;
+    private static int lastPowerFruit = -1;
     private static int queued;
     private static int cooldown;
     private static int startX;
@@ -70,7 +70,7 @@ public final class WumpaFly {
     }
 
     public static void reset() {
-        lastWumpa = -1;
+        lastPowerFruit = -1;
         queued = 0;
         cooldown = 0;
         drawing = false;
@@ -78,18 +78,18 @@ public final class WumpaFly {
         accumulatedNs = 0;
     }
 
-    /** Once per rendered frame: {@code wumpa} the real count, {@code at} the pickup's world position, the screen size in gui pixels. */
-    public static void update(int wumpa, Vec3 at, float guiWidth, float guiHeight, boolean paused) {
-        if (lastWumpa < 0) lastWumpa = wumpa;
-        if (wumpa > lastWumpa) {
-            queued += wumpa - lastWumpa;
+    /** Once per rendered frame: {@code power fruit} the real count, {@code at} the pickup's world position, the screen size in gui pixels. */
+    public static void update(int powerFruit, Vec3 at, float guiWidth, float guiHeight, boolean paused) {
+        if (lastPowerFruit < 0) lastPowerFruit = powerFruit;
+        if (powerFruit > lastPowerFruit) {
+            queued += powerFruit - lastPowerFruit;
             cooldown = 5;
             int[] p = project(at, guiWidth, guiHeight);
             startX = p[0];
             startY = p[1] - 20;                                   // 0x14 above the pickup, as the original
         }
-        lastWumpa = wumpa;
-        queued = Math.min(queued, wumpa);                            // the count dropped (a hit, a new race): nothing left to fly
+        lastPowerFruit = powerFruit;
+        queued = Math.min(queued, powerFruit);                            // the count dropped (a hit, a new race): nothing left to fly
         if (queued == 0) cooldown = 0;
 
         long now = System.nanoTime();

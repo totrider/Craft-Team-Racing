@@ -4,7 +4,7 @@ The baseline kart: a Blockbench model with the original's proportions (not its g
   python tools/make_kart_ctr.py
 
 blockbench/kart/kart_ctr.bbmodel is the source (written once from the numbers below if it is missing, then it is yours; this script only reads it) and
-src/main/resources/assets/ctrcraft/models/item/kart_ctr.json is generated from it (the entity renderer fetches that model; the spawn item keeps the older blockbench/kart/kart.bbmodel).
+src/main/resources/assets/ctrcraft/models/item/kart_ctr.json is generated from it (the entity renderer fetches that model) and so is the spawn item's models/item/kart.json (the same kart with its wheels and steering wheel in place).
 The placeholder texture is the same 16x16 palette as the old kart's (textures/item/kart.png).
 
 Where the numbers come from: tools/inspect_ctr_kart.py measures the original's racer models (local only). Crash's kart in level units, drawn at 72.7 units to the block (16 pixels = 1 block here, so 1 unit = 0.22 px; between the crates' 108.8, which was too small beside a player, and the physics' 50, which was a car): 56 units across is 0.77 block:
@@ -214,6 +214,33 @@ def write_exhausts(path=BB):
         json.dump({"source": "blockbench/kart/kart_ctr.bbmodel, the exhaust_* cubes (tools/make_kart_ctr.py)", "pipes": pipes}, f, indent=2)
 
 
+ITEM_OUT = os.path.join(base.ASSETS, "models", "item", "kart.json")
+WHEEL_MODEL = os.path.join(base.ASSETS, "models", "item", "kart_wheel.json")
+
+
+def write_item_model(textures, els, display):
+    """The spawn item's model (its inventory picture): the whole baseline kart in one model, the steering wheel and the four wheels (which the entity draws as models of their own,
+    spinning and steering) put in place from the wheel markers. The wheel model is 3 x 7 x 7 pixels; the markers give where each goes (their sizes are the wheel's own)."""
+    wheel = json.load(open(WHEEL_MODEL, encoding="utf-8"))
+    out = list(els)
+    for w in json.load(open(WHEELS_OUT, encoding="utf-8"))["wheels"]:
+        # the wheel model is centred on (8, 8, 8); the marker's middle is in blocks from the kart's origin (x 8, z 8 in pixels, y up)
+        shift = [8 + w["pos"][0] * 16 - 8, w["pos"][1] * 16 - 8, 8 + w["pos"][2] * 16 - 8]
+        for e in wheel["elements"]:
+            c = json.loads(json.dumps(e))
+            c["from"] = [round(c["from"][i] + shift[i], 4) for i in range(3)]
+            c["to"] = [round(c["to"][i] + shift[i], 4) for i in range(3)]
+            if "rotation" in c:
+                c["rotation"]["origin"] = [round(c["rotation"]["origin"][i] + shift[i], 4) for i in range(3)]
+            c["name"] = "wheel_%s_%s" % (w["name"], c.get("name", "part"))
+            out.append(c)
+    tex = dict(textures)
+    tex["wheel"] = wheel["textures"]["wheel"]
+    with open(ITEM_OUT, "w", encoding="utf-8", newline="\n") as f:
+        json.dump({"textures": tex, "elements": out, "display": display}, f, indent=2)
+    print("kart item model written (%d elements)" % len(out))
+
+
 def main():
     if not os.path.exists(BB):
         bbmodel.write(BB, "kart_ctr", {"kart": base.TEX}, list(kart_parts().items()), display=base.display(), gui_light_front=False,
@@ -245,6 +272,7 @@ def main():
                 os.remove(stale)
     write_wheels()
     write_exhausts()
+    write_item_model(textures, els, model["display"])
     print("kart_ctr written")
 
 

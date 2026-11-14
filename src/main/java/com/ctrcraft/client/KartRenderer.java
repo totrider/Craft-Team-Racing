@@ -32,7 +32,7 @@ import org.joml.Vector3f;
  * The model's front is north (-z); the kart's heading turns it.
  */
 public class KartRenderer extends EntityRenderer<KartEntity> {
-    /** The baseline kart (blockbench/kart/kart_ctr.bbmodel, the original's proportions); the spawn item keeps the older item/kart model. */
+    /** The baseline kart (blockbench/kart/kart_ctr.bbmodel, the original's proportions); the spawn item uses item/kart, which tools/make_kart_ctr.py makes from the same kart with its wheels in place. */
     public static final ModelResourceLocation MODEL =
             ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(CtrCraftMod.MODID, "item/kart_ctr"));
     /** The wheel (blockbench/kart/kart_wheel.bbmodel): an octagonal prism along x, drawn four times, spinning, the front two steering. */
@@ -225,7 +225,7 @@ public class KartRenderer extends EntityRenderer<KartEntity> {
         int fire = KartFlags.fireSize(flags);
         float alpha = (8 - KartFlags.fade(flags)) / 8.0F;
         boolean ultra = KartFlags.has(flags, KartFlags.ULTRA);
-        if (DebugCommands.flameSize > 0) {                    // /ctrdebug flame
+        if (DebugCommands.flameSize > 0) {                    // /ctr debug flame
             fire = DebugCommands.flameSize;
             alpha = 1.0F;
             ultra = DebugCommands.flameUltra;
@@ -264,12 +264,11 @@ public class KartRenderer extends EntityRenderer<KartEntity> {
         }
     }
 
-    @Override
-    public void render(KartEntity entity, float entityYaw, float partialTick, PoseStack pose,
-                       MultiBufferSource buffers, int packedLight) {
-        BakedModel model = Minecraft.getInstance().getModelManager().getModel(MODEL);
-        renderGroundShadow(entity, partialTick, pose, buffers, packedLight);
-        pose.pushPose();
+    /**
+     * The turn of the kart's body, from the world's axes at the kart's position to the model's own frame (x to its right, y up, z to the back): the yaw, the lean onto the ground, the jump's
+     * pose or the boost wheelie, and the tumble after an explosion. The model, its wheels and everything fixed to the kart (the exhaust smoke) go through it.
+     */
+    public static void applyBodyPose(PoseStack pose, KartEntity entity, float partialTick) {
         // model front is -z; at yaw 0 the kart faces +z
         float theta = 180.0F - entity.renderYawDegrees(partialTick);
         pose.mulPose(Axis.YP.rotationDegrees(theta));
@@ -310,6 +309,22 @@ public class KartRenderer extends EntityRenderer<KartEntity> {
             pose.scale((float) (1.0 + wobble / 4.0), 1.0F, (float) (1.0 + wobble * 6.0 / 40.0));
             pose.translate(0.0, -0.3, 0.0);
         }
+    }
+
+    /** The body pose as a matrix: a point in the model's frame (blocks from the kart's origin) to its offset from the kart's position in the world. */
+    public static org.joml.Matrix4f bodyMatrix(KartEntity entity, float partialTick) {
+        PoseStack pose = new PoseStack();
+        applyBodyPose(pose, entity, partialTick);
+        return new org.joml.Matrix4f(pose.last().pose());
+    }
+
+    @Override
+    public void render(KartEntity entity, float entityYaw, float partialTick, PoseStack pose,
+                       MultiBufferSource buffers, int packedLight) {
+        BakedModel model = Minecraft.getInstance().getModelManager().getModel(MODEL);
+        renderGroundShadow(entity, partialTick, pose, buffers, packedLight);
+        pose.pushPose();
+        applyBodyPose(pose, entity, partialTick);
         drawWheels(entity, pose, buffers, packedLight, partialTick);
         pose.translate(-0.5, 0.0, -0.5);
         VertexConsumer consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS));
@@ -342,6 +357,7 @@ public class KartRenderer extends EntityRenderer<KartEntity> {
         }
         drawBoostFlames(entity, pose, buffers, partialTick);
         pose.popPose();
+        ShieldBubble.drawKart(entity, pose, buffers, partialTick, this.entityRenderDispatcher.camera);
         super.render(entity, entityYaw, partialTick, pose, buffers, packedLight);
     }
 }

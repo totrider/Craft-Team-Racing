@@ -99,11 +99,7 @@ def main():
     if not os.path.exists(BB):
         write_first_bbmodel()
     model = bbmodel.read(BB)
-    dump(os.path.join(ASSETS, "models", "item", "kart.json"), {
-        "textures": {"kart": f"{NS}:item/kart", "particle": f"{NS}:item/kart"},
-        "elements": bbmodel.elements(model),
-        "display": model["display"],
-    })
+    # models/item/kart.json (the spawn item's picture) is no longer made here: tools/make_kart_ctr.py makes it from the baseline kart, wheels and steering wheel included
     lp = os.path.join(ASSETS, "lang", "en_us.json")
     lang = json.load(open(lp, encoding="utf-8")) if os.path.exists(lp) else {}
     lang[f"item.{NS}.kart"] = "Kart"

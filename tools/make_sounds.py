@@ -25,7 +25,7 @@ rng = np.random.default_rng(1996)
 
 SOUNDS = ["engine_loop", "skid_loop", "turbo_loop", "hop", "land", "drift_start", "boost", "boost_fail", "meter_red", "meter_full",
           "hang_time", "wall_hit", "slam", "spin_out",
-          "light_count", "light_green", "fruit_pickup", "glass_shatter", "mine_drop", "tnt_hit", "tnt_land", "tnt_tick", "tnt_explode", "crate_break", "bomb_launch", "bomb_roll", "bomb_explode", "item_roll", "item_get", "item_get_juiced", "crash_soft", "crash_mid", "crash_hard", "fruit_arrive"]
+          "light_count", "light_green", "fruit_pickup", "glass_shatter", "mine_drop", "tnt_hit", "tnt_land", "tnt_tick", "tnt_explode", "crate_break", "bomb_launch", "bomb_roll", "bomb_explode", "shield_on", "shield_pop", "shield_roll", "missile_launch", "missile_fly", "missile_explode", "tracker_beep", "item_roll", "item_get", "item_get_charged", "crash_soft", "crash_mid", "crash_hard", "fruit_arrive"]
 
 
 # the race music's events: empty here (the mod ships no music), a resource pack puts its files in them (see docs/MUSIC.md)
@@ -279,6 +279,56 @@ def bomb_explode():
     return fade(norm(x, 0.95))
 
 
+def shield_on():
+    t = t_axis(0.45)
+    x = 0.7 * np.sin(2 * np.pi * chirp_phase(t, 300, 900)) * decay(t, 0.2) + 0.3 * lowpass(noise(len(t)), 3000) * decay(t, 0.1)
+    return fade(norm(x, 0.7))
+
+
+def shield_roll():
+    n = int(SR * 0.4)
+    x = bandpass(noise(n + 6000), 300, 1800)
+    x *= 0.6 + 0.4 * np.abs(np.sin(2 * np.pi * 6 * np.arange(len(x)) / SR))
+    xf = 3000
+    body = x[xf: xf + n].copy()
+    body[:xf] = body[:xf] * np.linspace(0, 1, xf) + x[:xf] * np.linspace(1, 0, xf)
+    return norm(body, 0.4)
+
+
+def shield_pop():
+    t = t_axis(0.25)
+    x = bandpass(noise(len(t)), 800, 6000) * decay(t, 0.05) + 0.5 * np.sin(2 * np.pi * chirp_phase(t, 900, 200)) * decay(t, 0.06)
+    return fade(norm(x, 0.8))
+
+
+def missile_launch():
+    t = t_axis(0.5)
+    x = lowpass(noise(len(t)), 3500) * decay(t, 0.12) + 0.6 * np.sin(2 * np.pi * chirp_phase(t, 260, 900)) * decay(t, 0.2)
+    return fade(norm(x, 0.8))
+
+
+def missile_fly():
+    n = int(SR * 0.4)
+    x = bandpass(noise(n + 6000), 700, 3500)
+    x *= 0.75 + 0.25 * np.sin(2 * np.pi * 25 * np.arange(len(x)) / SR)          # a rocket's rasp
+    xf = 3000
+    body = x[xf: xf + n].copy()
+    body[:xf] = body[:xf] * np.linspace(0, 1, xf) + x[:xf] * np.linspace(1, 0, xf)
+    return norm(body, 0.4)
+
+
+def missile_explode():
+    t = t_axis(0.9)
+    x = lowpass(noise(len(t)), 1800) * decay(t, 0.22) + 0.8 * np.sin(2 * np.pi * (110 - 50 * t) * t) * decay(t, 0.25)
+    x += 0.5 * bandpass(noise(len(t)), 2000, 8000) * decay(t, 0.05)
+    return fade(norm(x, 0.95))
+
+
+def tracker_beep():
+    t = t_axis(0.12)
+    return fade(norm(np.sin(2 * np.pi * 1320 * t) * decay(t, 0.08), 0.6))
+
+
 def crate_break():
     t = t_axis(0.35)
     x = bandpass(noise(len(t)), 400, 4000) * decay(t, 0.07) + 0.6 * np.sin(2 * np.pi * 180 * t) * decay(t, 0.05)
@@ -299,7 +349,7 @@ def item_get():
     return fade(norm(x, 0.65))
 
 
-def item_get_juiced():
+def item_get_charged():
     out = np.zeros(int(SR * 0.7))
     for i, f in enumerate((1568.0, 2093.0)):
         t = t_axis(0.5)

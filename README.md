@@ -46,7 +46,7 @@ extension (a different block, an item, a data pack entry or a setting), never a 
 ## Status
 | | |
 |---|---|
-| **Works today** | Drivable karts with CTR's physics (powerslide, hop, boosts, spin-outs, wall slams, hang time) and its engine, skid and boost sounds (original synthesised placeholders). Smooth driving over steps, slabs and stairs. Boost blocks. Track building with nodes, a Track Tool, test drive and validation, branching paths. Races: starting by driving in, an intro with a camera pan over the grid, random grid (the original's two rows of four), lights, start rev and start boost, laps, positions, HUD, respawn, a deliberate way out of a race. A Wrench to switch whether a kart can start races. The original's driving meters and HUD layout. Wumpa fruit, fruit crates and power-up crates with CTR's place-based roulette, and three power-ups: the **Turbo**, **TNT / Nitro crates** and **N. Brio's Beaker** (green and red). Race music and sounds from optional local resource packs. |
+| **Works today** | Drivable karts with CTR's physics (powerslide, hop, boosts, spin-outs, wall slams, hang time) and its engine, skid and boost sounds (original synthesised placeholders). Smooth driving over steps, slabs and stairs. Boost blocks. Track building with nodes, a Track Tool, test drive and validation, branching paths. Races: starting by driving in, an intro with a camera pan over the grid, random grid (the original's two rows of four), lights, start rev and start boost, laps, positions, HUD, respawn, a deliberate way out of a race. A Wrench to switch whether a kart can start races. The original's driving meters and HUD layout. Power Fruit, fruit crates and power-up crates with CTR's place-based roulette, and three power-ups: the **Turbo**, **TNT / Nitro crates** and **N. Brio's Beaker** (green and red). Race music and sounds from optional local resource packs. |
 | **Planned** | Survival crafting for karts, parts and boost pads. The other power-ups (bowling bombs, missiles, Power Shield, masks, warp orb, clock) and a battle mode. Time trials and ghosts. Kart tuning (CTR's four engine classes, data-driven) with a tuning profile on the Wrench. A Super Boost Pad (CTR's blue-flame pad) as an opt-in block. Wrong-way detection, a ready check. Sable / Aeronautics compatibility and claim support for building tracks on a server (see [Mod compatibility](#mod-compatibility)). A rulebook item for custom rule sets. The original's 3D weapon models (the flask, bomb, missile and others) as directional sprites in the local pack. |
 
 The full plan is in [docs/ROADMAP.md](docs/ROADMAP.md).
@@ -71,8 +71,8 @@ Everything is in the Craft Team Racing creative tab for now (survival recipes ar
 | **Track Tool** | Item | Links track nodes, resizes their boxes, opens the Start Node menu. See [Building a race track](#building-a-race-track). |
 | **Start Node** | Block (invisible) | Marks the start line and the way the grid faces; starts races when a kart drives into its area. |
 | **Checkpoint Node** | Block (invisible) | A checkpoint box a kart has to pass, in order. |
-| **Fruit Spot** | Block | Where a Wumpa fruit appears. Touch it with a kart for +1 (0 to 10 wumpa; ten make the kart "juiced": its power-ups come in their stronger forms). |
-| **Fruit Crate Spot** | Block | A crate with 5 to 8 wumpa; it grows back a second after it is broken. |
+| **Fruit Spot** | Block | Where a Power Fruit appears. Touch it with a kart for +1 (0 to 10 power fruit; ten make the kart "charged": its power-ups come in their stronger forms). |
+| **Fruit Crate Spot** | Block | A crate with 5 to 8 power fruit; it grows back a second after it is broken. |
 | **Power-up Crate Spot** | Block | A "?" crate. Break it while holding nothing and a roulette picks a power-up by your place in the race (CTR's tables). Right-click with the Wrench to make it always give one particular power-up (good for testing). |
 | **Wrench** | Item | Right-click a kart to switch whether it can start races (on by default). Kart tuning is planned for it. |
 
@@ -80,15 +80,15 @@ Everything is in the Craft Team Racing creative tab for now (survival recipes ar
 Spots are small marker blocks, **invisible unless you hold something to edit them with** (a spot block, the Track Tool, a node block or the Wrench).
 **A pickup appears at a spot while a race is on a track near it** (within 96 blocks of the track's line, the links between its nodes; configurable), and is gone when the race ends.
 A **redstone signal arriving at a spot arms it**: its pickup appears and stays, even after the signal is gone, and a new pulse brings back a fruit that was taken. A spot waits
-to respawn a crate while a kart (or a placed weapon) sits on it, as the original does. The **wumpa count and the held power-up belong to the kart**: they stay when you get out, and
+to respawn a crate while a kart (or a placed weapon) sits on it, as the original does. The **power fruit count and the held power-up belong to the kart**: they stay when you get out, and
 every race starts with nothing. The design, with what the original does, is in [docs/DESIGN_ITEMS.md](docs/DESIGN_ITEMS.md).
 
 #### Power-ups built so far
 | Power-up | What it does here |
 |---|---|
-| **Turbo** | A speed burst (CTR's turbo item; bigger with ten wumpa). |
-| **TNT / Nitro crate** | Dropped behind you. The first other kart to touch it gets it on its head; three seconds later it explodes and **blasts** that kart (a 2.4 s tumble with the bounces of the original's animation, the speed taken away, three wumpa lost). **Jump repeatedly** (8 to 10 times) to throw it off, and it explodes harmlessly where it lands. With ten wumpa it is a Nitro crate, which explodes at the first touch. |
-| **N. Brio's Beaker** | Dropped behind, or thrown in an arc when the forward key is held. A kart that touches it spins out and the beaker bursts. A red one (ten wumpa) also puts a **rain cloud** over the kart for 7.68 s (item roll, icy ground or jump lockout; the slow effect is not built yet). |
+| **Turbo** | A speed burst (CTR's turbo item; bigger with ten power fruit). |
+| **TNT / Nitro crate** | Dropped behind you. The first other kart to touch it gets it on its head; three seconds later it explodes and **blasts** that kart (a 2.4 s tumble with the bounces of the original's animation, the speed taken away, three power fruit lost). **Jump repeatedly** (8 to 10 times) to throw it off, and it explodes harmlessly where it lands. With ten power fruit it is a Nitro crate, which explodes at the first touch. |
+| **N. Brio's Beaker** | Dropped behind, or thrown in an arc when the forward key is held. A kart that touches it spins out and the beaker bursts. A red one (ten power fruit) also puts a **rain cloud** over the kart for 7.68 s (item roll, icy ground or jump lockout). |
 
 Placed weapons follow the original's mine pool: ten at a time (the oldest bursts when an eleventh is placed), cleared when a race ends; in free roam each player has their own
 ten and untouched ones go away after five minutes. They lie on the slope they come to rest on, and a kart left on a slope stays on it. The rest of the original's list (bombs, missiles,
@@ -105,7 +105,7 @@ shield, masks, warp orb, clock) is summarised in [docs/POWERUPS.md](docs/POWERUP
 ## The race screen
 A race begins with the original's intro: the intro jingle plays (from your local music pack) while the camera pans over the grid from the finish line and comes back to your own
 kart, and only then do the four start lamps appear. The HUD is laid out where the original game puts things, at the original's proportions whatever the window's shape: the clock and lap times top left, the first four racers (as skin heads) below them, your place in
-big digits bottom left, the four start lamps top centre, the held power-up top centre-left and the Wumpa count beside it. The driving meters (the dial with its needle, the grey powerslide box under it and the hang-time bar beside it) are the original's, drawn as it draws them,
+big digits bottom left, the four start lamps top centre, the held power-up top centre-left and the Power Fruit count beside it. The driving meters (the dial with its needle, the grey powerslide box under it and the hang-time bar beside it) are the original's, drawn as it draws them,
 in the bottom right corner. The one difference: the lap
 counter sits at the right edge above the driving meters, where the original shows its map (the track and racers on a map are planned for Xaero's mods).
 
@@ -248,8 +248,8 @@ in Options > Resource Packs. **Nothing from the disc is ever committed or put in
 
 **Textures:** `extract-ctr-textures.bat` does the same for the artwork and writes **two** packs: `CTRCraft-OriginalTextures` (the art scaled down to
 Minecraft sizes: 32 x 32 crate faces and half-size item icons; a crate is one block) and `CTRCraft-OriginalTextures-OriginalScale` (the art at its original size: 64 x 64 crate
-faces, 32 x 48 power-up icons). Enable one of them. They replace the crates (the weapon, fruit, TNT and Nitro crates are built from the real models' own side, top and bottom pictures), the power-up icons (turned upright, with the juiced
-pictures for ten wumpa), the Wumpa fruit sprite in the HUD and the start lamps. The Wumpa fruit in the world is replaced by a sprite: the original mesh, with its own vertex colours, rendered turning in 32 steps
+faces, 32 x 48 power-up icons). Enable one of them. They replace the crates (the weapon, fruit, TNT and Nitro crates are built from the real models' own side, top and bottom pictures), the power-up icons (turned upright, with the charged
+pictures for ten power fruit), the Power Fruit sprite in the HUD and the start lamps. The Power Fruit in the world is replaced by a sprite: the original mesh, with its own vertex colours, rendered turning in 32 steps
 (`tools/render_ctr_sprite.py`) as an animated texture on a flat quad that always faces the camera (the mod draws any single-quad pickup model that way). Spring,
 Invisibility and Super Engine have no icon in the game's shared art, so they keep the mod's.
 
@@ -257,7 +257,9 @@ Invisibility and Super Engine have no icon in the game's shared art, so they kee
 original does the same). Tyre smoke and backfires are **dust puffs** that step through five pictures, bright to dark; wheels on dirt throw **clods**; a kart rubbing a wall throws starburst **sparks**. Both have the mod's own art and, in the
 texture packs, the original's.
 
-**Blender:** `python tools/export_ctr_mesh.py` exports the crates and the Wumpa fruit (or any model of Crash Cove's level; with `--pack` the weapon models of the shared pack) from your disc as OBJ files with
+**Naming:** the mod's own words are **Power Fruit** (the fruit; ten make a kart **charged**). The original game's local resource pack translates them back with a lang file (the pack's `lang/en_us.json` overrides the mod's): "Wumpa" and "juiced", also in the block names. Text in the mod that names them uses the keys `ctrcraft.term.power_fruit` and `ctrcraft.term.charged`, so the pack's words show where it is enabled.
+
+**Blender:** `python tools/export_ctr_mesh.py` exports the crates and the Power Fruit (or any model of Crash Cove's level; with `--pack` the weapon models of the shared pack) from your disc as OBJ files with
 UVs, materials, textures and the game's shading colours in `local-assets/ctr-mesh/`, to compare with the mod's models in Blender. The crate faces in the
 texture packs are baked from those meshes, so the frame, rivets and panel are exactly the original's.
 
@@ -271,7 +273,7 @@ lose jingle that fades out after 30 seconds) from whatever resource packs put in
 sequencer and sound chip offline and renders each level's song to a looping Ogg. The Music slider of the sound options sets the volume. See [docs/MUSIC.md](docs/MUSIC.md).
 
 **Sounds:** the sound tool extracts: the kart's (engine, skid, turbo, hop, landing, boost, wall hits), the three kinds of kart-against-kart crash, the start
-lamps, the Wumpa fruit pickup, the crate break, the power-up roulette (looped while it runs) and the TNT, Nitro and beaker sounds. The same approach is planned for textures, models and UI elements as the
+lamps, the Power Fruit pickup, the crate break, the power-up roulette (looped while it runs) and the TNT, Nitro and beaker sounds. The same approach is planned for textures, models and UI elements as the
 mod grows, for those who want to replace the original artwork with the real look. The mod's own stand-in art for those (the pickup models, the
 power-up icons) is drawn from memory as look-alikes and is easy to replace in a resource pack of your own.
 
