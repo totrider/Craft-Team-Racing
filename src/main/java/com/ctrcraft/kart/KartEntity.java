@@ -48,6 +48,26 @@ public class KartEntity extends Entity {
     private static final EntityDataAccessor<Integer> DATA_SEAT_COLOUR =
             SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.INT);
     public static final int DEFAULT_SEAT_COLOUR = 0xF0C43C;
+    /** The kart's upgrades: which are installed (an item used on the kart) and which of them are switched on. */
+    /** The mask preference: false light (Aku Aku, the good mask), true dark (Uka Uka, the evil one). Seen by everyone, so another player's mask shows as they chose. */
+    private static final EntityDataAccessor<Boolean> DATA_DARK_MASK = SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_UPGRADES = SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.INT);
+    public static final int UP_OFFROAD_UNLOCKED = 1;
+    public static final int UP_OFFROAD_ON = 2;
+    public static final int UP_BUMPER_UNLOCKED = 4;
+    public static final int UP_BUMPER_ON = 8;
+    /** Floater: the kart floats on water like a boat and has no water slowdown. */
+    public static final int UP_FLOATER_UNLOCKED = 16;
+    public static final int UP_FLOATER_ON = 32;
+    /** Jump Spring: a jump of the kart's own on a key (the spring's high jump). */
+    public static final int UP_SPRING_UNLOCKED = 64;
+    public static final int UP_SPRING_ON = 128;
+    /** Low Gravity Module: unlocked here; its strength, 0 to 10 tenths, is in bits 12 to 15. */
+    public static final int UP_GRAVITY_UNLOCKED = 256;
+    public static final int UP_GRAVITY_SHIFT = 12;
+    /** The Obsidian Floater replaced the Floater: it floats on lava as well and keeps the rider from lava's damage and fire. */
+    public static final int UP_OBSIDIAN = 512;
+    public static final int UP_GRAVITY_DEFAULT = 5 << UP_GRAVITY_SHIFT;
     private static final EntityDataAccessor<Integer> DATA_SHIELD = SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_TILT =
             SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.INT);
@@ -73,6 +93,8 @@ public class KartEntity extends Entity {
         builder.define(DATA_SHIELD, 0);
         builder.define(DATA_COLOUR, DEFAULT_COLOUR);
         builder.define(DATA_SEAT_COLOUR, DEFAULT_SEAT_COLOUR);
+        builder.define(DATA_UPGRADES, 0);
+        builder.define(DATA_DARK_MASK, false);
     }
 
     public int colour() {
@@ -265,29 +287,106 @@ public class KartEntity extends Entity {
         return items;
     }
 
-    /** Whether driving this kart into a Start node's area can start a race (the Wrench switches it). Kept on the server. */
+    /** Whether driving this kart into a Start node's area can start a race (the Wrench's screen sets it). Kept on the server. */
     private boolean canStartRaces = true;
 
     public boolean canStartRaces() {
         return canStartRaces;
     }
 
+    public void setCanStartRaces(boolean on) {
+        canStartRaces = on;
+    }
+
+    public boolean darkMask() {
+        return entityData.get(DATA_DARK_MASK);
+    }
+
+    public void setDarkMask(boolean dark) {
+        entityData.set(DATA_DARK_MASK, dark);
+    }
+
+    public int upgrades() {
+        return entityData.get(DATA_UPGRADES);
+    }
+
+    public void setUpgrades(int bits) {
+        entityData.set(DATA_UPGRADES, bits);
+    }
+
+    /** Offroad tires are installed and switched on: the kart ignores rough terrain (a race's own rules override this). */
+    public boolean offroadOn() {
+        return (upgrades() & (UP_OFFROAD_UNLOCKED | UP_OFFROAD_ON)) == (UP_OFFROAD_UNLOCKED | UP_OFFROAD_ON);
+    }
+
+    /** A soft bumper is installed and switched on: the kart does no collision damage to the entities it bumps into (a race's own rules override this). */
+    public boolean softBumperOn() {
+        return (upgrades() & (UP_BUMPER_UNLOCKED | UP_BUMPER_ON)) == (UP_BUMPER_UNLOCKED | UP_BUMPER_ON);
+    }
+
+    public boolean floaterOn() {
+        return (upgrades() & (UP_FLOATER_UNLOCKED | UP_FLOATER_ON)) == (UP_FLOATER_UNLOCKED | UP_FLOATER_ON);
+    }
+
+    /** 0 does not float, 1 floats on water, 2 floats on water and lava (the Obsidian Floater). */
+    public int floaterMode() {
+        return !floaterOn() ? 0 : (upgrades() & UP_OBSIDIAN) != 0 ? 2 : 1;
+    }
+
+    public boolean springOn() {
+        return (upgrades() & (UP_SPRING_UNLOCKED | UP_SPRING_ON)) == (UP_SPRING_UNLOCKED | UP_SPRING_ON);
+    }
+
+    /** The Low Gravity Module's strength in tenths (0 when it is not installed or set to 0). */
+    public int gravityStrength() {
+        return (upgrades() & UP_GRAVITY_UNLOCKED) == 0 ? 0 : (upgrades() >> UP_GRAVITY_SHIFT) & 15;
+    }
+
     @Override
     public InteractionResult interact(Player player, InteractionHand hand) {
         if (player.getItemInHand(hand).getItem() instanceof WrenchItem) {
+            // the Wrench opens the kart's settings screen (the screen sends its choices back: KartSettingsPayload)
+            if (!level().isClientSide && player instanceof net.minecraft.server.level.ServerPlayer sp) {
+                net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(sp, new com.ctrcraft.net.OpenKartSettingsPayload(getId(), canStartRaces, upgrades(), darkMask()));
+            }
+            return InteractionResult.sidedSuccess(level().isClientSide);
+        }
+        // an upgrade used on the kart is installed in it (it unlocks the switch in the settings screen); the item is used up
+        net.minecraft.world.item.ItemStack held = player.getItemInHand(hand);
+        // an installed upgrade starts switched on (the Low Gravity Module at 50 %)
+        int unlock = 0;
+        int defaults = 0;
+        int check = -1;
+        if (held.is(ModItems.OFFROAD_TIRES.get())) { unlock = UP_OFFROAD_UNLOCKED; defaults = UP_OFFROAD_ON; }
+        else if (held.is(ModItems.SOFT_BUMPER.get())) { unlock = UP_BUMPER_UNLOCKED; defaults = UP_BUMPER_ON; }
+        else if (held.is(ModItems.FLOATER.get())) { unlock = UP_FLOATER_UNLOCKED; defaults = UP_FLOATER_ON; }
+        else if (held.is(ModItems.OBSIDIAN_FLOATER.get())) {
+            // replaces the Floater: the same switch, now for lava as well (a kart with no Floater gets the switch, on)
+            unlock = UP_FLOATER_UNLOCKED | UP_OBSIDIAN;
+            defaults = (upgrades() & UP_FLOATER_UNLOCKED) != 0 ? 0 : UP_FLOATER_ON;
+            check = UP_OBSIDIAN;
+        }
+        else if (held.is(ModItems.JUMP_SPRING.get())) { unlock = UP_SPRING_UNLOCKED; defaults = UP_SPRING_ON; }
+        else if (held.is(ModItems.LOW_GRAVITY_MODULE.get())) { unlock = UP_GRAVITY_UNLOCKED; defaults = UP_GRAVITY_DEFAULT; }
+        if (unlock != 0) {
             if (!level().isClientSide) {
-                canStartRaces = !canStartRaces;
-                player.displayClientMessage(net.minecraft.network.chat.Component.translatable(
-                        canStartRaces ? "message.ctrcraft.kart.races_on" : "message.ctrcraft.kart.races_off"), true);
+                if ((upgrades() & (check == -1 ? unlock : check)) != 0) {
+                    player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.ctrcraft.kart.upgrade_installed"), true);
+                } else {
+                    setUpgrades(upgrades() | unlock | defaults);
+                    if (!player.getAbilities().instabuild) player.getItemInHand(hand).shrink(1);
+                    player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.ctrcraft.kart.upgrade_added"), true);
+                }
             }
             return InteractionResult.sidedSuccess(level().isClientSide);
         }
         if (player.getItemInHand(hand).getItem() instanceof net.minecraft.world.item.DyeItem dye) {
             // a dye in the hand paints the kart: the tub and struts, or the seat when sneaking
             if (!level().isClientSide) {
-                int rgb = dye.getDyeColor().getTextureDiffuseColor();
-                if (player.isSecondaryUseActive()) setSeatColour(rgb);
-                else setColour(rgb);
+                int rgb = dye.getDyeColor().getTextureDiffuseColor() & 0xFFFFFF;
+                // the dye mixes into the colour already there, as in the crafting grid (KartPaint.mix)
+                if (player.isSecondaryUseActive()) setSeatColour(KartPaint.mix(seatColour(), DEFAULT_SEAT_COLOUR, rgb));
+                else setColour(KartPaint.mix(colour(), DEFAULT_COLOUR, rgb));
                 if (!player.getAbilities().instabuild) player.getItemInHand(hand).shrink(1);
             }
             return InteractionResult.sidedSuccess(level().isClientSide);
@@ -387,19 +486,64 @@ public class KartEntity extends Entity {
         if (isInvulnerableTo(source) || level().isClientSide || isRemoved()) {
             return true;
         }
-        if (source.getEntity() instanceof Player player) {
-            if (!player.getAbilities().instabuild) {
-                spawnAtLocation(ModItems.KART.get());
+        // a hit with the hand: crouching with the Wrench picks an empty kart up (a creative player may pick up a driven one); any other punch does nothing, and a shot arrow or a
+        // thrown trident is not a punch (docs/DAMAGE.md)
+        if (source.getEntity() instanceof Player player && source.getDirectEntity() == player) {
+            if (player.isShiftKeyDown() && player.getMainHandItem().is(ModItems.WRENCH.get()) && (getControllingPassenger() == null || player.getAbilities().instabuild)) {
+                if (player.getAbilities().instabuild) {
+                    // creative: the kart goes into the inventory too, with its upgrades and paint (nothing is dropped if the stack goes in)
+                    ItemStack stack = toItem();
+                    if (!player.getInventory().add(stack)) player.drop(stack, false);
+                    discard();
+                } else {
+                    breakApart();
+                }
             }
-            discard();
             return true;
         }
-        return false;
+        return com.ctrcraft.kart.KartDamage.react(this, source);
+    }
+
+    /** The kart comes apart into its item (picked up, or destroyed by critical damage out of a race). */
+    public void breakApart() {
+        if (!isRemoved()) {
+            spawnAtLocation(toItem());
+            discard();
+        }
     }
 
     @Override
     public ItemStack getPickResult() {
-        return new ItemStack(ModItems.KART.get());
+        return toItem();
+    }
+
+    /** The kart as an item, carrying what it was fitted with: upgrades and their switches, paint, the mask preference, whether it can start races. Placing the item restores it. */
+    public ItemStack toItem() {
+        ItemStack stack = new ItemStack(ModItems.KART.get());
+        CompoundTag tag = new CompoundTag();
+        tag.putInt("Upgrades", upgrades());
+        tag.putBoolean("DarkMask", darkMask());
+        tag.putBoolean("CanStartRaces", canStartRaces);
+        stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(tag));
+        if (colour() != DEFAULT_COLOUR || seatColour() != DEFAULT_SEAT_COLOUR) stack.set(com.ctrcraft.ModComponents.KART_PAINT.get(), new KartPaint(colour(), seatColour()));
+        return stack;
+    }
+
+    /** What {@link #toItem} saved (and its paint, which crafting may have changed), put back when the item is placed. */
+    public void applyItem(ItemStack stack) {
+        KartPaint paint = stack.get(com.ctrcraft.ModComponents.KART_PAINT.get());
+        if (paint != null) {
+            setColour(paint.frame());
+            setSeatColour(paint.seat());
+        }
+        var data = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+        if (data != null) applyItemData(data.copyTag());
+    }
+
+    private void applyItemData(CompoundTag tag) {
+        if (tag.contains("Upgrades")) setUpgrades(tag.getInt("Upgrades"));
+        if (tag.contains("DarkMask")) setDarkMask(tag.getBoolean("DarkMask"));
+        if (tag.contains("CanStartRaces")) canStartRaces = tag.getBoolean("CanStartRaces");
     }
 
     @Override
@@ -408,6 +552,8 @@ public class KartEntity extends Entity {
         setColour(tag.contains("Colour") ? tag.getInt("Colour") : DEFAULT_COLOUR);
         setSeatColour(tag.contains("SeatColour") ? tag.getInt("SeatColour") : DEFAULT_SEAT_COLOUR);
         canStartRaces = !tag.contains("CanStartRaces") || tag.getBoolean("CanStartRaces");
+        setUpgrades(tag.getInt("Upgrades"));
+        setDarkMask(tag.getBoolean("DarkMask"));
         items.powerFruit = Math.max(0, Math.min(com.ctrcraft.pickup.ItemManager.MAX_POWER_FRUIT, tag.contains("PowerFruit") ? tag.getInt("PowerFruit") : tag.getInt("Wumpa")));       // "Wumpa": the key older saves used
         items.held = tag.getString("HeldPowerup");
     }
@@ -418,6 +564,8 @@ public class KartEntity extends Entity {
         tag.putInt("Colour", colour());
         tag.putInt("SeatColour", seatColour());
         tag.putBoolean("CanStartRaces", canStartRaces);
+        tag.putInt("Upgrades", upgrades());
+        tag.putBoolean("DarkMask", darkMask());
         tag.putInt("PowerFruit", items.powerFruit);
         tag.putString("HeldPowerup", items.held);
     }

@@ -43,6 +43,19 @@ public final class ModBlocks {
     public static final DeferredItem<BlockItem> BOOST_SLAB_ITEM = item("boost_slab", BOOST_SLAB);
     public static final DeferredItem<BlockItem> BOOST_STAIRS_ITEM = item("boost_stairs", BOOST_STAIRS);
 
+    /** The Super Boost family (an extension: CTR has the super turbo pad but never draws it differently): the same four blocks, in the {@code ctrcraft:super_turbo_pad} tag. */
+    public static final DeferredBlock<BoostPadBlock> SUPER_BOOST_PAD = BLOCKS.register("super_boost_pad", () -> new BoostPadBlock(
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(0.5F).sound(SoundType.METAL).noCollission().noOcclusion()));
+    public static final DeferredBlock<BoostBlock> SUPER_BOOST_BLOCK = BLOCKS.register("super_boost_block", () -> new BoostBlock(solid().mapColor(MapColor.COLOR_CYAN)));
+    public static final DeferredBlock<BoostSlabBlock> SUPER_BOOST_SLAB = BLOCKS.register("super_boost_slab", () -> new BoostSlabBlock(solid().mapColor(MapColor.COLOR_CYAN)));
+    public static final DeferredBlock<BoostStairsBlock> SUPER_BOOST_STAIRS = BLOCKS.register("super_boost_stairs",
+            () -> new BoostStairsBlock(SUPER_BOOST_BLOCK.get().defaultBlockState(), solid().mapColor(MapColor.COLOR_CYAN)));
+
+    public static final DeferredItem<BlockItem> SUPER_BOOST_PAD_ITEM = item("super_boost_pad", SUPER_BOOST_PAD);
+    public static final DeferredItem<BlockItem> SUPER_BOOST_BLOCK_ITEM = item("super_boost_block", SUPER_BOOST_BLOCK);
+    public static final DeferredItem<BlockItem> SUPER_BOOST_SLAB_ITEM = item("super_boost_slab", SUPER_BOOST_SLAB);
+    public static final DeferredItem<BlockItem> SUPER_BOOST_STAIRS_ITEM = item("super_boost_stairs", SUPER_BOOST_STAIRS);
+
     /** Track nodes: invisible, no collision; only seen with the Track Tool in hand. */
     public static final DeferredBlock<com.ctrcraft.track.TrackNodeBlock> START_NODE = BLOCKS.register("start_node",
             () -> new com.ctrcraft.track.TrackNodeBlock(nodeProps(), com.ctrcraft.track.TrackGraph.Kind.START));
@@ -62,7 +75,8 @@ public final class ModBlocks {
             () -> new com.ctrcraft.pickup.PickupSpotBlock(spotProps(), com.ctrcraft.pickup.PickupKind.POWERUP_CRATE));
     public static final DeferredItem<BlockItem> FRUIT_SPOT_ITEM = item("fruit_spot", FRUIT_SPOT);
     public static final DeferredItem<BlockItem> FRUIT_CRATE_SPOT_ITEM = item("fruit_crate_spot", FRUIT_CRATE_SPOT);
-    public static final DeferredItem<BlockItem> POWERUP_CRATE_SPOT_ITEM = item("powerup_crate_spot", POWERUP_CRATE_SPOT);
+    public static final DeferredItem<BlockItem> POWERUP_CRATE_SPOT_ITEM = ModItems.ITEMS.register("powerup_crate_spot",
+            () -> new com.ctrcraft.pickup.PowerupCrateSpotItem(POWERUP_CRATE_SPOT.get(), new Item.Properties()));
 
     private static BlockBehaviour.Properties spotProps() {
         return BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(0.5F).sound(SoundType.METAL).noCollission().noOcclusion();

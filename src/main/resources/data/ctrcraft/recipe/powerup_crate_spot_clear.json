@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [ { "item": "ctrcraft:powerup_crate_spot" } ],
+  "result": { "id": "ctrcraft:powerup_crate_spot", "count": 1 }
+}

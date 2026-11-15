@@ -45,6 +45,28 @@ public final class GuiTextures {
         SIZES.clear();
     }
 
+    /** The picture of a power-up that has none of its own: a question mark (textures/gui/power/unknown.png; a pack may replace it). */
+    private static final ResourceLocation UNKNOWN_POWER = ResourceLocation.fromNamespaceAndPath("ctrcraft", "textures/gui/power/unknown.png");
+
+    /** The mask preference of the kart this client last drove (the icons everywhere follow it). */
+    private static boolean darkMask;
+
+    /** The HUD icon of a power-up id, or the question mark when there is none. */
+    public static ResourceLocation powerIcon(String id) {
+        // the mask is the light one (Aku Aku) or the dark one (Uka Uka) as the player's own kart is set to
+        if (id.equals(com.ctrcraft.items.HeldItem.MASK.id())) {
+            var player = net.minecraft.client.Minecraft.getInstance().player;
+            if (player != null && player.getVehicle() instanceof com.ctrcraft.kart.KartEntity kart) darkMask = kart.darkMask();
+            if (darkMask) id = id + "_dark";
+        }
+        ResourceLocation rl = ResourceLocation.tryParse(id);
+        if (rl != null) {
+            ResourceLocation tex = rl.withPath("textures/gui/power/" + rl.getPath() + ".png");
+            if (size(tex) != null) return tex;
+        }
+        return UNKNOWN_POWER;
+    }
+
     private static final ResourceLocation POWER_FRUIT_SPRITE = ResourceLocation.fromNamespaceAndPath("ctrcraft", "item/power_fruit_sprite");
 
     /**

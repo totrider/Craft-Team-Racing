@@ -22,6 +22,8 @@ public final class ModTags {
     public static final TagKey<Block> SURFACE_MUD = tag("surface/mud");
     public static final TagKey<Block> SURFACE_SIDESLIP = tag("surface/sideslip");
     public static final TagKey<Block> TURBO_PAD = tag("turbo_pad");
+    /** The super turbo pad: CTR's second kind of pad (more speed, a shorter push): the blocks of the Super Boost family. */
+    public static final TagKey<Block> SUPER_TURBO_PAD = tag("super_turbo_pad");
 
     private static TagKey<Block> tag(String path) {
         return TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(CtrCraftMod.MODID, path));

@@ -29,6 +29,10 @@ public final class CtrCraftClient {
     public static final KeyMapping KEY_BRAKE =
             new KeyMapping("key.ctrcraft.brake", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_X, CATEGORY);
 
+    /** The Jump Spring upgrade: the kart's own high jump. */
+    public static final KeyMapping KEY_SPRING =
+            new KeyMapping("key.ctrcraft.spring", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, CATEGORY);
+
     /** During a race: back to the last checkpoint you passed. */
     public static final KeyMapping KEY_RESPAWN =
             new KeyMapping("key.ctrcraft.respawn", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, CATEGORY);
@@ -59,6 +63,16 @@ public final class CtrCraftClient {
         event.register(PickupRenderer.POWER_FRUIT);
         event.register(PickupRenderer.FRUIT_CRATE);
         event.register(PickupRenderer.POWERUP_CRATE);
+        event.register(PickupRenderer.POWERUP_CRATE_BLANK);
+    }
+
+    /** The kart item shows its paint: the frame's faces (tint 0) and the seat's (tint 1). */
+    @SubscribeEvent
+    public static void registerItemColours(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item event) {
+        event.register((stack, tint) -> {
+            com.ctrcraft.kart.KartPaint paint = stack.getOrDefault(com.ctrcraft.ModComponents.KART_PAINT.get(), com.ctrcraft.kart.KartPaint.DEFAULT);
+            return tint == 0 ? 0xFF000000 | paint.frame() : tint == 1 ? 0xFF000000 | paint.seat() : -1;
+        }, com.ctrcraft.ModItems.KART.get());
     }
 
     @SubscribeEvent
@@ -129,6 +143,7 @@ public final class CtrCraftClient {
     @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event) {
         event.register(KEY_HOP2);
+        event.register(KEY_SPRING);
         event.register(KEY_BRAKE);
         event.register(KEY_RESPAWN);
         event.register(KEY_LEAVE);

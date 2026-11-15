@@ -59,8 +59,27 @@ public final class ItemManager {
 
     /** A beaker hit the kart: it spins out. */
     public static final int EFFECT_SPIN = 6;
+    /** A kart under a turbo item boost ran into this one: flat for 3.84 s (VEH_PICK_DAMAGE_SQUISH), with a spin out. */
+    public static final int EFFECT_SQUISH = 7;
+    /** The kart that squashed another is thrown into a high jump (FORCED_JUMP_HIGH). */
+    public static final int EFFECT_HIGH_JUMP = 8;
+    /** The kart is set on fire (VEH_PICK_DAMAGE_BURN): a spin out, a slow for 3.84 s, flames and smoke. */
+    public static final int EFFECT_BURN = 9;
     /** The red beaker's rain cloud: this plus the RAIN_CLOUD_EFFECT_* number (0 slow, 1 item roll, 2 icy ground, 3 jump lockout). */
     public static final int EFFECT_CLOUD = 10;
+    /**
+     * The Clock (VehPickupItem_ShootNow): this plus the victim's place (0 is first, up to 7) times two plus one for a charged one. Taken after the spin it comes with
+     * (RB_Hazard_HurtDriver(victim, 1, ...): a spin, which a shield takes instead).
+     */
+    public static final int EFFECT_CLOCK = 20;
+    /** CLOCK_HURT_DURATION_NORMAL 0x1e00 and _JUICED 0x2d00 ms, in game ticks. */
+    public static final int CLOCK_TICKS = 154;
+    public static final int CLOCK_TICKS_CHARGED = 230;
+    /**
+     * Out of a race, a "global" effect (the Clock, and the ones to come) has no field of racers to reach, so it reaches the karts within this many blocks of the user instead.
+     * In a race it reaches every other racer, as the original does.
+     */
+    public static final double GLOBAL_EFFECT_RADIUS = 48.0;
     /** rcloud->timeMS = 0x1e00: 7.68 s in game ticks. */
     public static final int CLOUD_TICKS = 154;
 
@@ -120,7 +139,7 @@ public final class ItemManager {
 
     /** The effects that hurt: slow, blast, spin and the rain cloud's. */
     private static boolean harmful(int effect) {
-        return effect == EFFECT_SLOW || effect == EFFECT_BLAST || effect == EFFECT_SPIN || effect >= EFFECT_CLOUD;
+        return effect == EFFECT_SLOW || effect == EFFECT_BLAST || effect == EFFECT_SPIN || effect == EFFECT_SQUISH || effect == EFFECT_BURN || effect >= EFFECT_CLOUD;
     }
 
     private static final int SHIELD_TICKS = 240;            // SHIELD_DURATION_NORMAL 0x2d00 ms at 32 ms a frame: 360 frames, 12 seconds
@@ -188,6 +207,12 @@ public final class ItemManager {
         int effect;
         int effectSeq;
         int cloudTicks;
+        /** The turbo item's boost, ticks left (0x960 ms): ACTION_TURBO_ITEM, which lets this kart squash another it runs into. */
+        int turboItemTicks;
+        /** The Clock's hold on this kart: ticks left (no weapon can be fired, a crate gives nothing), and the effect that tells the client's sim how hard it slows, after a moment's delay. */
+        int clockTicks;
+        int clockPending;
+        int clockDelay;
         int cloudPending;
         int cloudDelay;
         /** HELD_ITEM_STACK_COUNT: the shots a bomb_3x / missile_3x still has (numHeldItems), 0 for every other item. */
@@ -203,6 +228,9 @@ public final class ItemManager {
 
         void clear() {
             cloudTicks = 0;
+            turboItemTicks = 0;
+            clockTicks = 0;
+            clockDelay = 0;
             bomb = null;
             powerFruit = 0;
             held = "";
@@ -221,7 +249,11 @@ public final class ItemManager {
     private static final Map<UUID, UUID> SYNCED = new HashMap<>();
     private static final Random RANDOM = new Random();
     /** The rules every race uses until the rulebook can set them per track. */
-    private static final RuleSet RULES = RuleSet.CTR;
+    /** The rules of the race a player is in, or CTR's. */
+    public static RuleSet rules(ServerPlayer p) {
+        RuleSet r = RaceManager.rulesOf(p.getUUID());
+        return r == null ? RuleSet.CTR : r;
+    }
 
     /** The display name of a power-up id ({@code ctrcraft:turbo} is the {@code power.ctrcraft.turbo} entry in the lang file). */
     public static Component nameOf(String id) {
@@ -257,9 +289,10 @@ public final class ItemManager {
                 crateBreak(level, pickup);
             }
             case POWERUP_CRATE -> {
-                if (s.held.isEmpty() && s.roll == 0) {
+                // RB_Crate: a received Clock suppresses the reward, but the crate is still used up
+                if (s.clockTicks == 0 && s.held.isEmpty() && s.roll == 0) {
                     s.roll = ROLL_TICKS;
-                    s.fixed = spot.itemId();         // the roulette's sound is the driver's client's (RouletteSound): a loop for as long as it runs
+                    s.fixed = spot.pick(RANDOM);         // the roulette's sound is the driver's client's (RouletteSound): a loop for as long as it runs
                 }
                 crateBreak(level, pickup);
             }
@@ -292,11 +325,13 @@ public final class ItemManager {
             return;
         }
         if (s.held.isEmpty() || s.roll > 0 || s.cooldown > 0) return;
+        if (s.clockTicks > 0) return;              // VehPhysProc: a driver the Clock has hit cannot fire a weapon (clockReceive != 0)
         // the 3x items are fired one at a time as the plain bomb or missile (VehPickupItem_Shoot: Bomb3x and Missile3x become the one-shot weapons)
         String id = s.held.equals(HeldItem.BOMB_3X.id()) ? HeldItem.BOMB.id() : s.held.equals(HeldItem.MISSILE_3X.id()) ? HeldItem.MISSILE.id() : s.held;
         if (id.equals(HeldItem.TURBO.id())) {
             // VehPickupItem_ShootNow: VehFire_Increment(0x960, ..., 0x80), 0x100 with ten power fruit
             s.effect = s.powerFruit >= CHARGED ? EFFECT_TURBO_CHARGED : EFFECT_TURBO;
+            s.turboItemTicks = 48;
             s.effectSeq++;
             s.held = "";
             sync(p, s);
@@ -368,12 +403,65 @@ public final class ItemManager {
             }
             s.held = "";
             sync(p, s);
+        } else if (id.equals(HeldItem.CLOCK.id())) {
+            useClock(p, s);
         } else {
             // not built yet: it is used up all the same, so the roulette and the icons can be tested one after another
             p.displayClientMessage(Component.translatable("message.ctrcraft.item.not_built", nameOf(s.held)), true);
             s.held = "";
             sync(p, s);
         }
+    }
+
+    /**
+     * The Clock (VehPickupItem_ShootNow, WEAPON_ID_CLOCK): every other racer is hit as by a spin (a shield takes it instead, and then nothing else happens to that racer) and gets the
+     * clock timer, 7.68 s (11.52 s with ten power fruit): the top speed is cut by a bigger amount the nearer to first the racer is, no weapon can be fired and a crate gives nothing.
+     * Out of a race it reaches the karts within {@link #GLOBAL_EFFECT_RADIUS} of the user.
+     */
+    private static void useClock(ServerPlayer p, State s) {
+        boolean charged = s.powerFruit >= CHARGED;
+        p.serverLevel().playSound(null, p.blockPosition(), ModSounds.CLOCK.get(), SoundSource.PLAYERS, 1.0F, 1.0F);          // OtherFX_Play(SOUND_CLOCK)
+        java.util.List<ServerPlayer> victims = RaceManager.opponents(p);
+        if (victims == null) {
+            victims = new java.util.ArrayList<>();
+            for (ServerPlayer o : p.serverLevel().players()) {
+                if (o != p && o.getVehicle() instanceof KartEntity && RaceManager.standing(o) == null && o.distanceToSqr(p) <= GLOBAL_EFFECT_RADIUS * GLOBAL_EFFECT_RADIUS) victims.add(o);
+            }
+        }
+        for (ServerPlayer v : victims) {
+            State vs = state(v);
+            if (vs == null) continue;
+            if (!applyEffect(v, EFFECT_SPIN)) continue;                       // the shield (or the moment after it) took the hit: no clock
+            losePowerFruit(v, 1);                                              // VehPhysProc_SpinFirst_Init: a spin costs a power fruit
+            RaceManager.Standing st = RaceManager.standing(v);
+            int rank = st == null ? 0 : Math.min(7, st.rank());
+            vs.clockTicks = charged ? CLOCK_TICKS_CHARGED : CLOCK_TICKS;
+            vs.clockPending = EFFECT_CLOCK + rank * 2 + (charged ? 1 : 0);
+            vs.clockDelay = 4;                                                 // a moment after the spin: the client takes one effect at a time
+        }
+        s.held = "";
+        sync(p, s);
+    }
+
+    private static final Map<String, Integer> LAST_SQUISH = new HashMap<>();
+
+    /**
+     * VehPhysCrash_Attack, the turbo squish: a kart under a turbo item boost ran into another one that has no boost going (the impact over 0xa00 is the attacker's client's report):
+     * the other is squashed (damage type 3, which a shield takes instead) and the attacker is thrown into a high jump.
+     */
+    public static void squish(ServerPlayer attacker, ServerPlayer victim, KartEntity victimKart) {
+        State s = state(attacker);
+        State vs = state(victim);
+        if (s == null || vs == null || attacker == victim || s.turboItemTicks <= 0) return;
+        if (com.ctrcraft.kart.KartFlags.has(victimKart.getVisualFlags(), com.ctrcraft.kart.KartFlags.BOOSTING)) return;          // driver1->reserves == 0
+        int now = attacker.server.getTickCount();
+        Integer last = LAST_SQUISH.put(attacker.getUUID() + ":" + victim.getUUID(), now);
+        if (last != null && now - last < 40) return;
+        if (!applyEffect(victim, EFFECT_SQUISH)) return;                       // the shield (or the moment after it) took the hit
+        losePowerFruit(victim, 1);                                             // a squash starts with a spin, which costs a power fruit
+        s.effect = EFFECT_HIGH_JUMP;
+        s.effectSeq++;
+        sync(attacker, s);
     }
 
     /** A shot of a stack is used: one fewer left and a short cooldown (noItemTimer 5 frames); the last one takes the item away. A plain item goes at once. */
@@ -388,7 +476,7 @@ public final class ItemManager {
     }
 
     /** HELD_ITEM_STACK_COUNT. */
-    public static final int STACK_COUNT = 3;
+    public static final int STACK_COUNT = com.ctrcraft.items.PowerupRegistry.stackCount(HeldItem.BOMB_3X.id());
 
     private static void sync(ServerPlayer p, State s) {
         PacketDistributor.sendToPlayer(p, new ItemStatePayload(s.powerFruit, s.held, s.roll, s.effect, s.effectSeq, s.count));
@@ -425,13 +513,16 @@ public final class ItemManager {
                 setKartShield(p, s);
             }
             if (s.cloudTicks > 0) s.cloudTicks--;
+            if (s.turboItemTicks > 0) s.turboItemTicks--;
+            if (s.clockTicks > 0) s.clockTicks--;
+            if (s.clockDelay > 0 && --s.clockDelay == 0) applyEffect(p, s.clockPending);
             if (s.cloudDelay > 0 && --s.cloudDelay == 0) applyEffect(p, s.cloudPending);
             if (s.roll > 0 && --s.roll == 0) {
                 if (!s.fixed.isEmpty()) {
                     s.held = s.fixed;
                 } else {
                     RaceManager.Standing st = RaceManager.standing(p);
-                    s.held = st == null ? RULES.powerups().draw(1, 0, 1, RANDOM) : RULES.powerups().draw(st.field(), st.rank(), st.lapIndex(), RANDOM);
+                    s.held = st == null ? rules(p).powerups().draw(1, 0, 1, RANDOM) : rules(p).powerups().draw(st.field(), st.rank(), st.lapIndex(), RANDOM);
                 }
                 s.count = s.held.equals(HeldItem.BOMB_3X.id()) || s.held.equals(HeldItem.MISSILE_3X.id()) ? STACK_COUNT : 0;       // VehPhysGeneral: numHeldItems = HELD_ITEM_STACK_COUNT
                 // VehPhysProc: the item is announced with OtherFX 0x5E, or 0x41 for a kart with ten power fruit

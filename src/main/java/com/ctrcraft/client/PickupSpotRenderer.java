@@ -42,5 +42,12 @@ public class PickupSpotRenderer implements BlockEntityRenderer<PickupSpotBlockEn
         BakedModel model = mc.getBlockRenderer().getBlockModel(state);
         mc.getBlockRenderer().getModelRenderer().renderModel(pose.last(), buffers.getBuffer(RenderType.cutout()), state, model, 1.0F, 1.0F, 1.0F, light,
                 OverlayTexture.NO_OVERLAY);
+        // a power-up crate spot that always gives one power-up shows its icon above it (so it can be read from a distance while building)
+        if (be.kind() == com.ctrcraft.pickup.PickupKind.POWERUP_CRATE && !be.itemId().isEmpty()) {
+            pose.pushPose();
+            pose.translate(0.5, 0.0, 0.5);
+            IconBillboard.draw(pose, buffers, be.itemId(), 1.35, 0.6F);
+            pose.popPose();
+        }
     }
 }

@@ -47,9 +47,34 @@ public class PickupSpotBlockEntity extends BlockEntity {
         return itemId;
     }
 
+    /** The power-ups this spot gives, one of them at random per crate (none: the general drop table). */
+    public String pick(java.util.Random random) {
+        return com.ctrcraft.items.CrateItems.pick(itemId, random);
+    }
+
     public void setItemId(String id) {
-        this.itemId = id;
+        String normalized = com.ctrcraft.items.CrateItems.normalize(id);
+        boolean changed = !normalized.equals(this.itemId);
+        this.itemId = normalized;
         setChanged();
+        // the crate that is standing there was made with the old setting: it goes, and the next tick brings a new one (a crate already taken keeps its respawn timer)
+        if (changed && pickup != null && level instanceof net.minecraft.server.level.ServerLevel server) {
+            Entity current = server.getEntity(pickup);
+            if (current != null) current.discard();
+            pickup = null;
+            spent = false;
+        }
+        if (level != null) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);          // the builder's client draws the power-up's icon over the spot
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return saveWithoutMetadata(registries);
+    }
+
+    @Override
+    public net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener> getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
     }
 
     public boolean owns(Entity e) {
@@ -79,7 +104,13 @@ public class PickupSpotBlockEntity extends BlockEntity {
         }
         be.signal = signal;
         if (server.getGameTime() % 10 == 0) {
-            boolean race = RaceManager.activeNear(server, pos, CtrConfig.PICKUP_TRACK_RADIUS.get());
+            com.ctrcraft.items.RuleSet rules = RaceManager.rulesNear(server, pos, CtrConfig.PICKUP_TRACK_RADIUS.get());
+            // the race's rules say which pickups it has (RuleSet: fruit, fruit crates, power-up crates)
+            boolean race = rules != null && switch (be.kind()) {
+                case FRUIT -> rules.fruit();
+                case FRUIT_CRATE -> rules.fruitCrates();
+                case POWERUP_CRATE -> rules.powerupCrates();
+            };
             if (race && !be.raceActive) {
                 be.spent = false;                    // a race begins: everything is there again
                 be.respawn = 0;
@@ -106,6 +137,7 @@ public class PickupSpotBlockEntity extends BlockEntity {
             if (e == null) return;
             e.setKind(be.kind());
             e.setSpot(pos);
+            e.setItem(be.itemId());
             e.setPos(pos.getX() + 0.5, pos.getY() + 0.1, pos.getZ() + 0.5);
             server.addFreshEntity(e);
             be.pickup = e.getUUID();

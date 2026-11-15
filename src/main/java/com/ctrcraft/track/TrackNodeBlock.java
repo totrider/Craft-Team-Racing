@@ -59,13 +59,14 @@ public class TrackNodeBlock extends Block {
         return RenderShape.INVISIBLE;
     }
 
-    /** Only someone holding the Track Tool or a node item can point at it (to link, remove or replace it); for everyone else it is not there. */
+    /** Only someone holding the Track Tool, a node item (or, for a Start node, the rulebook or the drop table) can point at it (to link, remove or replace it); for everyone else it is not there. */
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         // only a real entity's context can be holding something; the empty context (block state caches, early queries) never is, and must
         // not look the tool up before items are registered
         if (context instanceof EntityCollisionContext && (context.isHoldingItem(ModItems.TRACK_TOOL.get())
-                || context.isHoldingItem(ModBlocks.START_NODE_ITEM.get()) || context.isHoldingItem(ModBlocks.CHECKPOINT_NODE_ITEM.get()))) {
+                || context.isHoldingItem(ModBlocks.START_NODE_ITEM.get()) || context.isHoldingItem(ModBlocks.CHECKPOINT_NODE_ITEM.get())
+                || (kind == TrackGraph.Kind.START && (context.isHoldingItem(ModItems.RULEBOOK.get()) || context.isHoldingItem(ModItems.DROP_TABLE.get()))))) {
             return SHAPE;
         }
         return Shapes.empty();

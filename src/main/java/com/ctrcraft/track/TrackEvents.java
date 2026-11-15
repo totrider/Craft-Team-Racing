@@ -39,6 +39,15 @@ public final class TrackEvents {
         return isTrackItem(player.getMainHandItem()) || isTrackItem(player.getOffhandItem());
     }
 
+    /** The rulebook and the drop table are used on a Start node: while one is held the Start nodes are shown (and only they), so there is something to click. */
+    public static boolean holdsStartViewItem(Player player) {
+        return isStartViewItem(player.getMainHandItem()) || isStartViewItem(player.getOffhandItem());
+    }
+
+    public static boolean isStartViewItem(ItemStack stack) {
+        return stack.getItem() instanceof RulebookItem || stack.getItem() instanceof DropTableItem;
+    }
+
     public static boolean isTrackItem(ItemStack stack) {
         return stack.is(ModItems.TRACK_TOOL.get()) || stack.is(ModBlocks.START_NODE_ITEM.get()) || stack.is(ModBlocks.CHECKPOINT_NODE_ITEM.get());
     }
@@ -64,7 +73,7 @@ public final class TrackEvents {
         long[] grid = data.starts().stream().filter(s -> data.routes(s).valid(graph, s) && !RaceManager.raceRunning(level, s)
                 && player.distanceToSqr(NodeGeometry.x(s), NodeGeometry.y(s), NodeGeometry.z(s)) < GRID_SHOW_DISTANCE * GRID_SHOW_DISTANCE)
                 .mapToLong(Long::longValue).toArray();
-        if (!(holdsTrackItem(player) || TestDriveManager.isActive(player) || grid.length > 0 || LAST_GRID.getOrDefault(player.getUUID(), 0) > 0)) {
+        if (!(holdsTrackItem(player) || holdsStartViewItem(player) || TestDriveManager.isActive(player) || grid.length > 0 || LAST_GRID.getOrDefault(player.getUUID(), 0) > 0)) {
             return;
         }
         long key = ((long) player.level().dimension().location().hashCode() << 32) ^ (graph.version() & 0xFFFFFFFFL) ^ (java.util.Arrays.hashCode(grid) * 31L);

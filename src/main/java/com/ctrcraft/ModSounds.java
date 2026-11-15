@@ -29,6 +29,11 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> LIGHT_GREEN = reg("light_green");
     public static final DeferredHolder<SoundEvent, SoundEvent> FRUIT_PICKUP = reg("fruit_pickup");
     public static final DeferredHolder<SoundEvent, SoundEvent> FRUIT_ARRIVE = reg("fruit_arrive");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CLOCK = reg("clock");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BURN = reg("burn");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SQUISH = reg("squish");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SQUISH_RESTORE = reg("squish_restore");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WOBBLE_THUMP = reg("wobble_thump");
     public static final DeferredHolder<SoundEvent, SoundEvent> GLASS_SHATTER = reg("glass_shatter");
     /** An event with no sound: what the vanilla explosion is given to play, so the explosion's own (always 0.7 of the pitch, with a random wobble) is not heard. */
     public static final DeferredHolder<SoundEvent, SoundEvent> SILENT = reg("silent");

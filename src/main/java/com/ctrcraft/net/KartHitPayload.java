@@ -79,7 +79,10 @@ public record KartHitPayload(int kartId, int targetId, int impact, float dirX, f
             target.hasImpulse = true;
             if (target instanceof ServerPlayer sp) sp.connection.send(new ClientboundSetEntityMotionPacket(sp));
 
-            if (CtrConfig.ENTITY_DAMAGE.get() && target instanceof LivingEntity living) {
+            // a soft bumper (or a race's rule for it) takes the damage out of the bump: the kart still bounces and throws the entity
+            com.ctrcraft.items.RuleSet raceRules = com.ctrcraft.track.RaceManager.rulesOf(driver.getUUID());
+            boolean soft = raceRules != null ? raceRules.softBumper() : kart.softBumperOn();
+            if (!soft && CtrConfig.ENTITY_DAMAGE.get() && target instanceof LivingEntity living) {
                 float damage = ContactRules.damage(bps, CtrConfig.ENTITY_DAMAGE_SCALE.get());
                 if (damage > 0 && canHurt(driver, living)) {
                     DamageSource source = driver.damageSources().playerAttack(driver);

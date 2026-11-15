@@ -35,7 +35,7 @@ public final class ItemHud {
             if (GuiTextures.size(charged) != null) return charged;
         }
         ResourceLocation tex = rl.withPath("textures/gui/power/" + rl.getPath() + ".png");
-        return GuiTextures.size(tex) != null ? tex : null;
+        return GuiTextures.size(tex) != null ? tex : GuiTextures.powerIcon(id);          // a power-up without a picture of its own shows the question mark
     }
 
     /**
@@ -199,7 +199,11 @@ public final class ItemHud {
             }
             // a stack (three bombs, three missiles) shows how many shots are left, in the box's top left corner (UI_Weapon_DrawSelf: numHeldItems + '0')
             if (!rolling && ItemClient.count() > 0) {
-                KartHud.outlined(g, mc, Integer.toString(ItemClient.count()), bx + Math.round(2 * sx), by + Math.round(1 * sy), 1.5F * sy, 0xFFFFFFFF);
+                g.flush();                      // the icon is drawn immediately: the digit's text must come after it, and above it
+                g.pose().pushPose();
+                g.pose().translate(0, 0, 200);
+                KartHud.outlined(g, mc, Integer.toString(ItemClient.count()), bx - Math.round(0.5F * sx), by, 0.85F * sy, 0xFFFFFFFF);       // the original's digit is about 6 reference pixels tall and sticks out of the box's top left corner
+                g.pose().popPose();
             }
         }
 

@@ -46,6 +46,19 @@ you drive over it, so the direction is a marker, not a rule):
 | Boost Stairs | up / right / down / left relative to the stair | up (default) leads up the stairs; the arrow is on the treads |
 A click with an **empty hand** turns the arrow (clockwise; stairs cycle up, right, down, left).
 
+### Super Boost family (an extension, `ctrcraft:super_turbo_pad`)
+CTR has two pad types in its collision data: the turbo pad (`COLL_STEP_TRIGGER_TURBO_PAD`: 0x3C0 reserves, fire level 0x100) and the super turbo pad
+(`COLL_STEP_TRIGGER_SUPER_TURBO_PAD`: 0x78 reserves, fire level 0x800, a speed cap eight times as far above the single turbo's; VehPhysForce.c:1003-1030) which the
+game only lays down everywhere with a cheat, and draws with the same picture. Here the normal family is the green one (the original's colour) and the **Super Boost Pad,
+Block, Slab and Stairs** are the second family, teal (`KartSim.superTurboPad`, surface bit `Surface.SUPER_PAD`). Other boosts on a super pad keep the raised cap
+(VehFire.c:314-322). Both families are switched by the rule set's boost pads.
+
+### The arrows
+The top texture is **animated** (`boost_top.png`, 8 frames of 16 x 16): chevrons repeating every 8 px along the arrow, in a pattern that is seamless across blocks, inside a
+2 px border ring. Played in order the arrows run the way they point (the model's rotation turns the animation with the arrow). The pieced sheet for Fusion is made from the same
+frames (`compose_pieced`: where a neighbour continues the border the ring shows the pattern, so the arrows run on across the blocks). `tools/make_boost_pad.py` redraws both
+families' textures on every run (placeholder art: change `draw_frame` / `FAMILIES`). The bbmodels' embedded texture preview is the old yellow one; the game ignores it.
+
 ## Connected textures (Fusion, optional)
 With [Fusion](https://github.com/SuperMartijn642/Fusion) installed, boost blocks of the same state placed next to each other join up:
 the yellow border is only drawn round the outside of the group (inner corners get a notch), each block keeps its arrow. Without Fusion the

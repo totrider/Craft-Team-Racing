@@ -23,6 +23,17 @@ public final class RaceClient {
         return finishPlace;
     }
 
+    private static volatile com.ctrcraft.items.RuleSet rules = com.ctrcraft.items.RuleSet.CTR;
+
+    static void setRules(com.ctrcraft.items.RuleSet r) {
+        rules = r;
+    }
+
+    /** The rules of the race this player is in; CTR's when there is none. */
+    public static com.ctrcraft.items.RuleSet rules() {
+        return active() ? rules : com.ctrcraft.items.RuleSet.CTR;
+    }
+
     static void update(RacePayload payload) {
         if (payload.phase() == RacePayload.DONE && state.phase() != RacePayload.DONE) {
             finishPlace = payload.finishPlace();

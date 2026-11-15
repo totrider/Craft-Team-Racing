@@ -37,6 +37,14 @@ public final class KartEffects {
         }
         int flags = kart.getVisualFlags();
         RandomSource rnd = level.random;
+        if (KartFlags.wobble(flags)) {
+            // the hazard wobble's bounce plays OtherFX 0x10 on the second of every six game frames (COLL_FIXED_PlayerSearch: the kart is lifted again while its offset is positive)
+            long now = (long) (level.getGameTime() * 1.5);
+            long before = (long) ((level.getGameTime() - 1) * 1.5);
+            for (long f = before + 1; f <= now; f++) {
+                if (f % 6 == 1) level.playLocalSound(kart.getX(), kart.getY(), kart.getZ(), com.ctrcraft.ModSounds.WOBBLE_THUMP.get(), net.minecraft.sounds.SoundSource.PLAYERS, 0.8F, 1.0F, false);
+            }
+        }
         double yaw = Math.toRadians(kart.renderYawDegrees(1.0F));
         // Minecraft: forward = (-sin yaw, cos yaw), left = (cos yaw, sin yaw)
         double fx = -Math.sin(yaw);
@@ -46,6 +54,14 @@ public final class KartEffects {
         double x = kart.getX();
         double y = kart.getY();
         double z = kart.getZ();
+
+        if (KartFlags.burning(flags)) {
+            // a kart on fire (VehFrameProc_Driving_SpawnBurnSmoke: dark smoke; the flames are the mod's own stand-in)
+            for (int i = 0; i < 2; i++) {
+                level.addParticle(ParticleTypes.FLAME, x + (rnd.nextDouble() - 0.5) * 0.9, y + 0.15 + rnd.nextDouble() * 0.4, z + (rnd.nextDouble() - 0.5) * 0.9, 0.0, 0.04, 0.0);
+            }
+            level.addParticle(ParticleTypes.LARGE_SMOKE, x + (rnd.nextDouble() - 0.5) * 0.7, y + 0.6, z + (rnd.nextDouble() - 0.5) * 0.7, 0.0, 0.05, 0.0);
+        }
 
         // the exhaust pipes (KartExhausts, the open ends of the exhaust_* cubes of kart_ctr.bbmodel): the model's frame is x to the kart's right (minus the left vector), z to the back (minus forward)
         int exhaustMode = KartFlags.exhaust(flags);          // 0 none, 1 bright additive, 2 dark: from the sim's powerslide meter and flame, or the grid's revving engine

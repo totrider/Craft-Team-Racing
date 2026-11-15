@@ -35,7 +35,11 @@ public final class KartFlags {
         f |= (sim.fireSize() & 15) << 13;
         f |= (sim.flameFade() & 7) << 17;
         if (sim.ultraFire()) f |= ULTRA;
-        f |= (sim.tumbleCode() & 127) << 20;
+        int tumble = sim.tumbleCode();
+        if (tumble == 0) tumble = sim.squishCode();                                // the field's values below 64 are free: the squash (2, 8 to 15) and the hazard wobble (1)
+        if (tumble == 0 && sim.burning()) tumble = BURN_CODE;
+        if (tumble == 0 && sim.wobbling()) tumble = WOBBLE_CODE;
+        f |= (tumble & 127) << 20;
         f |= (sim.airTiltCode() & 7) << 27;
         return f;
     }
@@ -67,10 +71,36 @@ public final class KartFlags {
         return (flags >> 17) & 7;
     }
 
+    /** The value the tumble field holds while the kart wobbles (the Clock, a rain cloud's slow): the tumble's own values all have bit 64 set. */
+    public static final int WOBBLE_CODE = 1;
+    /** The value of the same field while the kart is on fire. */
+    public static final int BURN_CODE = 3;
+
     /** 0 when the kart is not tumbling (after an explosion), else 64 | the turn of its flip in 64ths of a revolution. */
     public static int tumble(int flags) {
-        return (flags >> 20) & 127;
+        int t = (flags >> 20) & 127;
+        return t >= 64 ? t : 0;
     }
+
+    /** Whether the kart is wobbling: the hazard timer of the original (the Clock, the rain cloud's slow, a squish) rocks it and shakes its wheels. */
+    public static boolean wobble(int flags) {
+        int t = (flags >> 20) & 127;
+        return t == WOBBLE_CODE || t == 2;
+    }
+
+    public static boolean burning(int flags) {
+        return ((flags >> 20) & 127) == BURN_CODE;
+    }
+
+    /** How tall the kart is drawn: 1, or flat while a turbo item's squash holds it (code 2), and the overshoots of its spring back (codes 8 to 15). */
+    public static float squishScale(int flags) {
+        int t = (flags >> 20) & 127;
+        if (t == 2) return 0.08F;
+        if (t >= 8 && t < 16) return RECOVER[t - 8];
+        return 1.0F;
+    }
+
+    private static final float[] RECOVER = { 0.35F, 0.8F, 1.25F, 1.3F, 1.12F, 0.95F, 1.04F, 1.0F };
 
     public static boolean has(int flags, int bit) {
         return (flags & bit) != 0;

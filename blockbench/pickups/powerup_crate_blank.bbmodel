@@ -1,0 +1,182 @@
+{
+ "meta": {
+  "format_version": "4.10",
+  "model_format": "java_block",
+  "box_uv": false
+ },
+ "name": "powerup_crate_blank",
+ "parent": "",
+ "ambientocclusion": true,
+ "front_gui_light": false,
+ "visible_box": [
+  1,
+  1,
+  0
+ ],
+ "resolution": {
+  "width": 16,
+  "height": 16
+ },
+ "elements": [
+  {
+   "name": "cube_0",
+   "box_uv": false,
+   "rescale": false,
+   "locked": false,
+   "light_emission": 0,
+   "render_order": "default",
+   "allow_mirror_modeling": true,
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    16,
+    16
+   ],
+   "autouv": 0,
+   "color": 0,
+   "origin": [
+    8,
+    8,
+    8
+   ],
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": 0
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": 0
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": 0
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": 0
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": 0
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": 0
+    }
+   },
+   "type": "cube",
+   "uuid": "65e42991-9be8-4272-be02-b21cd14e6e68"
+  }
+ ],
+ "outliner": [
+  {
+   "name": "cube",
+   "origin": [
+    8,
+    8,
+    8
+   ],
+   "color": 0,
+   "uuid": "5c85644c-1b92-4cd8-864e-859f22286cec",
+   "export": true,
+   "isOpen": false,
+   "locked": false,
+   "visibility": true,
+   "autouv": 0,
+   "children": [
+    "65e42991-9be8-4272-be02-b21cd14e6e68"
+   ]
+  }
+ ],
+ "textures": [
+  {
+   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\ctrcraft\\textures\\item\\crate_blank.png",
+   "name": "blank.png",
+   "folder": "",
+   "namespace": "",
+   "id": "blank",
+   "particle": false,
+   "render_mode": "default",
+   "render_sides": "auto",
+   "frame_time": 1,
+   "frame_order_type": "loop",
+   "frame_order": "",
+   "frame_interpolate": false,
+   "visible": true,
+   "mode": "bitmap",
+   "saved": true,
+   "uuid": "c72d5fa0-e63f-4201-8bc8-e496f3b4cb90",
+   "relative_path": "../../src/main/resources/assets/ctrcraft/textures/item/crate_blank.png",
+   "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABMklEQVR4nGP8vy/lPwMDA8P0SVsZaAky87yxijMxDDBggTE6znCC6YeLnFAUXN93hCoWwczxWPALTFeYfB8cIcAISwPoPtV0siHKAFJDCGYuLM0xMQwwYIG5xEGHH0WC2rli8OcCXCDTBhIy0498xBpS6ODAlY9Y9eFKM0wMgz0Eph/B7iP0OIWlGVw+xwWYGAZ7CDhA4xwjJNByCa60AksTQzcEDqD5AD1uCaWNA1e2DrEQ0ISW1YRcTmpqx1VnMDEM9jRArM9x5Q5CgIlhqIRA5ogtCTNx+AhXXOOqOwZ/CGjiaAMSG5fk6mNiGKxpwIFAy4fS1jMsFzExDDBgnBYgCe4XMHh1gymHRy1UtQA9hOTj9qH0wJgYBksayFQ5AGGooPZcKAXotWqFCar8gIcAANZZiOMDbs1dAAAAAElFTkSuQmCC",
+   "width": 32,
+   "height": 32
+  }
+ ],
+ "display": {
+  "gui": {
+   "rotation": [
+    30,
+    225,
+    0
+   ],
+   "scale": [
+    0.28,
+    0.28,
+    0.28
+   ]
+  },
+  "ground": {
+   "translation": [
+    0,
+    2,
+    0
+   ],
+   "scale": [
+    0.25,
+    0.25,
+    0.25
+   ]
+  }
+ },
+ "ctr_craft_note": "Stand-in pickup model in the original game's proportions (a crate is exactly one block). One group per part. The single texture slot 'pickups' is shared by all pickups: a small sheet (palette cells, the ? face, the fruit crate side), see tools/make_pickup_models.py."
+}

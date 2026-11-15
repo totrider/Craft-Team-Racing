@@ -56,6 +56,38 @@ public class PickupSpotBlock extends Block implements EntityBlock {
         return SHAPE;
     }
 
+    /** A power-up crate spot item that carries a power-up sets the spot it is placed as. */
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @javax.annotation.Nullable net.minecraft.world.entity.LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        if (!level.isClientSide && kind == PickupKind.POWERUP_CRATE && level.getBlockEntity(pos) instanceof PickupSpotBlockEntity be) {
+            String id = stack.get(com.ctrcraft.ModComponents.CRATE_ITEM.get());
+            if (id != null) be.setItemId(id);
+        }
+    }
+
+    /** What a broken spot drops, and what a middle click picks, keeps the power-up the spot was set to. */
+    @Override
+    protected List<ItemStack> getDrops(BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder params) {
+        List<ItemStack> drops = super.getDrops(state, params);
+        if (kind == PickupKind.POWERUP_CRATE && params.getOptionalParameter(net.minecraft.world.level.storage.loot.parameters.LootContextParams.BLOCK_ENTITY) instanceof PickupSpotBlockEntity be
+                && !be.itemId().isEmpty()) {
+            for (ItemStack d : drops) {
+                if (d.is(com.ctrcraft.ModBlocks.POWERUP_CRATE_SPOT_ITEM.get())) d.set(com.ctrcraft.ModComponents.CRATE_ITEM.get(), be.itemId());
+            }
+        }
+        return drops;
+    }
+
+    @Override
+    public ItemStack getCloneItemStack(net.minecraft.world.level.LevelReader level, BlockPos pos, BlockState state) {
+        ItemStack stack = super.getCloneItemStack(level, pos, state);
+        if (kind == PickupKind.POWERUP_CRATE && level.getBlockEntity(pos) instanceof PickupSpotBlockEntity be && !be.itemId().isEmpty()) {
+            stack.set(com.ctrcraft.ModComponents.CRATE_ITEM.get(), be.itemId());
+        }
+        return stack;
+    }
+
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new PickupSpotBlockEntity(pos, state);
@@ -79,14 +111,8 @@ public class PickupSpotBlock extends Block implements EntityBlock {
                 || !(level.getBlockEntity(pos) instanceof PickupSpotBlockEntity be)) {
             return ItemInteractionResult.CONSUME;
         }
-        List<String> ids = new ArrayList<>();
-        ids.add("");
-        for (HeldItem i : HeldItem.values()) ids.add(i.id());
-        int next = (ids.indexOf(be.itemId()) + 1) % ids.size();
-        be.setItemId(ids.get(next));
-        String id = ids.get(next);
-        sp.displayClientMessage(id.isEmpty() ? Component.translatable("message.ctrcraft.spot.roulette")
-                : Component.translatable("message.ctrcraft.spot.fixed", ItemManager.nameOf(id)), true);
+        // the Wrench opens a screen with a picture of every power-up to pick from (SetSpotPayload sends the choice back)
+        net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(sp, new com.ctrcraft.net.OpenSpotPayload(pos, be.itemId()));
         return ItemInteractionResult.CONSUME;
     }
 }

@@ -159,7 +159,8 @@ public class KartRenderer extends EntityRenderer<KartEntity> {
         Wheelie.Pose wheelie = Wheelie.pose(KartFlags.wheelie(kart.getVisualFlags()), KartScale.LU_PER_BLOCK);
         AirTilt.Pose air = AirTilt.pose(KartFlags.airTilt(kart.getVisualFlags()), AirTilt.DEFAULT_CHARACTER, KartScale.LU_PER_BLOCK);
         if (air != null) wheelie = null;               // one baked pose at a time: the jump's replaces the wheelie's
-        if (tumble == 0 && tilt == KartEntity.TILT_FLAT && wheelie == null && air == null) return;
+        boolean wobble = KartFlags.wobble(kart.getVisualFlags()) || KartFlags.squishScale(kart.getVisualFlags()) != 1.0F;
+        if (tumble == 0 && tilt == KartEntity.TILT_FLAT && wheelie == null && air == null && !wobble) return;
         float theta = 180.0F - kart.renderYawDegrees(partialTick);
         pose.translate(ox, oy, oz);
         pose.mulPose(Axis.YP.rotationDegrees(theta));
@@ -171,6 +172,7 @@ public class KartRenderer extends EntityRenderer<KartEntity> {
             double sn = Math.sin(Math.toRadians(theta));
             pose.mulPose(new Quaternionf().rotationTo(new Vector3f(0.0F, 1.0F, 0.0F), new Vector3f((float) (nx * c - nz * sn), (float) ny, (float) (nx * sn + nz * c))));
         }
+        applyWobble(pose, kart, partialTick);
         // the boost wheelie, as the kart's own model gets it (render): the rider is part of the kart, so it lifts, shifts, rears up and squashes with it
         if (wheelie != null) {
             pose.translate(0.0, wheelie.lift(), -wheelie.forward());
@@ -198,9 +200,20 @@ public class KartRenderer extends EntityRenderer<KartEntity> {
         float steer = entity.steer() * WHEEL_LOCK;
         VertexConsumer consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS));
         java.util.List<KartWheels.Wheel> list = KartWheels.get();
-        for (KartWheels.Wheel w : list) {
+        boolean wobble = KartFlags.wobble(entity.getVisualFlags());
+        int wobbleParity = wobbleFrame(entity, partialTick) & 1;
+        for (int wi = 0; wi < list.size(); wi++) {
+            KartWheels.Wheel w = list.get(wi);
             pose.pushPose();
             pose.translate(w.x(), w.y(), w.z());
+            if (wobble) {
+                // DrawTires: each axle is tilted by (cos, sin) of an angle / 64 of its length (the shift 6 of an odd hazard timer), the four wheels a quarter turn apart; the timer's angle
+                // (timer << 6 of 4096 to the turn) changes by half a turn every game frame, so the axles flip to the other side every frame
+                int[] quarter = { 0, 0x800, 0x400, 0xc00 };                  // front left, front right, rear left, rear right (the game's wheels 0, 1, 2 and 3 are in the order 0, 2, 1, 3 of the turn)
+                double a = 2.0 * Math.PI * ((64 + wobbleParity * 2048 + quarter[Math.min(wi, 3)]) % 4096) / 4096.0;
+                pose.mulPose(Axis.ZP.rotation((float) (Math.cos(a) / 64.0)));
+                pose.mulPose(Axis.YP.rotation((float) (Math.sin(a) / 64.0)));
+            }
             if (w.front()) pose.mulPose(Axis.YP.rotationDegrees(-steer));          // the model's front is -z: a right turn (+steer) is a negative turn about y
             pose.mulPose(Axis.XP.rotationDegrees(-spin));                        // rolling forward (towards -z) turns the top that way
             pose.scale(w.thickness() / WHEEL_THICKNESS, w.height() / WHEEL_DIAMETER, w.length() / WHEEL_DIAMETER);       // the marker's size: the model is 3 by 7 by 7 pixels
@@ -283,6 +296,7 @@ public class KartRenderer extends EntityRenderer<KartEntity> {
             Vector3f local = new Vector3f((float) (nx * c - nz * sn), (float) ny, (float) (nx * sn + nz * c));
             pose.mulPose(new Quaternionf().rotationTo(new Vector3f(0.0F, 1.0F, 0.0F), local));
         }
+        applyWobble(pose, entity, partialTick);
         // the boost wheelie: lift, forward shift, nose-up pitch and squash/stretch from CTR's own pose tables (kart frame: +z ahead,
         // the model's front is -z, so the forward shift and the pitch flip)
         Wheelie.Pose w = Wheelie.pose(KartFlags.wheelie(entity.getVisualFlags()), KartScale.LU_PER_BLOCK);
@@ -309,6 +323,34 @@ public class KartRenderer extends EntityRenderer<KartEntity> {
             pose.scale((float) (1.0 + wobble / 4.0), 1.0F, (float) (1.0 + wobble * 6.0 / 40.0));
             pose.translate(0.0, -0.3, 0.0);
         }
+    }
+
+    /**
+     * The hazard wobble (the Clock, a rain cloud's slow): while the original's hazardTimer is positive the ground normal the kart leans onto gets (sin, cos) of the timer times 12 (of 4096 to
+     * the turn) added, times 25 / 1024 (COLL_FIXED_PlayerSearch: 0x0c, 0x19 and 10): a lean of about 1.4 degrees that goes once round every 0.34 s. The wheels' own shake (DrawTires)
+     * is a hundredth of a wheel and not drawn.
+     */
+    private static void applyWobble(PoseStack pose, KartEntity kart, float partialTick) {
+        float flat = KartFlags.squishScale(kart.getVisualFlags());
+        if (flat != 1.0F) pose.scale(1.0F, flat, 1.0F);                       // a kart squashed by a turbo item: scale.y 0 (VehPhysForce), and its spring back
+        if (!KartFlags.wobble(kart.getVisualFlags())) return;
+        double ms = (kart.level().getGameTime() + partialTick) * 50.0;
+        double phase = 2.0 * Math.PI * ((ms * 12.0 / 4096.0) % 1.0);
+        float amplitude = (float) Math.toDegrees(25.0 * 4096.0 / 1024.0 / 4096.0);
+        pose.mulPose(Axis.XP.rotationDegrees(amplitude * (float) Math.sin(phase)));
+        pose.mulPose(Axis.ZP.rotationDegrees(amplitude * (float) Math.cos(phase)));
+        pose.translate(0.0, WOBBLE_LIFT[wobbleFrame(kart, partialTick) % 6] / KartScale.LU_PER_BLOCK, 0.0);
+    }
+
+    /**
+     * The kart's little bounce while the hazard timer is positive (COLL_FIXED_PlayerSearch, UpdateGroundOffset): Screen_OffsetY goes 3, 6, 9, 12, 4, 0 over six game frames and the kart is
+     * drawn (offset * 3) >> 3 level units higher: 1, 2, 3, 4, 1, 0. The game plays sound 0x10 on the second frame of each cycle (see {@link KartEffects}).
+     */
+    private static final double[] WOBBLE_LIFT = { 1.0, 2.0, 3.0, 4.0, 1.0, 0.0 };
+
+    /** The game frame (30 a second) a kart's wobble is at. */
+    static int wobbleFrame(KartEntity kart, float partialTick) {
+        return (int) ((kart.level().getGameTime() + partialTick) * 1.5);
     }
 
     /** The body pose as a matrix: a point in the model's frame (blocks from the kart's origin) to its offset from the kart's position in the world. */

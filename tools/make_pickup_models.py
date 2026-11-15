@@ -33,6 +33,7 @@ RES = os.path.join("src", "main", "resources")
 ASSETS = os.path.join(RES, "assets", "ctrcraft")
 TEX = os.path.join(ASSETS, "textures", "item", "pickups.png")
 BB = os.path.join("blockbench", "pickups")
+BLANK_TEX = os.path.join(ASSETS, "textures", "item", "crate_blank.png")
 
 PX_PER_BLOCK = 16.0
 PX_PER_UNIT = PX_PER_BLOCK / 108.8          # the original's crate (108.8 level units) is one block
@@ -126,7 +127,8 @@ def crate_face(size, panel_art):
     return face
 
 
-def question_panel(n):
+def blank_panel(n):
+    """The panel without its "?": planks and crossed braces (the face of a crate that is locked to a power-up, which shows that power-up's icon instead)."""
     im = Image.new("RGBA", (n, n), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
     p = lambda name: PALETTE[name][2] + (255,)
@@ -136,6 +138,12 @@ def question_panel(n):
         d.line([a, b], fill=p("wood_dark"), width=thick)
         d.line([a, b], fill=p("orange"), width=thin)
     d.rectangle([0, 0, n - 1, n - 1], outline=p("wood_dark"))
+    return im
+
+
+def question_panel(n):
+    im = blank_panel(n)
+    p = lambda name: PALETTE[name][2] + (255,)
     glyph = QUESTION if n >= 16 else QUESTION_SMALL           # a panel of 10 px has room for a 5 x 7 "?" and its outline, not for the 7 x 9
     gw, gh = len(glyph[0]), len(glyph)
     k = max(1, (n - 2) // gh)
@@ -158,6 +166,11 @@ def question_panel(n):
             if mask.getpixel((x, y)):
                 im.putpixel((x, y), p("yellow"))
     return im
+
+
+def blank_crate(size):
+    """The whole face of the blank crate, drawn at the sheet's resolution (textures/item/crate_blank.png)."""
+    return crate_face(ART, blank_panel).resize((size, size), Image.NEAREST)
 
 
 def plank_panel(n):
@@ -382,11 +395,18 @@ def power_fruit():
     return [("body", [body]), ("leaves", leaves)]
 
 
+def crate_blank_model():
+    face = {"uv": [0, 0, 16, 16], "texture": "#blank"}
+    return [("cube", [{"from": [CRATE_LO, 0, CRATE_LO], "to": [CRATE_HI, CRATE, CRATE_HI],
+                       "faces": {f: dict(face) for f in ("north", "east", "south", "west", "up", "down")}}])]
+
+
 def models():
     return {
         "power_fruit": power_fruit(),
         "fruit_crate": crate(PLANKS_UV),
         "powerup_crate": crate(QUESTION_UV),
+        "powerup_crate_blank": crate_blank_model(),
     }
 
 
@@ -403,11 +423,12 @@ def dump(path, obj):
 def embed():
     """Put the current sheet into the texture slot of every pickup bbmodel (the models carry their own copy of the picture)."""
     import base64
-    src = "data:image/png;base64," + base64.b64encode(open(TEX, "rb").read()).decode()
     for name in models():
+        tex = BLANK_TEX if name.endswith("_blank") else TEX
+        src = "data:image/png;base64," + base64.b64encode(open(tex, "rb").read()).decode()
         path = os.path.join(BB, name + ".bbmodel")
         m = json.load(open(path, encoding="utf-8"))
-        w, h = Image.open(TEX).size
+        w, h = Image.open(tex).size
         for t in m["textures"]:
             t["source"] = src
             t["width"], t["height"] = w, h
@@ -419,17 +440,20 @@ def main():
     os.makedirs(os.path.dirname(TEX), exist_ok=True)
     if not os.path.exists(TEX):
         draw_texture().save(TEX)
+    if not os.path.exists(BLANK_TEX):
+        blank_crate(SHEET).save(BLANK_TEX)
     os.makedirs(BB, exist_ok=True)
     for name, groups in models().items():
         path = os.path.join(BB, name + ".bbmodel")
         if not os.path.exists(path):
-            bbmodel.write(path, name, {"pickups": TEX}, groups, display=display(), gui_light_front=False,
+            bbmodel.write(path, name, {"blank": BLANK_TEX} if name.endswith("_blank") else {"pickups": TEX}, groups, display=display(), gui_light_front=False,
                           comment="Stand-in pickup model in the original game's proportions (a crate is exactly one block). One group per part. The single texture "
                                   "slot 'pickups' is shared by all pickups: a small sheet (palette cells, the ? face, the fruit crate side), see "
                                   "tools/make_pickup_models.py.")
         model = bbmodel.read(path)
         dump(os.path.join(ASSETS, "models", "item", "pickup_" + name + ".json"), {
-            "textures": {"pickups": "ctrcraft:item/pickups", "particle": "ctrcraft:item/pickups"},
+            "textures": {"blank": "ctrcraft:item/crate_blank", "particle": "ctrcraft:item/crate_blank"} if name.endswith("_blank")
+            else {"pickups": "ctrcraft:item/pickups", "particle": "ctrcraft:item/pickups"},
             "elements": bbmodel.elements(model),
             "display": model["display"] or display(),
         })

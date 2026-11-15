@@ -96,32 +96,60 @@ STAIR_DIRECTIONS = {"up": 0, "right": 90, "down": 180, "left": 270}
 
 # ---------------------------------------------------------------------------------------------------------------- textures
 
-def draw_top():
-    """Dark metal, a yellow border and three chevrons pointing up the texture (north in the model file)."""
-    im = Image.new("RGBA", (16, 16), (46, 48, 58, 255))
-    yellow, dark = (255, 205, 40, 255), (30, 31, 38, 255)
-    for i in range(16):
-        for edge in ((i, 0), (i, 15), (0, i), (15, i)):
-            im.putpixel(edge, yellow)
-    for top in (2, 6, 10):
-        for d in range(5):
-            for dx in (0, 1):
-                im.putpixel((8 - d - dx, top + d), yellow)
-                im.putpixel((7 + d + dx, top + d), yellow)
-    for x in range(1, 15):
-        im.putpixel((x, 1), dark)
-        im.putpixel((x, 14), dark)
+FRAMES = 8                 # the arrows' animation: the pattern repeats every 8 px along the arrow, one px a frame
+PERIOD = 8
+DARK = (30, 31, 38, 255)
+BG = (46, 48, 58, 255)
+# the family's accent colour: the original's pad is green; the super pad (an extension: CTR has the pad type but never draws it differently) is teal
+FAMILIES = [
+    {"key": "boost", "accent": (70, 220, 80, 255), "name": "Boost", "map_color": "COLOR_GREEN"},
+    {"key": "super_boost", "accent": (40, 215, 205, 255), "name": "Super Boost", "map_color": "COLOR_CYAN"},
+]
+
+
+def pattern_frame(accent, k):
+    """The arrows' pattern, 16 x 16, with the background: chevrons pointing up the texture (north in the model file), a new one every PERIOD px, so it repeats
+    seamlessly across blocks both ways. Frame k has it moved k px up: played in order the arrows run the way they point."""
+    im = Image.new("RGBA", (16, 16), BG)
+    for y in range(16):
+        r = (y + k) % PERIOD
+        if r >= 6:
+            continue
+        for dx in (0, 1):
+            im.putpixel((8 - r - dx, y), accent)
+            im.putpixel((7 + r + dx, y), accent)
     return im
 
 
-def draw_side():
-    """Plain dark metal with a yellow stripe along the top edge and a few rivets."""
-    im = Image.new("RGBA", (16, 16), (46, 48, 58, 255))
+def draw_frame(accent, k):
+    """One frame of a single block: the pattern inside a 2 px ring (the border: the accent colour outside, a dark line inside it)."""
+    im = pattern_frame(accent, k)
+    for y in range(16):
+        for x in range(16):
+            edge = min(x, y, 15 - x, 15 - y)
+            if edge == 0:
+                im.putpixel((x, y), accent)
+            elif edge == 1:
+                im.putpixel((x, y), DARK)
+    return im
+
+
+def draw_top(accent):
+    """The animated texture: FRAMES frames of 16 x 16, one under the other."""
+    sheet = Image.new("RGBA", (16, 16 * FRAMES))
+    for k in range(FRAMES):
+        sheet.paste(draw_frame(accent, k), (0, 16 * k))
+    return sheet
+
+
+def draw_side(accent):
+    """Plain dark metal with a stripe in the accent colour along the top edge and a few rivets."""
+    im = Image.new("RGBA", (16, 16), BG)
     for x in range(16):
-        im.putpixel((x, 0), (255, 205, 40, 255))
-        im.putpixel((x, 1), (255, 205, 40, 255))
-        im.putpixel((x, 2), (30, 31, 38, 255))
-        im.putpixel((x, 15), (30, 31, 38, 255))
+        im.putpixel((x, 0), accent)
+        im.putpixel((x, 1), accent)
+        im.putpixel((x, 2), DARK)
+        im.putpixel((x, 15), DARK)
     for x in (3, 12):
         im.putpixel((x, 8), (96, 98, 110, 255))
     return im
@@ -199,9 +227,11 @@ def sources():
 
 def ensure_sources():
     os.makedirs(TEX_DIR, exist_ok=True)
-    for path, draw in ((TEX_TOP, draw_top), (TEX_SIDE, draw_side)):
-        if not os.path.exists(path):
-            draw().save(path)
+    for fam in FAMILIES:
+        # placeholder art, regenerated every run (the arrows' animation and the pieced sheet follow from it); repaint by changing draw_frame
+        draw_top(fam["accent"]).save(os.path.join(TEX_DIR, fam["key"] + "_top.png"))
+        draw_side(fam["accent"]).save(os.path.join(TEX_DIR, fam["key"] + "_side.png"))
+        dump(os.path.join(TEX_DIR, fam["key"] + "_top.png.mcmeta"), {"animation": {"frametime": 1}})
     for name, groups in sources().items():
         path = os.path.join(BB_DIR, name + ".bbmodel")
         if not os.path.exists(path):
@@ -233,9 +263,10 @@ def turned(elements, r):
     return out
 
 
-def write_model(name, elements, parent_display=None):
+def write_model(name, elements, fam):
+    key = fam["key"]
     dump(os.path.join(ASSETS, "models", "block", name + ".json"), {
-        "textures": {"top": f"{NS}:block/boost_top", "side": f"{NS}:block/boost_side", "particle": f"{NS}:block/boost_side"},
+        "textures": {"top": f"{NS}:block/{key}_top", "side": f"{NS}:block/{key}_side", "particle": f"{NS}:block/{key}_side"},
         "elements": elements})
 
 
@@ -249,19 +280,19 @@ def read(name):
 
 # ---------------------------------------------------------------------------------------------------------------- Fusion
 
-RING = 2                                    # px of border ring in boost_top.png
+RING = 2                                    # px of border ring in the top texture
 OVERRIDES = os.path.join(RES, "fusion-overrides", "assets", NS, "textures", "block")
 # Fusion's pieced layout (PiecedLayoutHandler): 5 tiles in a row, chosen per quarter of the face by (side, side, diagonal) bits
 PIECED_CORNER_TILE = (0, 3, 2, 4, 0, 3, 2, 1)
 
 
-def compose_pieced(base):
-    """The 5-tile pieced sheet (80 x 16) made from the base texture: tile 0 = isolated, 1 = all eight neighbours, 2 = up and down,
-    3 = left and right, 4 = the four sides but no diagonals (inner corners)."""
-    from collections import Counter
+def compose_pieced(base, pattern):
+    """The 5-tile pieced sheet (80 x 16) of one frame: tile 0 = isolated, 1 = all eight neighbours, 2 = up and down, 3 = left and right, 4 = the four sides but no
+    diagonals (inner corners). {base} is a single block's frame (the pattern inside the ring), {pattern} the same frame's pattern without the ring: where a neighbour
+    continues the border the ring is the pattern, so the arrows run on across the blocks."""
     base = base.convert("RGBA")
-    assert base.size == (16, 16), "boost_top.png must be 16x16"
-    bg = Counter(base.getdata()).most_common(1)[0][0]
+    pattern = pattern.convert("RGBA")
+    assert base.size == (16, 16), "a frame must be 16x16"
     specs = [dict(t=0, r=0, b=0, l=0, tl=0, tr=0, bl=0, br=0),
              dict(t=1, r=1, b=1, l=1, tl=1, tr=1, bl=1, br=1),
              dict(t=1, r=0, b=1, l=0, tl=0, tr=0, bl=0, br=0),
@@ -291,30 +322,59 @@ def compose_pieced(base):
                     elif edge_v:                                          # only the left/right border continues across
                         px[x, y] = base.getpixel((x, min(max(y, RING), 15 - RING)))
                     elif diag:
-                        px[x, y] = bg                                     # surrounded: no border
+                        px[x, y] = pattern.getpixel((x, y))               # surrounded: no border
                     continue                                              # surrounded but the diagonal is missing: an inner corner, as drawn
                 border = not (c["t"] if top else c["b"]) if h else not (c["l"] if left else c["r"])
                 if not border:
-                    px[x, y] = bg
+                    px[x, y] = pattern.getpixel((x, y))
         sheet.paste(tile, (16 * i, 0))
     return sheet
 
 
 def write_fusion(preview=False):
-    base = Image.open(TEX_TOP)
-    sheet = compose_pieced(base)
     os.makedirs(OVERRIDES, exist_ok=True)
-    sheet.save(os.path.join(OVERRIDES, "boost_top.png"))
-    dump(os.path.join(OVERRIDES, "boost_top.png.mcmeta"), {"fusion": {
-        "type": "connecting", "layout": "pieced", "connections": {"type": "is_same_state"}}})
+    for fam in FAMILIES:
+        accent = fam["accent"]
+        sheet = Image.new("RGBA", (80, 16 * FRAMES))
+        for k in range(FRAMES):
+            sheet.paste(compose_pieced(draw_frame(accent, k), pattern_frame(accent, k)), (0, 16 * k))
+        sheet.save(os.path.join(OVERRIDES, fam["key"] + "_top.png"))
+        # the frames are 80 x 16 (the default frame is square)
+        dump(os.path.join(OVERRIDES, fam["key"] + "_top.png.mcmeta"), {
+            "animation": {"frametime": 1, "width": 80, "height": 16},
+            "fusion": {"type": "connecting", "layout": "pieced", "connections": {"type": "is_same_state"}}})
+        if preview and fam["key"] == "boost":
+            draw_preview(sheet.crop((0, 0, 80, 16)))
     # the mod's own pack.mcmeta: tells Fusion where the optional files are (it reads it for every mod). The formats cover resources
     # (34) and data (48) of 1.21.1 so the mod's pack is never flagged
     dump(os.path.join(RES, "pack.mcmeta"), {
         "pack": {"description": "Craft Team Racing", "pack_format": 34,
                  "supported_formats": {"min_inclusive": 34, "max_inclusive": 48}},
         "fusion": {"overrides_folder": "fusion-overrides"}})
-    if preview:
-        draw_preview(sheet)
+
+
+STATIC = os.path.join(RES, "static-pads")
+
+
+def write_static_pack():
+    """The built-in pack the client turns on when the player switches the arrow animation off (the client config's animatedBoostPads, see client/BoostPadAnimation):
+    the same pictures with a metadata that shows frame 0 only. A pack has to carry the pictures as well as the .mcmeta (the metadata is read from the pack that holds the
+    picture), and Fusion's sheets come from the pack's own fusion-overrides folder, as the mod's do. Not part of the mod's own assets: it sits outside assets/."""
+    tex = os.path.join(STATIC, "assets", NS, "textures", "block")
+    fus = os.path.join(STATIC, "fusion-overrides", "assets", NS, "textures", "block")
+    os.makedirs(tex, exist_ok=True)
+    os.makedirs(fus, exist_ok=True)
+    dump(os.path.join(STATIC, "pack.mcmeta"), {
+        "pack": {"description": "Craft Team Racing: still boost pad arrows", "pack_format": 34, "supported_formats": {"min_inclusive": 34, "max_inclusive": 48}},
+        "fusion": {"overrides_folder": "fusion-overrides"}})
+    for fam in FAMILIES:
+        key = fam["key"]
+        Image.open(os.path.join(TEX_DIR, key + "_top.png")).save(os.path.join(tex, key + "_top.png"))
+        dump(os.path.join(tex, key + "_top.png.mcmeta"), {"animation": {"frames": [0]}})
+        Image.open(os.path.join(OVERRIDES, key + "_top.png")).save(os.path.join(fus, key + "_top.png"))
+        dump(os.path.join(fus, key + "_top.png.mcmeta"), {
+            "animation": {"frames": [0], "width": 80, "height": 16},
+            "fusion": {"type": "connecting", "layout": "pieced", "connections": {"type": "is_same_state"}}})
 
 
 def draw_preview(sheet):
@@ -339,97 +399,102 @@ def draw_preview(sheet):
 def main():
     ensure_sources()
     models = []                                           # every model file written, to check the block states against
-
-    # ---- plate, block, slab: one model each, the block state turns it
-    for name in ("boost_pad", "boost_block", "boost_slab_bottom", "boost_slab_top"):
-        m = read(name)
-        write_model(name, turned(bbmodel.elements(m), 0))
-        models.append(name)
+    all_blocks = {}                                       # family key -> its four block names
+    lp = os.path.join(ASSETS, "lang", "en_us.json")
+    lang = json.load(open(lp, encoding="utf-8")) if os.path.exists(lp) else {}
     disp = read("boost_block")["display"] or display()
-    write_item("boost_pad", "boost_pad", disp)
-    write_item("boost_block", "boost_block", disp)
-    write_item("boost_slab", "boost_slab_bottom", disp)
 
     def ys(facing):
         return {} if ANGLE[facing] == 0 else {"y": ANGLE[facing]}
 
-    dump(os.path.join(ASSETS, "blockstates", "boost_pad.json"),
-         {"variants": {"facing=%s" % f: dict({"model": f"{NS}:block/boost_pad"}, **ys(f)) for f in FACINGS}})
-    dump(os.path.join(ASSETS, "blockstates", "boost_block.json"),
-         {"variants": {"facing=%s" % f: dict({"model": f"{NS}:block/boost_block"}, **ys(f)) for f in FACINGS}})
-    slab = {}
-    for f in FACINGS:
-        slab["type=bottom,facing=%s" % f] = dict({"model": f"{NS}:block/boost_slab_bottom"}, **ys(f))
-        slab["type=top,facing=%s" % f] = dict({"model": f"{NS}:block/boost_slab_top"}, **ys(f))
-        slab["type=double,facing=%s" % f] = dict({"model": f"{NS}:block/boost_block"}, **ys(f))
-    dump(os.path.join(ASSETS, "blockstates", "boost_slab.json"), {"variants": slab})
+    for fam in FAMILIES:
+        key = fam["key"]
+        out = lambda name, key=key: key + name[len("boost"):]            # boost_pad -> super_boost_pad
 
-    # ---- stairs: a model per shape, half and arrow direction in the model's own frame (0/90/180/270)
-    for shape in ("straight", "inner", "outer"):
-        for half in ("bottom", "top"):
-            els = bbmodel.elements(read("boost_stairs_%s_%s" % (shape, half)))
-            for r in (0, 90, 180, 270):
-                name = "boost_stairs_%s_%s_%d" % (shape, half, r)
-                write_model(name, turned(els, r))
-                models.append(name)
-    write_item("boost_stairs", "boost_stairs_straight_bottom_90", disp)
-    stairs = {}
-    for (facing, half, shape), (kind, y) in STAIR_TABLE.items():
-        for direction, offset in STAIR_DIRECTIONS.items():
-            world = (ANGLE[facing] + offset) % 360          # where the arrow points in the world
-            r = (world - y) % 360                           # and in the model's own frame (the block state turns it by y)
-            v = {"model": f"{NS}:block/boost_stairs_{kind}_{half}_{r}"}
-            if y:
-                v["y"] = y
-            stairs["direction=%s,facing=%s,half=%s,shape=%s" % (direction, facing, half, shape)] = v
-    dump(os.path.join(ASSETS, "blockstates", "boost_stairs.json"), {"variants": stairs})
-    assert len(stairs) == 160
+        # ---- plate, block, slab: one model each, the block state turns it
+        for name in ("boost_pad", "boost_block", "boost_slab_bottom", "boost_slab_top"):
+            m = read(name)
+            write_model(out(name), turned(bbmodel.elements(m), 0), fam)
+            models.append(out(name))
+        write_item(out("boost_pad"), out("boost_pad"), disp)
+        write_item(out("boost_block"), out("boost_block"), disp)
+        write_item(out("boost_slab"), out("boost_slab_bottom"), disp)
 
-    # ---- loot tables: each drops itself (a double slab two)
-    def loot(block, extra=None):
-        entry = {"type": "minecraft:item", "name": f"{NS}:{block}"}
-        if extra:
-            entry["functions"] = extra
-        dump(os.path.join(DATA, NS, "loot_table", "blocks", block + ".json"), {
-            "type": "minecraft:block", "pools": [{"rolls": 1.0, "bonus_rolls": 0.0, "entries": [entry],
-                                                   "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
-    for b in ("boost_pad", "boost_block", "boost_stairs"):
-        loot(b)
-    loot("boost_slab", [{"function": "minecraft:set_count", "count": 2.0, "add": False, "conditions": [{
-        "condition": "minecraft:block_state_property", "block": f"{NS}:boost_slab", "properties": {"type": "double"}}]}])
+        dump(os.path.join(ASSETS, "blockstates", out("boost_pad") + ".json"),
+             {"variants": {"facing=%s" % f: dict({"model": f"{NS}:block/{out('boost_pad')}"}, **ys(f)) for f in FACINGS}})
+        dump(os.path.join(ASSETS, "blockstates", out("boost_block") + ".json"),
+             {"variants": {"facing=%s" % f: dict({"model": f"{NS}:block/{out('boost_block')}"}, **ys(f)) for f in FACINGS}})
+        slab = {}
+        for f in FACINGS:
+            slab["type=bottom,facing=%s" % f] = dict({"model": f"{NS}:block/{out('boost_slab_bottom')}"}, **ys(f))
+            slab["type=top,facing=%s" % f] = dict({"model": f"{NS}:block/{out('boost_slab_top')}"}, **ys(f))
+            slab["type=double,facing=%s" % f] = dict({"model": f"{NS}:block/{out('boost_block')}"}, **ys(f))
+        dump(os.path.join(ASSETS, "blockstates", out("boost_slab") + ".json"), {"variants": slab})
 
-    # ---- tags
-    blocks = ["boost_pad", "boost_block", "boost_slab", "boost_stairs"]
-    ours = [f"{NS}:{b}" for b in blocks]
+        # ---- stairs: a model per shape, half and arrow direction in the model's own frame (0/90/180/270)
+        for shape in ("straight", "inner", "outer"):
+            for half in ("bottom", "top"):
+                els = bbmodel.elements(read("boost_stairs_%s_%s" % (shape, half)))
+                for r in (0, 90, 180, 270):
+                    name = out("boost_stairs_%s_%s_%d" % (shape, half, r))
+                    write_model(name, turned(els, r), fam)
+                    models.append(name)
+        write_item(out("boost_stairs"), out("boost_stairs_straight_bottom_90"), disp)
+        stairs = {}
+        for (facing, half, shape), (kind, y) in STAIR_TABLE.items():
+            for direction, offset in STAIR_DIRECTIONS.items():
+                world = (ANGLE[facing] + offset) % 360          # where the arrow points in the world
+                r = (world - y) % 360                           # and in the model's own frame (the block state turns it by y)
+                v = {"model": f"{NS}:block/{out('boost_stairs_%s_%s_%d' % (kind, half, r))}"}
+                if y:
+                    v["y"] = y
+                stairs["direction=%s,facing=%s,half=%s,shape=%s" % (direction, facing, half, shape)] = v
+        dump(os.path.join(ASSETS, "blockstates", out("boost_stairs") + ".json"), {"variants": stairs})
+        assert len(stairs) == 160
+
+        # ---- loot tables: each drops itself (a double slab two)
+        def loot(block, extra=None):
+            entry = {"type": "minecraft:item", "name": f"{NS}:{block}"}
+            if extra:
+                entry["functions"] = extra
+            dump(os.path.join(DATA, NS, "loot_table", "blocks", block + ".json"), {
+                "type": "minecraft:block", "pools": [{"rolls": 1.0, "bonus_rolls": 0.0, "entries": [entry],
+                                                       "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
+        for b in ("boost_pad", "boost_block", "boost_stairs"):
+            loot(out(b))
+        loot(out("boost_slab"), [{"function": "minecraft:set_count", "count": 2.0, "add": False, "conditions": [{
+            "condition": "minecraft:block_state_property", "block": f"{NS}:{out('boost_slab')}", "properties": {"type": "double"}}]}])
+
+        all_blocks[key] = [out(b) for b in ("boost_pad", "boost_block", "boost_slab", "boost_stairs")]
+        for b in ("pad", "block", "slab", "stairs"):
+            lang[f"block.{NS}.{out('boost_' + b)}"] = f"{fam['name']} {b.capitalize()}"
+
+    # ---- tags: the pad tags are per family (a normal pad, a super pad), the rest cover all of them
     def tag(kind, ns, path, values):
         dump(os.path.join(DATA, ns, "tags", kind, path + ".json"), {"replace": False, "values": values})
-    tag("block", NS, "turbo_pad", ours)
-    tag("block", "minecraft", "slabs", [f"{NS}:boost_slab"])
-    tag("block", "minecraft", "stairs", [f"{NS}:boost_stairs"])
-    tag("block", "minecraft", "mineable/pickaxe", ours)
-    tag("item", "minecraft", "slabs", [f"{NS}:boost_slab"])
-    tag("item", "minecraft", "stairs", [f"{NS}:boost_stairs"])
+    every = [f"{NS}:{b}" for fam in FAMILIES for b in all_blocks[fam["key"]]]
+    tag("block", NS, "turbo_pad", [f"{NS}:{b}" for b in all_blocks["boost"]])
+    tag("block", NS, "super_turbo_pad", [f"{NS}:{b}" for b in all_blocks["super_boost"]])
+    tag("block", "minecraft", "slabs", [f"{NS}:{b[2]}" for b in all_blocks.values()])
+    tag("block", "minecraft", "stairs", [f"{NS}:{b[3]}" for b in all_blocks.values()])
+    tag("block", "minecraft", "mineable/pickaxe", every)
+    tag("item", "minecraft", "slabs", [f"{NS}:{b[2]}" for b in all_blocks.values()])
+    tag("item", "minecraft", "stairs", [f"{NS}:{b[3]}" for b in all_blocks.values()])
     # Create's copycats accept these as materials (a copycat of a boost block boosts, see McBlockSource)
-    tag("block", "create", "copycat_allow", [o for o in ours if not o.endswith("boost_pad")])
-
-    # ---- names
-    lp = os.path.join(ASSETS, "lang", "en_us.json")
-    lang = json.load(open(lp, encoding="utf-8")) if os.path.exists(lp) else {}
-    lang[f"block.{NS}.boost_pad"] = "Boost Pad"
-    lang[f"block.{NS}.boost_block"] = "Boost Block"
-    lang[f"block.{NS}.boost_slab"] = "Boost Slab"
-    lang[f"block.{NS}.boost_stairs"] = "Boost Stairs"
+    tag("block", "create", "copycat_allow", [o for o in every if not o.endswith("boost_pad")])
     dump(lp, lang)
 
     write_fusion(preview="--preview" in sys.argv)
+    write_static_pack()
 
     # ---- check every model a block state names was written
-    for fn in ("boost_pad", "boost_block", "boost_slab", "boost_stairs"):
-        states = json.load(open(os.path.join(ASSETS, "blockstates", fn + ".json"), encoding="utf-8"))["variants"]
-        for k, v in states.items():
-            name = v["model"].split("/")[-1]
-            assert os.path.exists(os.path.join(ASSETS, "models", "block", name + ".json")), (fn, k, name)
-    print("boost blocks written: %d models, %d stair variants" % (len(models), len(stairs)))
+    for fam in FAMILIES:
+        for fn in all_blocks[fam["key"]]:
+            states = json.load(open(os.path.join(ASSETS, "blockstates", fn + ".json"), encoding="utf-8"))["variants"]
+            for k, v in states.items():
+                name = v["model"].split("/")[-1]
+                assert os.path.exists(os.path.join(ASSETS, "models", "block", name + ".json")), (fn, k, name)
+    print("boost blocks written: %d models" % len(models))
 
 
 if __name__ == "__main__":

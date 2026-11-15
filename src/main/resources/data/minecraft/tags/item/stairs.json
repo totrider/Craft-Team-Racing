@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "ctrcraft:boost_stairs"
+    "ctrcraft:boost_stairs",
+    "ctrcraft:super_boost_stairs"
   ]
 }

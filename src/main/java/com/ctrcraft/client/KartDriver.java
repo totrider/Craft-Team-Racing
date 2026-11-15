@@ -119,6 +119,7 @@ public final class KartDriver {
         boolean l1 = CtrCraftClient.KEY_HOP2.isDown();
         latchR1 |= r1;
         latchL1 |= l1;
+        springLatch |= CtrCraftClient.KEY_SPRING.consumeClick();
         if (world == null || worldLevel != mc.level) {
             world = new TerrainCollider(new TerrainField(new McBlockSource(mc.level, kart)), KartScale.LU_PER_BLOCK);
             worldLevel = mc.level;
@@ -154,14 +155,38 @@ public final class KartDriver {
             }
             latchR1 = false;
             latchL1 = false;
+            // in a race the rules decide what a kart may do (the karts' own upgrades do not count); outside one its own upgrades do
+            boolean race = RaceClient.active();
+            int floaterMode = race ? RaceClient.rules().floater() : kart.floaterMode();
+            boolean floating = floaterMode >= 1;
+            McBlockSource.floaterMode = floaterMode;
+            sim.setLowGravity(race ? RaceClient.rules().lowGravity() : kart.gravityStrength());
+            if (springLatch) {
+                springLatch = false;
+                if (race ? RaceClient.rules().spring() : kart.springOn()) sim.springJump();
+            }
             world.prepare(sim.position(), sim.velocity().y / 256.0);
             int surface = world.surfaceAt(sim.position());
             if (surface >= 0) {
                 sim.groundType = Surface.terrain(surface);
-                if (Surface.isPad(surface) && sim.grounded()) {
-                    sim.turboPad();
+                // offroad tires (or a race's offroad rule): grass, dirt, sand, snow and mud drive like asphalt
+                if (offroadActive(kart) && (sim.groundType == com.ctrcraft.physics.Terrain.DIRT || sim.groundType == com.ctrcraft.physics.Terrain.SLOW_DIRT
+                        || sim.groundType == com.ctrcraft.physics.Terrain.SNOW || sim.groundType == com.ctrcraft.physics.Terrain.MUD)) {
+                    sim.groundType = com.ctrcraft.physics.Terrain.ASPHALT;
+                }
+                if (Surface.isPad(surface) && sim.grounded() && com.ctrcraft.track.RaceClient.rules().boostPads()) {
+                    if (Surface.isSuperPad(surface)) sim.superTurboPad();
+                    else sim.turboPad();
                 }
             }
+            // water and lava: a fall into them is cushioned; a kart on the bottom drives as in water; the Floater is on top of the water and has none of it
+            int fluidKind = 0;
+            if (mc.level != null) {
+                var fluidState = mc.level.getFluidState(net.minecraft.core.BlockPos.containing(kart.getX(), kart.getY() + 0.35, kart.getZ()));
+                fluidKind = fluidState.is(net.minecraft.tags.FluidTags.LAVA) ? (floaterMode == 2 ? 0 : 2) : fluidState.is(net.minecraft.tags.FluidTags.WATER) && !floating ? 1 : 0;
+            }
+            sim.setFluid(fluidKind);
+            if (fluidKind != 0 && sim.grounded()) sim.groundType = com.ctrcraft.physics.Terrain.WATER;
             if (sim.cloudActive() && mc.level != null) {
                 // the rain cloud over the kart (the original's is a 3D cloud model with a rain emitter; these particles stand in for it)
                 Fx.play("rain_cloud", kart.getX(), kart.getY(), kart.getZ(), 0.0F, 0.0F, kart.tickCount);
@@ -177,6 +202,15 @@ public final class KartDriver {
             } else if (itemEffect == com.ctrcraft.pickup.ItemManager.EFFECT_SPIN) {
                 sim.itemSpin();
                 ScreenFlash.start();
+            } else if (itemEffect == com.ctrcraft.pickup.ItemManager.EFFECT_BURN) {
+                sim.itemBurn();
+            } else if (itemEffect == com.ctrcraft.pickup.ItemManager.EFFECT_SQUISH) {
+                sim.itemSquish();
+            } else if (itemEffect == com.ctrcraft.pickup.ItemManager.EFFECT_HIGH_JUMP) {
+                sim.forceHighJump();
+            } else if (itemEffect >= com.ctrcraft.pickup.ItemManager.EFFECT_CLOCK) {
+                int code = itemEffect - com.ctrcraft.pickup.ItemManager.EFFECT_CLOCK;
+                sim.setClock(code >> 1, ((code & 1) == 1 ? com.ctrcraft.pickup.ItemManager.CLOCK_TICKS_CHARGED : com.ctrcraft.pickup.ItemManager.CLOCK_TICKS) * 50);
             } else if (itemEffect >= com.ctrcraft.pickup.ItemManager.EFFECT_CLOUD) {
                 sim.setCloud(itemEffect - com.ctrcraft.pickup.ItemManager.EFFECT_CLOUD, com.ctrcraft.pickup.ItemManager.CLOUD_TICKS * 50);
             } else if (itemEffect == com.ctrcraft.pickup.ItemManager.EFFECT_CLEAR) {
@@ -187,6 +221,7 @@ public final class KartDriver {
                 ScreenFlash.start();                  // RB_Burst_CollThread: the victim's screen flashes white (fadeFromBlack 0x1fff)
             }
             sim.tntOnHead = System.currentTimeMillis() < tntUntilMs;
+            sim.speedCapPercent = com.ctrcraft.track.RaceClient.rules().maxSpeedPercent();
             sim.tick(world, input);
             sendHits(mc, kart, sim.drainBumps());
             playEvents(mc, sim.drainEvents());
@@ -248,6 +283,22 @@ public final class KartDriver {
     private static void sendHits(Minecraft mc, KartEntity kart, List<KartSim.Bump> bumps) {
         long now = System.currentTimeMillis();
         for (KartSim.Bump b : bumps) {
+            if (b.id() < 0 && b.impact() > 0xA00 && sim.turboItem() && now - lastSquishSent > 1000L) {
+                // VehPhysCrash_Attack: an impact over 0xa00 by a kart under a turbo item boost squashes the kart it ran into (the server checks the rest)
+                KartEntity hit = null;
+                double best = KartScale.toBlocks(2.0 * KartBump.HIT_RADIUS) + 1.0;
+                for (KartEntity other : mc.level.getEntitiesOfClass(KartEntity.class, kart.getBoundingBox().inflate(best), e -> e != kart && !e.isRemoved())) {
+                    double d = other.distanceTo(kart);
+                    if (d < best) {
+                        best = d;
+                        hit = other;
+                    }
+                }
+                if (hit != null) {
+                    lastSquishSent = now;
+                    PacketDistributor.sendToServer(new com.ctrcraft.net.KartSquishPayload(kart.getId(), hit.getId()));
+                }
+            }
             if (b.id() < 0 || b.impact() < KartBump.FEEDBACK_MIN_IMPACT) {
                 continue;
             }
@@ -265,7 +316,14 @@ public final class KartDriver {
     }
 
     private static final java.util.Map<Integer, Long> LAST_HIT_SENT = new java.util.HashMap<>();
+    private static long lastSquishSent;
 
+    /** Whether the kart ignores rough terrain: in a race its rules say so (they override the kart's own switch); otherwise the kart's offroad tires are installed and switched on. */
+    private static boolean offroadActive(KartEntity kart) {
+        return com.ctrcraft.track.RaceClient.active() ? com.ctrcraft.track.RaceClient.rules().offroad() : kart.offroadOn();
+    }
+
+    private static boolean springLatch;
     private static boolean dismountSent;
     private static net.minecraft.world.level.Level worldLevel;
 
@@ -364,7 +422,7 @@ public final class KartDriver {
 
     /** The kart's smoothed ground normal (what it leans on) as two bytes: x and z, value = n * 127 + 127. */
     private static int tiltData() {
-        com.ctrcraft.physics.V3 up = sim.facing().y;
+        com.ctrcraft.physics.V3 up = sim.visualNormal();
         int nx = (int) Math.round(Math.max(-1.0, Math.min(1.0, up.x)) * 127.0) + 127;
         int nz = (int) Math.round(Math.max(-1.0, Math.min(1.0, up.z)) * 127.0) + 127;
         return (nx & 0xFF) | ((nz & 0xFF) << 8);
@@ -425,6 +483,9 @@ public final class KartDriver {
                     sound = e.value() >= 0xDD ? ModSounds.CRASH_HARD.get() : e.value() > 0xA0 ? ModSounds.CRASH_MID.get() : ModSounds.CRASH_SOFT.get();
                     volume = e.value() / 255.0F;
                 }
+                case BURN -> sound = ModSounds.BURN.get();
+                case SQUISH -> sound = ModSounds.SQUISH.get();
+                case SQUISH_RESTORE -> sound = ModSounds.SQUISH_RESTORE.get();
                 case SPIN_OUT -> {
                     if (com.ctrcraft.CtrClientConfig.SPIN_OUT_SOUND.get()) sound = ModSounds.SPIN_OUT.get();         // the mod's own, off unless the player wants it
                 }

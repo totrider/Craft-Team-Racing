@@ -23,6 +23,8 @@ public class CtrCraftMod {
         ModItems.register(modEventBus);
         ModSounds.register(modEventBus);
         ModComponents.register(modEventBus);
+        ModRecipes.register(modEventBus);
+        modEventBus.addListener((net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent e) -> e.enqueueWork(com.ctrcraft.kart.KartItem::registerCauldron));
         modContainer.registerConfig(net.neoforged.fml.config.ModConfig.Type.SERVER, CtrConfig.SPEC);
         modContainer.registerConfig(net.neoforged.fml.config.ModConfig.Type.CLIENT, CtrClientConfig.SPEC);
         ModCreativeTabs.register(modEventBus);
@@ -47,6 +49,15 @@ public class CtrCraftMod {
                 com.ctrcraft.pickup.UseItemPayload::handle);
         registrar.playToServer(com.ctrcraft.net.KartHitPayload.TYPE, com.ctrcraft.net.KartHitPayload.STREAM_CODEC,
                 com.ctrcraft.net.KartHitPayload::handle);
+        registrar.playToClient(com.ctrcraft.track.RulesPayload.TYPE, com.ctrcraft.track.RulesPayload.STREAM_CODEC, com.ctrcraft.track.RulesPayload::handle);
+        registrar.playToServer(com.ctrcraft.net.RulebookSavePayload.TYPE, com.ctrcraft.net.RulebookSavePayload.STREAM_CODEC, com.ctrcraft.net.RulebookSavePayload::handle);
+        registrar.playToClient(com.ctrcraft.net.OpenKartSettingsPayload.TYPE, com.ctrcraft.net.OpenKartSettingsPayload.STREAM_CODEC, com.ctrcraft.net.OpenKartSettingsPayload::handle);
+        registrar.playToServer(com.ctrcraft.net.KartSettingsPayload.TYPE, com.ctrcraft.net.KartSettingsPayload.STREAM_CODEC, com.ctrcraft.net.KartSettingsPayload::handle);
+        registrar.playToClient(com.ctrcraft.net.OpenSpotPayload.TYPE, com.ctrcraft.net.OpenSpotPayload.STREAM_CODEC, com.ctrcraft.net.OpenSpotPayload::handle);
+        registrar.playToServer(com.ctrcraft.net.SetSpotPayload.TYPE, com.ctrcraft.net.SetSpotPayload.STREAM_CODEC, com.ctrcraft.net.SetSpotPayload::handle);
+        registrar.playToServer(com.ctrcraft.net.DropTableSavePayload.TYPE, com.ctrcraft.net.DropTableSavePayload.STREAM_CODEC, com.ctrcraft.net.DropTableSavePayload::handle);
+        registrar.playToServer(com.ctrcraft.net.KartSquishPayload.TYPE, com.ctrcraft.net.KartSquishPayload.STREAM_CODEC,
+                com.ctrcraft.net.KartSquishPayload::handle);
         registrar.playToClient(com.ctrcraft.track.TrackSnapshotPayload.TYPE, com.ctrcraft.track.TrackSnapshotPayload.STREAM_CODEC,
                 com.ctrcraft.track.TrackSnapshotPayload::handle);
         registrar.playToClient(com.ctrcraft.track.TestDrivePayload.TYPE, com.ctrcraft.track.TestDrivePayload.STREAM_CODEC,

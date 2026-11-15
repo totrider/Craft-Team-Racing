@@ -32,6 +32,7 @@ public class PickupRenderer extends EntityRenderer<PickupEntity> {
     public static final ModelResourceLocation POWER_FRUIT = model("pickup_power_fruit");
     public static final ModelResourceLocation FRUIT_CRATE = model("pickup_fruit_crate");
     public static final ModelResourceLocation POWERUP_CRATE = model("pickup_powerup_crate");
+    public static final ModelResourceLocation POWERUP_CRATE_BLANK = model("pickup_powerup_crate_blank");
     private static final Direction[] SIDES = { Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST, null };
 
     private final RandomSource random = RandomSource.create();
@@ -50,7 +51,7 @@ public class PickupRenderer extends EntityRenderer<PickupEntity> {
     public void render(PickupEntity entity, float yaw, float partialTick, PoseStack pose, MultiBufferSource buffers, int light) {
         PickupKind kind = entity.kind();
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(
-                kind == PickupKind.FRUIT ? POWER_FRUIT : kind == PickupKind.FRUIT_CRATE ? FRUIT_CRATE : POWERUP_CRATE);
+                kind == PickupKind.FRUIT ? POWER_FRUIT : kind == PickupKind.FRUIT_CRATE ? FRUIT_CRATE : entity.itemId().isEmpty() ? POWERUP_CRATE : POWERUP_CRATE_BLANK);
         float t = entity.tickCount + partialTick;
         pose.pushPose();
         // the models are in the original's size already: a crate stands on the spot, the fruit floats a little
@@ -71,6 +72,8 @@ public class PickupRenderer extends EntityRenderer<PickupEntity> {
                 consumer.putBulkData(pose.last(), quad, 1.0F, 1.0F, 1.0F, 1.0F, light, OverlayTexture.NO_OVERLAY);
             }
         }
+        // a crate locked to power-ups shows the icon on each of its six faces, where the "?" is
+        if (kind == PickupKind.POWERUP_CRATE && !sprite && !entity.itemId().isEmpty()) IconBillboard.drawFaces(pose, buffers, entity.itemId(), (long) t, light);
         pose.popPose();
         super.render(entity, yaw, partialTick, pose, buffers, light);
     }

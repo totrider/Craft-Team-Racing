@@ -19,6 +19,9 @@ public final class Surface {
     public static final int MUD = 7;
     public static final int SIDESLIP = 8;
     public static final int PAD = 64;
+    /** A super turbo pad: CTR's second pad type (COLL_STEP_TRIGGER_SUPER_TURBO_PAD), which the original only ever lays down with a cheat. */
+    public static final int SUPER_PAD = 128;
+    public static final int PADS = PAD | SUPER_PAD;
 
     public static Terrain terrain(int code) {
         return switch (code & 63) {
@@ -35,6 +38,10 @@ public final class Surface {
     }
 
     public static boolean isPad(int code) {
-        return (code & PAD) != 0;
+        return (code & PADS) != 0;
+    }
+
+    public static boolean isSuperPad(int code) {
+        return (code & SUPER_PAD) != 0;
     }
 }

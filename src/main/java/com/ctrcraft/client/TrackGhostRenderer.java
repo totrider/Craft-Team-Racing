@@ -50,6 +50,15 @@ public final class TrackGhostRenderer {
     /** Rotation 0 is south and it turns clockwise (west, north, east), like a standing sign. */
     private static final String[] COMPASS = { "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW", "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE" };
 
+    /** A track node's block outline is not drawn: the node's own box (above) is the highlight, and the two would lie on the same lines and fight. */
+    @SubscribeEvent
+    public static void onHighlight(net.neoforged.neoforge.client.event.RenderHighlightEvent.Block event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null && mc.level.getBlockState(event.getTarget().getBlockPos()).getBlock() instanceof TrackNodeBlock) {
+            event.setCanceled(true);
+        }
+    }
+
     @SubscribeEvent
     public static void onRender(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
@@ -57,7 +66,7 @@ public final class TrackGhostRenderer {
         }
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
-        if (player == null || mc.level == null || !(TrackEvents.holdsTrackItem(player) || TestDriveClient.active())) {
+        if (player == null || mc.level == null || !(TrackEvents.holdsTrackItem(player) || TrackEvents.holdsStartViewItem(player) || TestDriveClient.active())) {
             return;
         }
         GlobalPos selected = null;
@@ -66,6 +75,7 @@ public final class TrackGhostRenderer {
                 selected = stack.get(ModComponents.SELECTED_NODE.get());
             }
         }
+        boolean startsOnly = !TrackEvents.holdsTrackItem(player) && !TestDriveClient.active();           // a rulebook or a drop table in hand: just the Start nodes
         long selectedPos = selected != null && selected.dimension().equals(mc.level.dimension()) ? selected.pos().asLong() : Long.MIN_VALUE;
 
         PoseStack pose = event.getPoseStack();
@@ -85,14 +95,25 @@ public final class TrackGhostRenderer {
             if (cam.distanceToSqr(cx, cy, cz) > VIEW_DISTANCE * VIEW_DISTANCE) {
                 continue;
             }
+            if (startsOnly && n.kind() != TrackGraph.Kind.START) {
+                continue;
+            }
             boolean sel = n.pos() == selectedPos;
+            // the node under the crosshair is shown by its own box in a brighter colour (the vanilla outline of the block is hidden: it would be drawn on the same lines)
+            boolean hover = !sel && mc.hitResult instanceof BlockHitResult target && target.getType() == HitResult.Type.BLOCK && target.getBlockPos().asLong() == n.pos();
             float[] c = sel ? new float[] { 1.0F, 1.0F, 1.0F } : colour(n.kind());
-            float a = sel ? pulse : 0.9F;
-            drawNode(pose, p, lines, n.pos(), n.rotation(), n.ext(), c[0], c[1], c[2], a, sel ? 0.8F : 0.4F, 1.6);
+            if (hover) {
+                c = new float[] { 0.45F + 0.55F * c[0], 0.45F + 0.55F * c[1], 0.45F + 0.55F * c[2] };
+            }
+            float a = sel ? pulse : hover ? 1.0F : 0.9F;
+            drawNode(pose, p, lines, n.pos(), n.rotation(), n.ext(), c[0], c[1], c[2], a, sel || hover ? 0.8F : 0.4F, 1.6);
             if (TestDriveClient.isCandidate(n.pos())) {
                 target(p, lines, n.pos(), n.rotation(), n.ext(), pulse);
             }
 
+            if (startsOnly) {
+                continue;
+            }
             // links, once per pair
             for (long other : n.links()) {
                 if (other < n.pos() || TrackClient.get(other) == null) {

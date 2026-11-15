@@ -184,6 +184,31 @@
       "ctrcraft:item_get_charged"
     ]
   },
+  "clock": {
+    "sounds": [
+      "ctrcraft:clock"
+    ]
+  },
+  "wobble_thump": {
+    "sounds": [
+      "ctrcraft:wobble_thump"
+    ]
+  },
+  "squish": {
+    "sounds": [
+      "ctrcraft:squish"
+    ]
+  },
+  "squish_restore": {
+    "sounds": [
+      "ctrcraft:squish_restore"
+    ]
+  },
+  "burn": {
+    "sounds": [
+      "ctrcraft:burn"
+    ]
+  },
   "crash_soft": {
     "sounds": [
       "ctrcraft:crash_soft"
@@ -217,6 +242,9 @@
     "sounds": []
   },
   "music.race_end.other": {
+    "sounds": []
+  },
+  "silent": {
     "sounds": []
   }
 }

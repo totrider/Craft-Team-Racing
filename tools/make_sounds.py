@@ -25,7 +25,7 @@ rng = np.random.default_rng(1996)
 
 SOUNDS = ["engine_loop", "skid_loop", "turbo_loop", "hop", "land", "drift_start", "boost", "boost_fail", "meter_red", "meter_full",
           "hang_time", "wall_hit", "slam", "spin_out",
-          "light_count", "light_green", "fruit_pickup", "glass_shatter", "mine_drop", "tnt_hit", "tnt_land", "tnt_tick", "tnt_explode", "crate_break", "bomb_launch", "bomb_roll", "bomb_explode", "shield_on", "shield_pop", "shield_roll", "missile_launch", "missile_fly", "missile_explode", "tracker_beep", "item_roll", "item_get", "item_get_charged", "crash_soft", "crash_mid", "crash_hard", "fruit_arrive"]
+          "light_count", "light_green", "fruit_pickup", "glass_shatter", "mine_drop", "tnt_hit", "tnt_land", "tnt_tick", "tnt_explode", "crate_break", "bomb_launch", "bomb_roll", "bomb_explode", "shield_on", "shield_pop", "shield_roll", "missile_launch", "missile_fly", "missile_explode", "tracker_beep", "item_roll", "item_get", "item_get_charged", "clock", "wobble_thump", "squish", "squish_restore", "burn", "crash_soft", "crash_mid", "crash_hard", "fruit_arrive"]
 
 
 # the race music's events: empty here (the mod ships no music), a resource pack puts its files in them (see docs/MUSIC.md)
@@ -359,6 +359,47 @@ def item_get_charged():
     return fade(norm(out, 0.65))
 
 
+def wobble_thump():
+    """The kart's bounce while it wobbles (stand-in): a short low thump."""
+    t = t_axis(0.12)
+    x = np.sin(2 * np.pi * (110 + 70 * decay(t, 0.02)) * t) * decay(t, 0.04) + 0.3 * lowpass(noise(len(t)), 900) * decay(t, 0.02)
+    return fade(norm(x, 0.6))
+
+
+def squish():
+    """A kart squashed flat (stand-in): a falling slide whistle and a thud."""
+    t = t_axis(0.5)
+    x = np.sin(2 * np.pi * np.cumsum(900 * decay(t, 0.18) + 120) / SR) * decay(t, 0.25) * 0.7
+    thud = np.sin(2 * np.pi * 70 * t) * decay(t, 0.06)
+    return fade(norm(x + 0.6 * thud, 0.7))
+
+
+def squish_restore():
+    """A squashed kart springing back (stand-in): a rising boing."""
+    t = t_axis(0.4)
+    x = np.sin(2 * np.pi * np.cumsum(200 + 700 * (t / 0.4)) / SR) * decay(t, 0.2)
+    return fade(norm(x, 0.65))
+
+
+def burn():
+    """A kart catching fire (stand-in): a whoosh and a crackle."""
+    t = t_axis(0.7)
+    whoosh = bandpass(noise(len(t)), 300, 2500) * np.minimum(1.0, t / 0.08) * decay(t, 0.3)
+    crackle = (rng.random(len(t)) > 0.985) * rng.uniform(-1, 1, len(t)) * decay(t, 0.5)
+    return fade(norm(whoosh + 0.8 * crackle, 0.7))
+
+
+def clock():
+    """The Clock's sound (stand-in): a tick, a tock and a rising chime."""
+    out = np.zeros(int(SR * 0.9))
+    for i, (f, start) in enumerate(((1200.0, 0.0), (900.0, 0.18), (1500.0, 0.42), (2000.0, 0.58))):
+        t = t_axis(0.3)
+        tone = (np.sin(2 * np.pi * f * t) + 0.3 * np.sin(4 * np.pi * f * t)) * decay(t, 0.05 if i < 2 else 0.12)
+        s0 = int(start * SR)
+        out[s0: s0 + len(tone)] += tone
+    return fade(norm(out, 0.65))
+
+
 def crash_soft():
     t = t_axis(0.2)
     x = np.sin(2 * np.pi * (90 + 60 * decay(t, 0.03)) * t) * decay(t, 0.06) + 0.4 * lowpass(noise(len(t)), 1200) * decay(t, 0.03)
@@ -388,6 +429,7 @@ def main():
         write_ogg(name, globals()[name]())
     sj = {name: {"sounds": ["ctrcraft:" + name]} for name in SOUNDS}
     sj.update({name: {"sounds": []} for name in MUSIC_EVENTS})
+    sj["silent"] = {"sounds": []}                      # an event with no sound (ModSounds.SILENT)
     with open(os.path.join(OUT, "sounds.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump(sj, f, indent=2)
     print("%d sounds written" % len(SOUNDS))

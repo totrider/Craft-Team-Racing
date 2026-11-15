@@ -39,13 +39,14 @@ import render_ctr_model as rm  # noqa: E402
 import extract_ctr_sounds as sounds  # noqa: E402  (the disc reader)
 import render_ctr_sprite as sprite  # noqa: E402  (the Wumpa fruit's spin, rendered from the model)
 import make_pickup_models as stand_in  # noqa: E402  (the pickup sheet's layout and palette)
+import crate_blank  # noqa: E402  (the power-up crate's face without its "?")
 
 PACK_FORMAT = 34
 
 # the mod's power-up id -> the game's icon name in shared.mpk (what the icon shows, from looking at them)
 POWER_ICONS = {
     "turbo": "turbonew", "bomb": "bomb", "bomb_3x": "bomb3", "missile": "bomb-tracker", "missile_3x": "bomb-tracker3",
-    "tnt": "nitro", "potion": "poison", "shield": "shield", "mask": "doctor", "clock": "clock", "warpball": "missile",
+    "tnt": "nitro", "potion": "poison", "shield": "shield", "mask": "doctor", "mask_dark": "ukauka", "clock": "clock", "warpball": "missile",
 }
 JUICED_ICONS = {"tnt_charged": "nitroj", "potion_charged": "poisonj", "shield_charged": "shieldj"}      # the mod calls the original's "juiced" state "charged" (the pack's lang file translates the words back)
 LAMPS = {"red_on": "lightredon", "red_off": "lightredoff", "green_on": "lightgreenon", "green_off": "lightgreenoff"}
@@ -134,6 +135,28 @@ def fit(img, box):
     return out
 
 
+QUESTION_MODE = None        # None: the pictures as the disc has them; "blank": the power-up crate's panel without its "?"; "mark": only the "?" (everything else transparent)
+_texture = ct.Vram.texture
+
+
+def _patched_texture(self, layout):
+    img = _texture(self, layout)
+    if QUESTION_MODE is None or img is None:
+        return img
+    panel = img.shape[:2] == (64, 64) and crate_blank.question_mask(np.asarray(img)) is not None
+    if QUESTION_MODE == "blank":
+        return crate_blank.blank(np.array(img)) if panel else img
+    if not panel:
+        return np.zeros_like(img)                                   # the frame strip and the rest: nothing
+    out = np.zeros_like(img)
+    m = crate_blank.question_mask(np.asarray(img))
+    out[m] = img[m]
+    return out
+
+
+ct.Vram.texture = _patched_texture
+
+
 def bake_face(vram, model, size):
     """The original's crate face as the game draws it: the model's front face (the triangles in the plane of the lowest z), rasterised at size x size with its own
     UVs and palette, so the mitred frame, the rivets and the panel are exactly the original's."""
@@ -144,6 +167,7 @@ def bake_face(vram, model, size):
     ys = [v[1] for v in verts if abs(v[2] - zmin) < 0.5]
     x0, x1, y0, y1 = min(xs), max(xs), min(ys), max(ys)
     out = np.zeros((size, size, 4), dtype=np.uint8)
+    cache = {}
     for corner, tex, _, _ in tris:
         pts = [verts[i] for i in corner]
         if not all(abs(p[2] - zmin) < 0.5 for p in pts):
@@ -165,9 +189,17 @@ def bake_face(vram, model, size):
                     continue
                 u = int(round(a * uv[0][0] + b * uv[1][0] + c * uv[2][0]))
                 v = int(round(a * uv[0][1] + b * uv[1][1] + c * uv[2][1]))
-                px = vram_texel(vram, tpage, clut, min(255, max(0, u)), min(255, max(0, v)))
-                if px:
-                    out[y, x] = px + (255,)
+                u, v = min(255, max(0, u)), min(255, max(0, v))
+                key = (u0, v0, clut, u1, v1, tpage, u2, v2, u3, v3)
+                if key not in cache:
+                    lay = ct.layout_bytes(model, tex)
+                    cache[key] = (vram.texture(lay), min(u0, u1, u2, u3), min(v0, v1, v2, v3))
+                img, bu, bv = cache[key]
+                if img is None:
+                    continue
+                texel = img[min(img.shape[0] - 1, max(0, v - bv)), min(img.shape[1] - 1, max(0, u - bu))]
+                if texel[3]:
+                    out[y, x] = tuple(int(c) for c in texel[:3]) + (255,)
     return Image.fromarray(out, "RGBA")
 
 
@@ -307,9 +339,10 @@ def crate_cube_files(crates, scale):
             files["textures/item/%s_crate_%s.png" % (key, part)] = pic
             tex[part] = "ctrcraft:item/%s_crate_%s" % (key, part)
         side = {"uv": [0, 0, 16, 16], "texture": "#side"}
-        files["models/item/pickup_%s.json" % {"question": "powerup_crate", "fruit": "fruit_crate"}.get(key, key)] = {
+        e = 0.0
+        files["models/item/pickup_%s.json" % {"question": "powerup_crate", "question_blank": "powerup_crate_blank", "fruit": "fruit_crate"}.get(key, key)] = {
             "textures": {"side": tex["side"], "top": tex["top"], "bottom": tex["bottom"], "particle": tex["side"]},
-            "elements": [{"from": [0, 0, 0], "to": [16, 16, 16], "faces": {
+            "elements": [{"from": [-e, -e, -e], "to": [16 + e, 16 + e, 16 + e], "faces": {
                 "north": side, "south": side, "east": side, "west": side,
                 "up": {"uv": [0, 0, 16, 16], "texture": "#top"}, "down": {"uv": [0, 0, 16, 16], "texture": "#bottom"}}}]}
     return files
@@ -405,6 +438,8 @@ def main():
     models = ct.level_models(big.read(ct.CRASH_COVE_1P_LEV))
     # the whole faces, baked from the meshes: at the panel's own size for the original-scale pack (a 64 texel panel fills two thirds of the face), at half that for
     # the Minecraft-size one
+    global QUESTION_MODE
+    QUESTION_MODE = None
     question_96 = bake_face(vram, models["crate_question"], 96)
     planks_96 = bake_face(vram, models["crate_fruit"], 96)
     question = question_96
@@ -413,10 +448,20 @@ def main():
     fruit = fruit_palette(models["fruit"])
     # the weapon crate and the fruit crate, like the TNT and Nitro ones: the real models (Crash Cove's level file) seen from the side, the top and the bottom with the
     # game's vertex shading, a face picture each
-    for key, mname in (("question", "crate_question"), ("fruit", "crate_fruit")):
+    # the weapon crate as the disc has it, and a second one without its "?" for a crate locked to one power-up (which shows that power-up's icon)
+    for key, mname, mode in (("question", "crate_question", None), ("question_blank", "crate_question", "blank"), ("fruit", "crate_fruit", None)):
+        QUESTION_MODE = mode
         pm = rm.Prepared(vram, models[mname])
         crates[key] = {"side": rm.render_view(pm, 0, 0, 96, fit_bbox=True), "top": rm.render_view(pm, 0, 90, 96, fit_bbox=True),
                        "bottom": rm.render_view(pm, 0, -90, 96, fit_bbox=True)}
+    QUESTION_MODE = None
+    # a look at the result: the blank faces (side, top, bottom) above, the standard faces below
+    prev = Image.new("RGBA", (3 * 96 * 2, 2 * 96 * 2), (40, 40, 40, 255))
+    for i, part in enumerate(("side", "top", "bottom")):
+        prev.alpha_composite(crates["question_blank"][part].resize((192, 192), Image.NEAREST), (i * 192, 0))
+        prev.alpha_composite(crates["question"][part].resize((192, 192), Image.NEAREST), (i * 192, 192))
+    os.makedirs(args.out, exist_ok=True)
+    prev.save(os.path.join(args.out, "crate_blank_preview.png"))
     print("crate faces: %dx%d and %dx%d" % (question.width, question.height, planks.width, planks.height))
 
     # the 3D bomb with its spark, and the burst effects: the same for both packs (their sizes are not the crates' or icons' scale)

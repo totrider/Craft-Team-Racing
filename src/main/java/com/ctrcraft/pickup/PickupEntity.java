@@ -21,6 +21,9 @@ import net.minecraft.world.phys.AABB;
 public class PickupEntity extends Entity {
     private static final EntityDataAccessor<Integer> DATA_KIND = SynchedEntityData.defineId(PickupEntity.class, EntityDataSerializers.INT);
 
+    /** The power-up the spot it came from always gives ("" for the roulette): the builder's client draws its icon over the crate. */
+    private static final EntityDataAccessor<String> DATA_ITEM = SynchedEntityData.defineId(PickupEntity.class, EntityDataSerializers.STRING);
+
     private BlockPos spot;
 
     public PickupEntity(EntityType<?> type, Level level) {
@@ -30,6 +33,14 @@ public class PickupEntity extends Entity {
 
     public PickupKind kind() {
         return PickupKind.byOrdinal(entityData.get(DATA_KIND));
+    }
+
+    public String itemId() {
+        return entityData.get(DATA_ITEM);
+    }
+
+    public void setItem(String id) {
+        entityData.set(DATA_ITEM, id == null ? "" : id);
     }
 
     public void setKind(PickupKind kind) {
@@ -62,6 +73,7 @@ public class PickupEntity extends Entity {
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(DATA_KIND, 0);
+        builder.define(DATA_ITEM, "");
     }
 
     @Override

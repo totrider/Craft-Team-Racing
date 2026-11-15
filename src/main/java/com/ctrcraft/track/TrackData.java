@@ -34,6 +34,59 @@ public class TrackData extends SavedData {
         return startsCache;
     }
 
+    /** The rule set a track's Start node has as its default, and the one set for the next race only (not saved: it is used up by that race). */
+    private final Map<Long, com.ctrcraft.items.RuleSet> defaultRules = new HashMap<>();
+    private final Map<Long, com.ctrcraft.items.RuleSet> temporaryRules = new HashMap<>();
+
+    /** The rules a race on this track starts with: the one set for the next race, else the track's default, else CTR's. */
+    public com.ctrcraft.items.RuleSet rules(long start) {
+        com.ctrcraft.items.RuleSet r = temporaryRules.get(start);
+        if (r == null) r = defaultRules.get(start);
+        return r == null ? com.ctrcraft.items.RuleSet.CTR : r;
+    }
+
+    /** The drop table a Start node has as its default and the one set for the next race only: kept apart from the rules so a table can be swapped without touching them. */
+    private final Map<Long, com.ctrcraft.items.PowerupTable> defaultTables = new HashMap<>();
+    private final Map<Long, com.ctrcraft.items.PowerupTable> temporaryTables = new HashMap<>();
+
+    /** The rules a race starts with: {@link #rules} with the drop table of the track (the one for the next race, else the default) in place of the rules' own, when there is one. */
+    public com.ctrcraft.items.RuleSet effectiveRules(long start) {
+        com.ctrcraft.items.RuleSet r = rules(start);
+        com.ctrcraft.items.PowerupTable t = temporaryTables.get(start);
+        if (t == null) t = defaultTables.get(start);
+        return t == null ? r : r.withPowerups(t);
+    }
+
+    public void setDefaultTable(long start, com.ctrcraft.items.PowerupTable table) {
+        if (table.isCtr()) defaultTables.remove(start);
+        else defaultTables.put(start, table);
+        setDirty();
+    }
+
+    public void setTemporaryTable(long start, com.ctrcraft.items.PowerupTable table) {
+        temporaryTables.put(start, table);
+    }
+
+    /** Everything set for one race only is used up. */
+    public void clearTemporaryAll(long start) {
+        temporaryRules.remove(start);
+        temporaryTables.remove(start);
+    }
+
+    public void setDefaultRules(long start, com.ctrcraft.items.RuleSet rules) {
+        if (rules.isCtr()) defaultRules.remove(start);
+        else defaultRules.put(start, rules);
+        setDirty();
+    }
+
+    public void setTemporaryRules(long start, com.ctrcraft.items.RuleSet rules) {
+        temporaryRules.put(start, rules);
+    }
+
+    public void clearTemporaryRules(long start) {
+        temporaryRules.remove(start);
+    }
+
     /** What test drives recorded, by the start node of the track. */
     private final Map<Long, TrackRoutes> routes = new HashMap<>();
 
@@ -89,6 +142,28 @@ public class TrackData extends SavedData {
             rl.add(t);
         }
         tag.put("routes", rl);
+        ListTag rules = new ListTag();
+        for (Map.Entry<Long, com.ctrcraft.items.RuleSet> e : defaultRules.entrySet()) {
+            if (!graph.contains(e.getKey())) continue;
+            com.ctrcraft.RulebookData.RULESET_CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, e.getValue()).result().ifPresent(t -> {
+                CompoundTag c = new CompoundTag();
+                c.putLong("start", e.getKey());
+                c.put("rules", t);
+                rules.add(c);
+            });
+        }
+        tag.put("rules", rules);
+        ListTag tables = new ListTag();
+        for (Map.Entry<Long, com.ctrcraft.items.PowerupTable> e : defaultTables.entrySet()) {
+            if (!graph.contains(e.getKey())) continue;
+            com.ctrcraft.DropTableData.TABLE_CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, e.getValue()).result().ifPresent(t -> {
+                CompoundTag c = new CompoundTag();
+                c.putLong("start", e.getKey());
+                c.put("table", t);
+                tables.add(c);
+            });
+        }
+        tag.put("tables", tables);
         return tag;
     }
 
@@ -119,6 +194,18 @@ public class TrackData extends SavedData {
                 r.addBranch(new TrackRoutes.Branch(bt.getLong("from"), bt.getLong("to"), bt.getLongArray("nodes")));
             }
             data.routes.put(t.getLong("start"), r);
+        }
+        ListTag ruleList = tag.getList("rules", Tag.TAG_COMPOUND);
+        for (int i = 0; i < ruleList.size(); i++) {
+            CompoundTag c = ruleList.getCompound(i);
+            long start = c.getLong("start");
+            com.ctrcraft.RulebookData.RULESET_CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, c.get("rules")).result().ifPresent(r -> data.defaultRules.put(start, r));
+        }
+        ListTag tableList = tag.getList("tables", Tag.TAG_COMPOUND);
+        for (int i = 0; i < tableList.size(); i++) {
+            CompoundTag c = tableList.getCompound(i);
+            long start = c.getLong("start");
+            com.ctrcraft.DropTableData.TABLE_CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, c.get("table")).result().ifPresent(t -> data.defaultTables.put(start, t));
         }
         return data;
     }

@@ -96,6 +96,9 @@ public final class KartSim {
     private static final int HANG_TIME_RESERVES = 960;
     private static final int TURBO_PAD_RESERVES = 0x3C0;
     private static final int TURBO_PAD_ACCEL = 8000;
+    /** The super turbo pad (VEH_PHYS_FORCE_SUPER_TURBO_PAD_RESERVES / _FIRE_LEVEL, VehPhysForce.c:131-134): a short push (0x78) but with fire level 0x800, a speed cap eight times the pad's climb. */
+    private static final int SUPER_PAD_RESERVES = 0x78;
+    private static final int SUPER_PAD_FIRE = 0x800;
     private static final int ICE_EXIT_MS = -320;
     /** The kart's collision sphere: radius and centre height above the origin (lu). */
     public static final double SPHERE_RADIUS = 25.0;
@@ -216,6 +219,8 @@ public final class KartSim {
 
     private V3 n1 = V3.UP;
     private V3 n2 = V3.UP;
+    /** The smoothed ground normal as the renderer should lean the kart (n2 without the hazard wobble, which the renderer adds smoothly itself). */
+    private V3 n2c = V3.UP;
     private V3 n4 = V3.UP;
     private Mat3 moving;
     private Mat3 facing;
@@ -317,7 +322,7 @@ public final class KartSim {
         return Math.min(7, flameAlpha >> 9);
     }
 
-    /** Burning past the sacred fire cap (4096): only a super turbo pad gives that in CTR (a cheat), and we have none yet. */
+    /** Burning past the sacred fire cap (4096): only a super turbo pad gives that in CTR (laid down only by a cheat there; here it is the Super Boost family). */
     public boolean ultraFire() {
         return flameOn && fireSpeedCap > SACRED_FIRE_SPEED;
     }
@@ -466,6 +471,7 @@ public final class KartSim {
         reserves = 0;
         n1 = V3.UP;
         n2 = V3.UP;
+        n2c = V3.UP;
         moving = rotAxisAngle(V3.UP, heading);
         facing = moving;
     }
@@ -479,7 +485,19 @@ public final class KartSim {
         }
     }
 
+    /** A super turbo pad (COLL_STEP_TRIGGER_SUPER_TURBO_PAD): VehFire_Increment(0x78 reserves, FREEZE type, fire level 0x800). */
+    public void superTurboPad() {
+        if ((flags & ACCEL_PREVENTION) != 0) return;
+        onPad = true;
+        onSuperPad = true;
+        if (fireIncrement(SUPER_PAD_RESERVES, FireKind.FREEZE, SUPER_PAD_FIRE) && !padPrev) {
+            events.add(KartEvent.of(KartEvent.Type.BOOST));
+        }
+    }
+
     private boolean padPrev;
+    /** The kart is on a super turbo pad this tick: a boost cap above the sacred fire is kept (VehFire.c:314-322, the STP test). */
+    private boolean onSuperPad;
 
     /** AccelSpeed_ClassStat: Speed_ClassStat + 1500 in every class (reference/wok/ctr-physics-spec.md, stats.rs). */
     public int accelSpeed() {
@@ -503,6 +521,7 @@ public final class KartSim {
      */
     public void itemTurbo(boolean charged) {
         if (fireIncrement(0x960, FireKind.FREEZE, charged ? 0x100 : 0x80)) {
+            turboItem = true;
             events.add(new KartEvent(KartEvent.Type.BOOST, 2));
         }
     }
@@ -518,6 +537,89 @@ public final class KartSim {
     public void setCloud(int effect, int ms) {
         cloudEffect = effect;
         cloudMs = ms;
+    }
+
+    /** The original's hazardTimer is positive while the Clock holds the kart, a rain cloud slows it or it is squished: the kart wobbles (COLL_FIXED_PlayerSearch, DrawTires). */
+    public boolean wobbling() {
+        // VehPhysProc: the timer only goes positive while the kart touches the ground and moves faster than VEH_PHYS_PROC_HAZARD_LOW_SPEED_THRESHOLD (0x101); slower or in the air it turns negative
+        return (clockMs > 0 || squishMs > 0 || (cloudMs > 0 && cloudEffect == CLOUD_SLOW)) && grounded() && Math.abs(speedApprox) >= 0x101;
+    }
+
+    /** The lean the renderer shows (without the wobble, which it draws itself). */
+    public V3 visualNormal() {
+        return n2c;
+    }
+
+    /**
+     * The turbo item's boost (ACTION_TURBO_ITEM: set by VehFire_Increment with the TURBO_ITEM type, cleared when the turbo dies), a squashed kart's timer (squishTimer 0xf00 ms) and
+     * the frames of its spring back, and a forced high jump waiting (FORCED_JUMP_HIGH).
+     */
+    private boolean turboItem;
+    private int squishMs;
+    private int squishRecover;
+    private boolean forceHighJump;
+    /** burnTimer: a kart set on fire (VEH_PICK_DAMAGE_BURN) burns for 0xf00 ms, with no input for 0x780 ms and a spin out, and has the full damaged speed taken off its top speed. */
+    private int burnMs;
+
+    public void itemBurn() {
+        if (burnMs == 0) events.add(KartEvent.of(KartEvent.Type.BURN));                // VehPickState: the burn sound plays when it was not burning already
+        burnMs = 0xf00;
+        spinOut(0x780);
+    }
+
+    public boolean burning() {
+        return burnMs > 0;
+    }
+
+    public boolean turboItem() {
+        return turboItem && reserves > 0;
+    }
+
+    /** A kart under a turbo item boost ran into this one (VehPickState_NewState, VEH_PICK_DAMAGE_SQUISH): flat for 0xf00 ms, no input for 0xf0, a spin out. */
+    public void itemSquish() {
+        if (state != State.SPINNING) events.add(KartEvent.of(KartEvent.Type.SQUISH));
+        squishMs = 0xf00;
+        squishRecover = 0;
+        spinOut(0xf0);
+    }
+
+    // ---- upgrades and fluids (extensions: not in the original) ----
+    /** Gravity while airborne, as a fraction (the Low Gravity Module: 1 down to 0.1). */
+    private double gravityScale = 1.0;
+    /** 0 none, 1 water, 2 lava: the kart is inside it (the host says so). */
+    private int fluid;
+    private int springCooldownMs;
+    private static final int SPRING_COOLDOWN_MS = 1500;
+    /** A fall's speed at rest in water / lava, as a fraction of the terminal velocity: the drag per step that gives it (gravity 900 against it). */
+    private static final double WATER_DRAG = 1.0 - 900.0 / (TERMINAL_VELOCITY * 0.25);
+    private static final double LAVA_DRAG = 1.0 - 900.0 / (TERMINAL_VELOCITY * 0.12);
+
+    /** The Low Gravity Module: {@code tenths} of 0 to 10 (0 off, 10 the slowest fall, a tenth of gravity). Gravity is only scaled in the air, so slopes drive as they do. */
+    public void setLowGravity(int tenths) {
+        gravityScale = 1.0 - 0.09 * Math.max(0, Math.min(10, tenths));
+    }
+
+    /** Which fluid the kart is in (0 none, 1 water, 2 lava): it slows the vertical speed so a fall into it is cushioned. */
+    public void setFluid(int kind) {
+        fluid = kind;
+    }
+
+    /** The Jump Spring upgrade's key: the spring's high jump, from the ground, once every 1.5 s. */
+    public boolean springJump() {
+        if (springCooldownMs > 0 || !grounded() || state == State.SPINNING || state == State.CRASHING) return false;
+        springCooldownMs = SPRING_COOLDOWN_MS;
+        forceHighJump = true;
+        return true;
+    }
+
+    /** VehPhysCrash_Attack: the kart that squashed another is thrown into a high jump (forcedJumpType = FORCED_JUMP_HIGH). */
+    public void forceHighJump() {
+        forceHighJump = true;
+    }
+
+    /** What the synced flags carry of the squash: 2 flat, 8 + frame while it springs back (0 to 7), else 0. */
+    public int squishCode() {
+        return squishMs > 0 ? 2 : squishRecover > 0 ? 8 + (8 - squishRecover) : 0;
     }
 
     public boolean cloudActive() {
@@ -560,6 +662,18 @@ public final class KartSim {
     public void tick(Collider world, KartInput input) {
         boolean tappedR1 = input.r1() && !prevR1;
         boolean tappedL1 = input.l1() && !prevL1;
+        if (clockMs > 0) clockMs = Math.max(0, clockMs - MS);
+        if (burnMs > 0) burnMs = Math.max(0, burnMs - MS);
+        if (squishMs > 0) {
+            squishMs = Math.max(0, squishMs - MS);
+            if (squishMs == 0) {
+                squishRecover = 8;                                  // VehPhysForce: scale.y comes back (BAKED_GTE_MATRIX_SQUISH_RECOVER) and the restore sound plays
+                events.add(KartEvent.of(KartEvent.Type.SQUISH_RESTORE));
+            }
+        } else if (squishRecover > 0) {
+            squishRecover--;
+        }
+        if (reserves == 0) turboItem = false;
         if (cloudMs > 0) {
             cloudMs = Math.max(0, cloudMs - MS);
             if (cloudEffect == CLOUD_JUMP_LOCKOUT) {      // RAIN_CLOUD_EFFECT_JUMP_LOCKOUT: the jump button does nothing
@@ -598,7 +712,16 @@ public final class KartSim {
         // TRANSLATE_MATRIX: the visual frame.
         double w = grounded() ? 6.0 : 7.0;
         V3 target = grounded() ? n1 : V3.UP;
-        n2 = n2.mul(w).add(target.mul(8.0 - w)).div(8.0).normalizeOr(V3.UP);
+        n2c = n2c.mul(w).add(target.mul(8.0 - w)).div(8.0).normalizeOr(V3.UP);
+        V3 blended = n2.mul(w).add(target.mul(8.0 - w)).div(8.0);
+        // COLL_FIXED_PlayerSearch: while the hazard timer is positive the blended normal gets (sin, cos)(timer x 12 of 4096) x 25 >> 10 (of 4096), turned by the kart's own matrix, added
+        // before it is normalised: the wobble goes into the stored normal (and so into the next blend), which the facing frame and the airborne slope use
+        if (wobbling()) {
+            int timer = (clockMs > 0 ? clockMs : squishMs > 0 ? squishMs : cloudMs) | 1;
+            double a = 2.0 * Math.PI * ((timer * 12) & 0xFFF) / 4096.0;
+            blended = blended.add(moving.mul(new V3(Math.sin(a) * 100.0 / 4096.0, 0.0, Math.cos(a) * 100.0 / 4096.0)));
+        }
+        n2 = blended.normalizeOr(V3.UP);
         facing = rotAxisAngle(n2, wrap(angle + turnAngle));
         hangTime();
         engineSoundTick();
@@ -612,6 +735,8 @@ public final class KartSim {
         flameTick();
         padPrev = onPad;
         onPad = false;
+        onSuperPad = false;
+        if (springCooldownMs > 0) springCooldownMs = Math.max(0, springCooldownMs - MS);
     }
 
     /**
@@ -950,9 +1075,25 @@ public final class KartSim {
         // in every engine class); taken after the power fruit and the reserves, before the cap
         int subtract = 0;
         if (tntOnHead) subtract = DAMAGED_SPEED >> 1;
-        if (cloudMs > 0 && cloudEffect == CLOUD_SLOW) subtract = DAMAGED_SPEED;
-        return Math.min(b + bonus - subtract, MAX_BASE_SPEED);
+        if (squishMs > 0 || burnMs > 0 || (cloudMs > 0 && cloudEffect == CLOUD_SLOW)) subtract = DAMAGED_SPEED;
+        if (clockMs > 0) subtract = Math.max(subtract, (DAMAGED_SPEED * (0x14 - clockRank)) >> 4);        // VEH_BASE_SPEED_CLOCK_RANK_BASE 0x14, _DAMAGE_SHIFT 4
+        int top = Math.min(b + bonus - subtract, MAX_BASE_SPEED);
+        // RuleSet.maxSpeedPercent: a cap on the top speed as a percentage of the engine class's (0: none)
+        if (speedCapPercent > 0) top = Math.min(top, kartClass.speed * speedCapPercent / 100);
+        return top;
     }
+
+    /** The Clock's hold (clockReceive): ms left and the place it was received at (0 is first); the top speed loses DAMAGED_SPEED * (20 - place) >> 4 of it. */
+    private int clockMs;
+    private int clockRank;
+
+    public void setClock(int rank, int ms) {
+        clockRank = rank;
+        clockMs = ms;
+    }
+
+    /** The race's top speed cap, percent of the class's (0: none): set by the host each frame. */
+    public int speedCapPercent;
 
     /** MetaPhys DAMAGED_SPEED_OFFSET: the same 4096 for the four engine classes (zGlobal_DATA.c). */
     private static final int DAMAGED_SPEED = 4096;
@@ -1160,7 +1301,9 @@ public final class KartSim {
         vel = new V3(sp * Math.cos(pitch) * Math.sin(yaw), sp * Math.sin(pitch), sp * Math.cos(pitch) * Math.cos(yaw));
         V3 l = moving.mulTransposed(vel);
         V3 l0 = l;
-        V3 g = moving.mulTransposed(new V3(0, -GRAVITY, 0));
+        boolean airborne = (flagsPrev & TOUCH_GROUND) == 0;
+        double gs = airborne ? gravityScale : 1.0;
+        V3 g = moving.mulTransposed(new V3(0, -GRAVITY * gs, 0));
         double gx = g.x, gy = g.y, gz = g.z;
         if ((gz < 0 && fwdAccelImpulse > 0) || (gz > 0 && fwdAccelImpulse < 0)) gz = 0;
         boolean opposite = (baseSpeed > 0 && speedApprox < 0) || (baseSpeed < 0 && speedApprox > 0);
@@ -1175,13 +1318,17 @@ public final class KartSim {
         else if (gz < 0) lz = Math.max(lz, Math.min(l0.z, fire - 2560));
         double side = SIDE_SPEED_CLAMP;
         lx = Math.max(Math.min(l0.x, -side), Math.min(lx, Math.max(l0.x, side)));
-        ly = Math.max(ly, Math.min(l0.y, -TERMINAL_VELOCITY));
+        ly = Math.max(ly, Math.min(l0.y, -TERMINAL_VELOCITY * gs));
         l = new V3(lx, ly, lz);
         boolean slowDrag = speedApprox > terrainBase && speedTerrain.speed() < 256;
         // VehPhysForce_OnApplyForces: a blasted kart is rubbed even in the air (the tumble's bounces would otherwise carry the kart's speed on)
         if ((flagsPrev & TOUCH_GROUND) != 0 || slowDrag || tumbleMs > 0) l = friction(l);
         if (Math.abs(l.z) > 64) forwardDir = l.z >= 0 ? 1 : -1;
         vel = moving.mul(l).add(nudge);
+        if (fluid != 0) {
+            // in water or lava: the vertical speed is held down (a fall is cushioned, a dive is slowed), and lava is thick sideways too
+            vel = new V3(vel.x * (fluid == 2 ? 0.9 : 1.0), vel.y * (fluid == 2 ? LAVA_DRAG : WATER_DRAG), vel.z * (fluid == 2 ? 0.9 : 1.0));
+        }
     }
 
     /** Ground friction (VehPhysForce.c:429-806, spec 3.6), in the kart's frame. */
@@ -1380,7 +1527,14 @@ public final class KartSim {
             fwdAccelImpulse = 0;
         }
         boolean lockout = state == State.CRASHING || state == State.SPINNING;
-        if (grounded() && jumpForced != 0) {
+        if (forceHighJump) {
+            // forcedJumpType HIGH: the initial velocity is three times the jump force, whether or not the kart is on the ground
+            forceHighJump = false;
+            jumpForced = JUMP_FORCED_MS;
+            jumpVel = JUMP_FORCE * 3;
+            mv = processJump(mv);
+            events.add(KartEvent.of(KartEvent.Type.HOP));
+        } else if (grounded() && jumpForced != 0) {
             mv = processJump(mv);
         } else if (!lockout && coyote != 0 && jumpBuffer != 0 && jumpCooldown == 0) {
             jumpForced = JUMP_FORCED_MS;
@@ -1453,7 +1607,7 @@ public final class KartSim {
             flameCountdown = kind == FireKind.STACK ? FLAME_POWERSLIDE_FRAMES : FLAME_NO_DISAPPEAR;
         }
         int cap = SINGLE_TURBO_SPEED + ((fire * (SACRED_FIRE_SPEED - SINGLE_TURBO_SPEED)) >> 8);
-        if (reserves == 0 || cap > fireSpeedCap || fireSpeedCap > 4096) {
+        if (reserves == 0 || cap > fireSpeedCap || (fireSpeedCap > SACRED_FIRE_SPEED && !onSuperPad)) {
             fireSpeedCap = cap;
             flameSize = Math.min(8, (fire >> 6) + 5);
         }

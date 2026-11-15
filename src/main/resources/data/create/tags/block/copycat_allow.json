@@ -3,6 +3,9 @@
   "values": [
     "ctrcraft:boost_block",
     "ctrcraft:boost_slab",
-    "ctrcraft:boost_stairs"
+    "ctrcraft:boost_stairs",
+    "ctrcraft:super_boost_block",
+    "ctrcraft:super_boost_slab",
+    "ctrcraft:super_boost_stairs"
   ]
 }

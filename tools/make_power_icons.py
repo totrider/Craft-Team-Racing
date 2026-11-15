@@ -217,6 +217,21 @@ def mask():
     return im
 
 
+def mask_dark():
+    """The dark mask: a purple-black tiki with red eyes and a crown of dark feathers."""
+    im, d = canvas()
+    for pts, col in (([(5, 14), (2, 4), (11, 11)], DBLUE), ([(10, 12), (12, 1), (17, 11)], DRED), ([(16, 11), (22, 2), (24, 13)], DBLUE), ([(23, 13), (30, 6), (28, 18)], DRED)):
+        d.polygon(pts, fill=col, outline=OUT)
+    d.rounded_rectangle([5, 10, 27, 46], radius=8, fill=(95, 55, 130, 255), outline=OUT)
+    d.rectangle([8, 20, 24, 23], fill=BLACK)
+    d.ellipse([8, 24, 14, 32], fill=RED, outline=OUT)
+    d.ellipse([18, 24, 24, 32], fill=RED, outline=OUT)
+    d.rectangle([10, 36, 22, 42], fill=BLACK, outline=OUT)
+    for x in (12, 15, 18):
+        d.line([(x, 36), (x, 42)], fill=WHITE)
+    return im
+
+
 def clock():
     """A gold stopwatch."""
     im, d = canvas()
@@ -359,8 +374,22 @@ def lamp(colour, lit):
     return im
 
 
+def unknown():
+    """The fallback for a power-up that has no picture of its own (one from a data pack, say): a purple tile with a white question mark."""
+    im, d = canvas()
+    d.rounded_rectangle([4, 6, 28, 44], radius=5, fill=(112, 72, 172, 255), outline=OUT)
+    d.rounded_rectangle([6, 8, 26, 14], radius=3, fill=(150, 110, 210, 255))
+    mark = [(10, 18), (11, 13), (16, 11), (21, 13), (22, 18), (19, 22), (16, 25), (16, 29)]
+    d.line(mark, fill=OUT, width=7, joint="curve")
+    d.line(mark, fill=WHITE, width=4, joint="curve")
+    d.ellipse([13, 32, 19, 38], fill=OUT)
+    d.ellipse([14, 33, 18, 37], fill=WHITE)
+    return im
+
+
 ICONS = {
-    "turbo": turbo, "bomb": bomb, "missile": missile, "tnt": tnt, "potion": potion, "spring": spring, "shield": shield, "mask": mask,
+    "unknown": unknown,
+    "turbo": turbo, "bomb": bomb, "missile": missile, "tnt": tnt, "potion": potion, "spring": spring, "shield": shield, "mask": mask, "mask_dark": mask_dark,
     "clock": clock, "warpball": warpball, "bomb_3x": bomb_3x, "missile_3x": missile_3x, "invisibility": invisibility, "super_engine": super_engine,
     "tnt_charged": tnt_charged, "potion_charged": potion_charged, "shield_charged": shield_charged,
 }

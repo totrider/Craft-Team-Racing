@@ -92,9 +92,12 @@ public final class RaceManager {
         int firstFinishTick = -1;
         int finished;
         final Map<UUID, Racer> racers = new LinkedHashMap<>();
+        /** The rules the race runs by, fixed when it begins to gather (the track's temporary or default ones). */
+        final com.ctrcraft.items.RuleSet rules;
 
-        Race(Key key, int laps, UUID starter, int graphVersion, boolean manual) {
+        Race(Key key, int laps, UUID starter, int graphVersion, boolean manual, com.ctrcraft.items.RuleSet rules) {
             this.manual = manual;
+            this.rules = rules;
             this.key = key;
             this.laps = laps;
             this.starter = starter;
@@ -113,6 +116,19 @@ public final class RaceManager {
         return new Standing(r.racers.size(), Math.max(0, ranking(r).indexOf(rc)), rc.progress.laps());
     }
 
+    /** The other racers of the race this player is racing in (the lights are out; those who have finished are not in it any more), or null when the player is not racing. */
+    public static List<ServerPlayer> opponents(ServerPlayer player) {
+        Race r = BY_PLAYER.get(player.getUUID());
+        if (r == null || r.phase != RacePayload.RACING) return null;
+        List<ServerPlayer> out = new ArrayList<>();
+        for (Racer rc : r.racers.values()) {
+            if (rc.id.equals(player.getUUID()) || rc.finishPlace != 0 || rc.out) continue;
+            ServerPlayer p = player.server.getPlayerList().getPlayer(rc.id);
+            if (p != null) out.add(p);
+        }
+        return out;
+    }
+
     /**
      * Whether a race that has reached the lights is on a track whose line (the links between its nodes) passes within {@code radius} blocks of
      * {@code pos}: the spots near a track belong to it (docs/DESIGN_ITEMS.md).
@@ -125,6 +141,23 @@ public final class RaceManager {
             if (TrackData.get(level).graph().distSqToTrack(r.key.start(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= sq) return true;
         }
         return false;
+    }
+
+    /** The rules of the race this player is in (gathering, on the grid or racing), or null when the player is not in one. */
+    public static com.ctrcraft.items.RuleSet rulesOf(UUID id) {
+        Race r = BY_PLAYER.get(id);
+        return r == null ? null : r.rules;
+    }
+
+    /** The rules of a race that has reached the lights on a track whose line passes within {@code radius} blocks of {@code pos}, or null when there is none. */
+    public static com.ctrcraft.items.RuleSet rulesNear(ServerLevel level, BlockPos pos, double radius) {
+        double sq = radius * radius;
+        for (Race r : RACES.values()) {
+            if (r.phase != RacePayload.LIGHTS && r.phase != RacePayload.RACING) continue;
+            if (!r.key.dimension().equals(level.dimension())) continue;
+            if (TrackData.get(level).graph().distSqToTrack(r.key.start(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= sq) return r.rules;
+        }
+        return null;
     }
 
     /** Whether a race on the track of this Start node has started (the lights are out): until then the grid and the gathering area stay shown. */
@@ -150,7 +183,7 @@ public final class RaceManager {
         if (!routes.valid(data.graph(), start)) return "message.ctrcraft.race.not_valid";
         Key key = new Key(level.dimension(), start);
         if (RACES.containsKey(key)) return "message.ctrcraft.race.running";
-        RACES.put(key, new Race(key, routes.laps(), starter.getUUID(), data.graph().version(), true));
+        RACES.put(key, new Race(key, routes.laps(), starter.getUUID(), data.graph().version(), true, data.effectiveRules(start)));
         broadcastGather(level, RACES.get(key), startPos);
         return null;
     }
@@ -269,6 +302,7 @@ public final class RaceManager {
             r.racers.put(p.getUUID(), rc);
             BY_PLAYER.put(p.getUUID(), r);
             com.ctrcraft.pickup.ItemManager.reset(p);          // a new race starts with nothing in the kart
+            PacketDistributor.sendToPlayer(p, new RulesPayload(r.rules));        // the rules the client's own sim needs (boost pads, the top speed cap)
             put(level, p, rc);
         }
         r.phase = RacePayload.LIGHTS;
@@ -379,7 +413,7 @@ public final class RaceManager {
         TrackData data = TrackData.get(level);
         TrackRoutes routes = data.routes(key.start());
         if (!routes.valid(data.graph(), key.start())) return;
-        Race race = new Race(key, routes.laps(), null, data.graph().version(), false);
+        Race race = new Race(key, routes.laps(), null, data.graph().version(), false, data.effectiveRules(key.start()));
         RACES.put(key, race);
         broadcastGather(level, race, BlockPos.of(key.start()));
     }
@@ -478,6 +512,7 @@ public final class RaceManager {
     private static void end(MinecraftServer server, Race r, String reasonKey, boolean results) {
         RACES.remove(r.key);
         ServerLevel level = server.getLevel(r.key.dimension());
+        if (level != null) TrackData.get(level).clearTemporaryAll(r.key.start());          // a rule set set for one race is used up by it
         if (level != null) com.ctrcraft.pickup.MinePool.clearRace(r.key.dimension().location() + "@" + r.key.start(), level);
         List<Racer> rank = ranking(r);
         for (Racer rc : r.racers.values()) {
@@ -485,6 +520,7 @@ public final class RaceManager {
             ServerPlayer p = server.getPlayerList().getPlayer(rc.id);
             if (p == null) continue;
             PacketDistributor.sendToPlayer(p, RacePayload.off());
+            PacketDistributor.sendToPlayer(p, new RulesPayload(com.ctrcraft.items.RuleSet.CTR));
             if (reasonKey != null) p.displayClientMessage(Component.translatable(reasonKey), true);
             if (results) {
                 p.sendSystemMessage(Component.translatable("message.ctrcraft.race.results"));

@@ -71,6 +71,9 @@ Everything is in the Craft Team Racing creative tab for now (survival recipes ar
 | **Track Tool** | Item | Links track nodes, resizes their boxes, opens the Start Node menu. See [Building a race track](#building-a-race-track). |
 | **Start Node** | Block (invisible) | Marks the start line and the way the grid faces; starts races when a kart drives into its area. |
 | **Checkpoint Node** | Block (invisible) | A checkpoint box a kart has to pass, in order. |
+| **Offroad Tires**, **Soft Bumper** | Items | Kart upgrades: use one on a kart to install it, then switch it on in the kart's screen (the Wrench). Offroad tires make the kart ignore rough terrain (grass, dirt, sand, snow, mud); a soft bumper stops the kart doing collision damage. A race's rules override the switches. See docs/UPGRADES.md. |
+| **Drop Table** | Item | Sets which power-ups crates give on a track: CTR's roulette or a weighted list, picked from a grid of icons. Crouch and right-click a Start node to apply it (as the track's default, or for the next race only); separate from the rulebook so drops can be swapped without touching the rules. |
+| **Rulebook** | Item | Sets the rules of a race: right-click to open its screen (which pickups there are, boost pads, a top speed cap, driver damage and hunger, the power-up list), crouch and right-click a track's Start node to apply it (as the track's default, or for the next race only). |
 | **Fruit Spot** | Block | Where a Power Fruit appears. Touch it with a kart for +1 (0 to 10 power fruit; ten make the kart "charged": its power-ups come in their stronger forms). |
 | **Fruit Crate Spot** | Block | A crate with 5 to 8 power fruit; it grows back a second after it is broken. |
 | **Power-up Crate Spot** | Block | A "?" crate. Break it while holding nothing and a roulette picks a power-up by your place in the race (CTR's tables). Right-click with the Wrench to make it always give one particular power-up (good for testing). |
