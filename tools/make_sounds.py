@@ -25,11 +25,11 @@ rng = np.random.default_rng(1996)
 
 SOUNDS = ["engine_loop", "skid_loop", "turbo_loop", "hop", "land", "drift_start", "boost", "boost_fail", "meter_red", "meter_full",
           "hang_time", "wall_hit", "slam", "spin_out",
-          "light_count", "light_green", "fruit_pickup", "glass_shatter", "mine_drop", "tnt_hit", "tnt_land", "tnt_tick", "tnt_explode", "crate_break", "bomb_launch", "bomb_roll", "bomb_explode", "shield_on", "shield_pop", "shield_roll", "missile_launch", "missile_fly", "missile_explode", "tracker_beep", "item_roll", "item_get", "item_get_charged", "clock", "wobble_thump", "squish", "squish_restore", "burn", "crash_soft", "crash_mid", "crash_hard", "fruit_arrive"]
+          "light_count", "light_green", "fruit_pickup", "glass_shatter", "mine_drop", "tnt_hit", "tnt_land", "tnt_tick", "tnt_explode", "crate_break", "bomb_launch", "bomb_roll", "bomb_explode", "shield_on", "shield_pop", "shield_roll", "missile_launch", "missile_fly", "missile_explode", "tracker_beep", "item_roll", "item_get", "item_get_charged", "clock", "wobble_thump", "squish", "squish_restore", "burn", "crash_soft", "crash_mid", "crash_hard", "fruit_arrive", "mask_aku", "mask_uka", "warp_launch", "warp_fly", "warp_end", "lap"]
 
 
 # the race music's events: empty here (the mod ships no music), a resource pack puts its files in them (see docs/MUSIC.md)
-MUSIC_EVENTS = ["music.race_intro", "music.race", "music.final_lap", "music.race_end.first", "music.race_end.other"]
+MUSIC_EVENTS = ["music.race_intro", "music.race", "music.final_lap", "music.race_end.first", "music.race_end.other", "music.aku_aku", "music.uka_uka"]
 
 
 def t_axis(seconds):
@@ -277,6 +277,56 @@ def bomb_explode():
     x = lowpass(noise(len(t)), 1200) * decay(t, 0.3) + 0.9 * np.sin(2 * np.pi * (85 - 40 * t) * t) * decay(t, 0.32)
     x += 0.5 * bandpass(noise(len(t)), 1800, 7000) * decay(t, 0.06)
     return fade(norm(x, 0.95))
+
+
+def mask_aku():
+    """Stand-in for Aku Aku's cry: two rising, vowel-like notes."""
+    t = t_axis(0.9)
+    f = np.where(t < 0.4, 330 + 180 * t / 0.4, 420 + 120 * (t - 0.4) / 0.5)
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    x = (np.sin(ph) + 0.5 * np.sin(2 * ph) + 0.25 * np.sin(3 * ph)) * np.where(t < 0.4, decay(t, 0.5), decay(t - 0.4, 0.3)) * (0.5 + 0.5 * np.sin(np.pi * np.clip(t / 0.9, 0, 1)))
+    return fade(norm(x, 0.7))
+
+
+def mask_uka():
+    """Stand-in for Uka Uka's laugh: a low growl, three falling barks."""
+    t = t_axis(0.9)
+    f = 170 - 60 * ((t * 3.3) % 1.0)
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    bark = np.exp(-((t * 3.3) % 1.0) * 5.0)
+    x = (np.sign(np.sin(ph)) * 0.5 + np.sin(ph) * 0.5 + 0.3 * lowpass(noise(len(t)), 1500)) * bark * np.clip((0.9 - t) / 0.2, 0, 1)
+    return fade(norm(x, 0.75))
+
+
+def warp_launch():
+    """Stand-in for the Warp Orb leaving: a rising electric whine."""
+    t = t_axis(0.7)
+    x = np.sin(2 * np.pi * chirp_phase(t, 200, 1400)) * 0.5 + 0.4 * bandpass(noise(len(t)), 1500, 7000) * (0.4 + 0.6 * np.sin(2 * np.pi * 40 * t) ** 2)
+    return fade(norm(x * decay(t - 0.05, 0.4), 0.7))
+
+
+def warp_fly():
+    """A short crackling hum, played now and then while the orb flies."""
+    t = t_axis(0.35)
+    x = 0.5 * np.sin(2 * np.pi * 180 * t) + 0.5 * bandpass(noise(len(t)), 800, 5000) * (np.sin(2 * np.pi * 60 * t) > 0.3)
+    return fade(norm(x, 0.45))
+
+
+def lap():
+    """Stand-in for the lap sound (a lap was completed): two rising bell notes."""
+    t = t_axis(0.6)
+    x = np.zeros(len(t))
+    for start, f in ((0.0, 660.0), (0.14, 990.0)):
+        tt = np.clip(t - start, 0.0, None)
+        x += (t >= start) * (np.sin(2 * np.pi * f * tt) + 0.3 * np.sin(2 * np.pi * 2 * f * tt)) * np.exp(-tt * 7.0)
+    return fade(norm(x, 0.6))
+
+
+def warp_end():
+    """The orb going out: a falling zap."""
+    t = t_axis(0.5)
+    x = np.sin(2 * np.pi * chirp_phase(t, 1200, 120)) * decay(t, 0.2) + 0.4 * bandpass(noise(len(t)), 2000, 9000) * decay(t, 0.08)
+    return fade(norm(x, 0.7))
 
 
 def shield_on():

@@ -51,6 +51,10 @@ public class KartEntity extends Entity {
     /** The kart's upgrades: which are installed (an item used on the kart) and which of them are switched on. */
     /** The mask preference: false light (Aku Aku, the good mask), true dark (Uka Uka, the evil one). Seen by everyone, so another player's mask shows as they chose. */
     private static final EntityDataAccessor<Boolean> DATA_DARK_MASK = SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.BOOLEAN);
+    /** The Mask power-up on this kart: 0 none, 1 Aku Aku (light), 2 Uka Uka (dark), plus 4 while it fades away. Set by the server, seen by everyone. */
+    /** A kart whose driver has finished the race (or been put on a podium): nothing touches it and it touches nothing. */
+    private static final EntityDataAccessor<Boolean> DATA_ETHEREAL = SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_MASK = SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_UPGRADES = SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.INT);
     public static final int UP_OFFROAD_UNLOCKED = 1;
     public static final int UP_OFFROAD_ON = 2;
@@ -61,12 +65,17 @@ public class KartEntity extends Entity {
     public static final int UP_FLOATER_ON = 32;
     /** Jump Spring: a jump of the kart's own on a key (the spring's high jump). */
     public static final int UP_SPRING_UNLOCKED = 64;
-    public static final int UP_SPRING_ON = 128;
+    public static final int UP_SPRING_ON = 128;                      // the first version's switch: a kart that has it and no strength gets the default one
+    public static final int UP_SPRING_SHIFT = 16;                    // the Jump Spring's strength, 0 to 10 tenths, in bits 16 to 19
+    public static final int UP_SPRING_DEFAULT = 5 << UP_SPRING_SHIFT;
     /** Low Gravity Module: unlocked here; its strength, 0 to 10 tenths, is in bits 12 to 15. */
     public static final int UP_GRAVITY_UNLOCKED = 256;
     public static final int UP_GRAVITY_SHIFT = 12;
     /** The Obsidian Floater replaced the Floater: it floats on lava as well and keeps the rider from lava's damage and fire. */
     public static final int UP_OBSIDIAN = 512;
+    /** Paddle: a floating kart drives at full speed on the water instead of at the water's slowdown (as the Offroad Tires do for rough ground). */
+    public static final int UP_PADDLE_UNLOCKED = 1024;
+    public static final int UP_PADDLE_ON = 2048;
     public static final int UP_GRAVITY_DEFAULT = 5 << UP_GRAVITY_SHIFT;
     private static final EntityDataAccessor<Integer> DATA_SHIELD = SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_TILT =
@@ -95,6 +104,8 @@ public class KartEntity extends Entity {
         builder.define(DATA_SEAT_COLOUR, DEFAULT_SEAT_COLOUR);
         builder.define(DATA_UPGRADES, 0);
         builder.define(DATA_DARK_MASK, false);
+        builder.define(DATA_MASK, 0);
+        builder.define(DATA_ETHEREAL, false);
     }
 
     public int colour() {
@@ -184,6 +195,11 @@ public class KartEntity extends Entity {
     @Override
     public void tick() {
         super.tick();
+        if (!level().isClientSide && maskState() != 0 && getControllingPassenger() == null) {
+            // the driver got out: the mask goes with them
+            items.maskTicks = 0;
+            setMaskState(0);
+        }
         if (level().isClientSide) {
             wheelSpinO = wheelSpin;
             if (!Double.isNaN(lastX)) {
@@ -212,31 +228,60 @@ public class KartEntity extends Entity {
             if (getEngineData() != 0x823C) {
                 setEngineData(0x823C);
             }
+            if (!parkChecked) {
+                // the driver got out: a kart standing on blocks stays exactly where it was and as it was (its place, its lean on the slope): nothing is recomputed, which on a step or an
+                // uneven edge sank it into the ground and flattened it. It sleeps like a resting kart, and wakes (falls, settles) only when the blocks under it change.
+                parkChecked = true;
+                if (restsOnBlocks()) {
+                    restTilted = true;
+                    restSignature = com.ctrcraft.pickup.GroundTilt.signature(level(), getX(), getY(), getZ());
+                }
+            }
             if (restTilted) {
                 // asleep on a slope: nothing to compute until the blocks under it change (looked at about once a second)
                 if (tickCount % 20 == 0 && com.ctrcraft.pickup.GroundTilt.signature(level(), getX(), getY(), getZ()) != restSignature) restTilted = false;
                 return;
             }
-            // fall, stop
-            Vec3 dm = getDeltaMovement().add(0, -0.04, 0);
-            setDeltaMovement(dm.x * 0.6, dm.y * 0.98, dm.z * 0.6);
+            // fall, stop: in water or lava the fall is held back (a sinking kart drops slowly), and a kart with the Floater rises to the surface and rides in it a little below its top
+            Vec3 dm = getDeltaMovement();
+            int mode = floaterMode();
+            double surface = FloatSurface.top(level(), getX(), getY() + 0.05, getZ(), mode);
+            net.minecraft.world.level.material.FluidState here = level().getFluidState(net.minecraft.core.BlockPos.containing(getX(), getY() + 0.35, getZ()));
+            if (!Double.isNaN(surface)) {
+                double target = surface - FloatSurface.SINK;
+                setDeltaMovement(dm.x * 0.6, dm.y * 0.6 + (target - getY()) * 0.12, dm.z * 0.6);
+                restTilted = false;
+            } else if (here.is(net.minecraft.tags.FluidTags.WATER) || here.is(net.minecraft.tags.FluidTags.LAVA)) {
+                setDeltaMovement(dm.x * 0.7, Math.max(dm.y - 0.01, -0.06) * 0.8, dm.z * 0.7);
+            } else {
+                dm = dm.add(0, -0.04, 0);
+                setDeltaMovement(dm.x * 0.6, dm.y * 0.98, dm.z * 0.6);
+            }
             move(MoverType.SELF, getDeltaMovement());
             // an empty kart that has come to rest lies on the slope it is on (the driver's tilt would otherwise snap back to flat), flat on the slope's plane, once
             if (onGround() && getDeltaMovement().lengthSqr() < 1.0E-4) {
                 restTilted = true;
                 com.ctrcraft.pickup.GroundTilt.Rest r = com.ctrcraft.pickup.GroundTilt.rest(level(), this, getX(), getY(), getZ());
-                setTilt(r.tilt());
-                setPos(getX(), r.y(), getZ());
+                setTilt(r.tilt());          // (its height is left as it is: lowering it to the slope's plane sank it into the edge of a step)
                 restSignature = com.ctrcraft.pickup.GroundTilt.signature(level(), getX(), getY(), getZ());
             } else if (getTilt() != TILT_FLAT) {
                 setTilt(TILT_FLAT);
             }
         } else {
             restTilted = false;
+            parkChecked = false;
         }
     }
 
     private boolean restTilted;
+    /** The first tick without a driver has looked at whether the kart stands on blocks (then it stays as it is). */
+    private boolean parkChecked;
+
+    /** The kart's box is on something: it rests on blocks (not in a fluid, not in the air), so it is left where it is. */
+    private boolean restsOnBlocks() {
+        if (!level().getFluidState(net.minecraft.core.BlockPos.containing(getX(), getY() + 0.35, getZ())).isEmpty()) return false;
+        return !level().noCollision(this, getBoundingBox().inflate(-0.01).move(0.0, -0.15, 0.0));
+    }
     private int restSignature;
     private int rejectedMoves;
 
@@ -298,6 +343,22 @@ public class KartEntity extends Entity {
         canStartRaces = on;
     }
 
+    public boolean ethereal() {
+        return entityData.get(DATA_ETHEREAL);
+    }
+
+    public void setEthereal(boolean on) {
+        entityData.set(DATA_ETHEREAL, on);
+    }
+
+    public int maskState() {
+        return entityData.get(DATA_MASK);
+    }
+
+    public void setMaskState(int state) {
+        entityData.set(DATA_MASK, state);
+    }
+
     public boolean darkMask() {
         return entityData.get(DATA_DARK_MASK);
     }
@@ -333,8 +394,16 @@ public class KartEntity extends Entity {
         return !floaterOn() ? 0 : (upgrades() & UP_OBSIDIAN) != 0 ? 2 : 1;
     }
 
-    public boolean springOn() {
-        return (upgrades() & (UP_SPRING_UNLOCKED | UP_SPRING_ON)) == (UP_SPRING_UNLOCKED | UP_SPRING_ON);
+    public boolean paddleOn() {
+        return (upgrades() & (UP_PADDLE_UNLOCKED | UP_PADDLE_ON)) == (UP_PADDLE_UNLOCKED | UP_PADDLE_ON);
+    }
+
+    /** The Jump Spring's strength in tenths (0 when it is not installed or set to 0): the double jump, 5 being the spring's own high jump. */
+    public int springStrength() {
+        int u = upgrades();
+        if ((u & UP_SPRING_UNLOCKED) == 0) return 0;
+        int strength = (u >> UP_SPRING_SHIFT) & 15;
+        return strength == 0 && (u & UP_SPRING_ON) != 0 ? 5 : strength;
     }
 
     /** The Low Gravity Module's strength in tenths (0 when it is not installed or set to 0). */
@@ -366,7 +435,8 @@ public class KartEntity extends Entity {
             defaults = (upgrades() & UP_FLOATER_UNLOCKED) != 0 ? 0 : UP_FLOATER_ON;
             check = UP_OBSIDIAN;
         }
-        else if (held.is(ModItems.JUMP_SPRING.get())) { unlock = UP_SPRING_UNLOCKED; defaults = UP_SPRING_ON; }
+        else if (held.is(ModItems.PADDLE.get())) { unlock = UP_PADDLE_UNLOCKED; defaults = UP_PADDLE_ON; }
+        else if (held.is(ModItems.JUMP_SPRING.get())) { unlock = UP_SPRING_UNLOCKED; defaults = UP_SPRING_DEFAULT; }
         else if (held.is(ModItems.LOW_GRAVITY_MODULE.get())) { unlock = UP_GRAVITY_UNLOCKED; defaults = UP_GRAVITY_DEFAULT; }
         if (unlock != 0) {
             if (!level().isClientSide) {
@@ -525,6 +595,7 @@ public class KartEntity extends Entity {
         tag.putBoolean("DarkMask", darkMask());
         tag.putBoolean("CanStartRaces", canStartRaces);
         stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(tag));
+        if ((upgrades() & UP_OBSIDIAN) != 0) stack.set(net.minecraft.core.component.DataComponents.FIRE_RESISTANT, net.minecraft.util.Unit.INSTANCE);
         if (colour() != DEFAULT_COLOUR || seatColour() != DEFAULT_SEAT_COLOUR) stack.set(com.ctrcraft.ModComponents.KART_PAINT.get(), new KartPaint(colour(), seatColour()));
         return stack;
     }

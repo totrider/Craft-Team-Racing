@@ -77,6 +77,37 @@ def obsidian_floater():
     return img
 
 
+def paddle():
+    """A steamboat's paddle wheel: a rim, eight spokes and a wooden blade at the end of each, round an iron hub."""
+    import math
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    cx = cy = 7.5
+    wood, wood_dark, iron, rim = (176, 124, 70, 255), (112, 72, 38, 255), (120, 124, 136, 255), (150, 154, 166, 255)
+    for y in range(16):
+        for x in range(16):
+            d = math.hypot(x - cx, y - cy)
+            if 6.2 <= d <= 7.5:
+                px[x, y] = rim                                   # the rim
+    for k in range(8):                                           # eight spokes with a blade each
+        a = k * math.pi / 4 + math.pi / 8
+        for t in range(2, 7):
+            x, y = int(round(cx + math.cos(a) * t)), int(round(cy + math.sin(a) * t))
+            px[x, y] = wood_dark
+        bx, by = cx + math.cos(a) * 6.8, cy + math.sin(a) * 6.8
+        for ox in (-1, 0, 1):
+            for oy in (-1, 0, 1):
+                x, y = int(round(bx + ox)), int(round(by + oy))
+                if 0 <= x < 16 and 0 <= y < 16 and math.hypot(x - cx, y - cy) > 5.4:
+                    px[x, y] = wood_dark if (ox == 1 and oy == 1) or (ox == -1 and oy == -1) else wood
+    for y in range(6, 10):
+        for x in range(6, 10):
+            if math.hypot(x - cx, y - cy) <= 2.4:
+                px[x, y] = iron                                  # the hub
+    px[7, 7] = px[8, 8] = (160, 164, 176, 255)
+    return img
+
+
 def math_atan(dy, dx):
     import math
     return math.atan2(dy, dx)
@@ -117,6 +148,7 @@ def main():
     tires().save(os.path.join(OUT, "offroad_tires.png"))
     bumper().save(os.path.join(OUT, "soft_bumper.png"))
     floater().save(os.path.join(OUT, "floater.png"))
+    paddle().save(os.path.join(OUT, "paddle.png"))
     obsidian_floater().save(os.path.join(OUT, "obsidian_floater.png"))
     gravity().save(os.path.join(OUT, "low_gravity_module.png"))
     spring().save(os.path.join(OUT, "jump_spring.png"))

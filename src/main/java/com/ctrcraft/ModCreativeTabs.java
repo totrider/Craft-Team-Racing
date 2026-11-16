@@ -31,13 +31,18 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.SOFT_BUMPER.get());
                         output.accept(ModItems.FLOATER.get());
                         output.accept(ModItems.OBSIDIAN_FLOATER.get());
+                        output.accept(ModItems.PADDLE.get());
                         output.accept(ModItems.LOW_GRAVITY_MODULE.get());
                         output.accept(ModItems.JUMP_SPRING.get());
                         output.accept(ModItems.TRACK_TOOL.get());
                         output.accept(ModItems.RULEBOOK.get());
                         output.accept(ModItems.DROP_TABLE.get());
+                        output.accept(ModItems.MUSIC_SHEET.get());
                         output.accept(ModBlocks.START_NODE_ITEM.get());
                         output.accept(ModBlocks.CHECKPOINT_NODE_ITEM.get());
+                        output.accept(ModBlocks.PODIUM_1_NODE_ITEM.get());
+                        output.accept(ModBlocks.PODIUM_2_NODE_ITEM.get());
+                        output.accept(ModBlocks.PODIUM_3_NODE_ITEM.get());
                         output.accept(ModBlocks.FRUIT_SPOT_ITEM.get());
                         output.accept(ModBlocks.FRUIT_CRATE_SPOT_ITEM.get());
                         output.accept(ModBlocks.POWERUP_CRATE_SPOT_ITEM.get());

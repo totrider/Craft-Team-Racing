@@ -455,6 +455,11 @@ public final class KartSim {
         return out;
     }
 
+    /** Drops any boost the kart has (held on the grid: nothing may carry it off before GO). */
+    public void clearBoost() {
+        reserves = 0;
+    }
+
     /** Teleport to a place and stand still (new ride, out of bounds). */
     public void place(V3 position, int heading) {
         pos = position;
@@ -584,6 +589,20 @@ public final class KartSim {
     }
 
     // ---- upgrades and fluids (extensions: not in the original) ----
+    /**
+     * ACTION_MASK_WEAPON (set while the mask's thread lives, its fade too): +const_MaskSpeed (3900) on the top speed, and none of the terrain's slowing (its speed multiplier and its acceleration
+     * scale, mud physics) or the turn's speed penalty (VehPhysGeneral.c:1109, 1249, 2059; VehPhysForce.c:683; VehPhysProc.c:1365). Set by the host from the kart's synced mask state.
+     */
+    private boolean mask;
+
+    public void setMask(boolean on) {
+        mask = on;
+    }
+
+    public boolean maskActive() {
+        return mask;
+    }
+
     /** Gravity while airborne, as a fraction (the Low Gravity Module: 1 down to 0.1). */
     private double gravityScale = 1.0;
     /** 0 none, 1 water, 2 lava: the kart is inside it (the host says so). */
@@ -592,11 +611,14 @@ public final class KartSim {
     private static final int SPRING_COOLDOWN_MS = 1500;
     /** A fall's speed at rest in water / lava, as a fraction of the terminal velocity: the drag per step that gives it (gravity 900 against it). */
     private static final double WATER_DRAG = 1.0 - 900.0 / (TERMINAL_VELOCITY * 0.25);
+    /** The gravity in water and in lava, as a fraction (an extension: not in the original). */
+    private static final double WATER_GRAVITY = 0.45;
+    private static final double LAVA_GRAVITY = 0.3;
     private static final double LAVA_DRAG = 1.0 - 900.0 / (TERMINAL_VELOCITY * 0.12);
 
     /** The Low Gravity Module: {@code tenths} of 0 to 10 (0 off, 10 the slowest fall, a tenth of gravity). Gravity is only scaled in the air, so slopes drive as they do. */
     public void setLowGravity(int tenths) {
-        gravityScale = 1.0 - 0.09 * Math.max(0, Math.min(10, tenths));
+        gravityScale = 1.0 - 0.063 * Math.max(0, Math.min(10, tenths));          // 100 % is 37 % of gravity (what 70 % was at first: the top of the useful range)
     }
 
     /** Which fluid the kart is in (0 none, 1 water, 2 lava): it slows the vertical speed so a fall into it is cushioned. */
@@ -604,16 +626,34 @@ public final class KartSim {
         fluid = kind;
     }
 
-    /** The Jump Spring upgrade's key: the spring's high jump, from the ground, once every 1.5 s. */
-    public boolean springJump() {
-        if (springCooldownMs > 0 || !grounded() || state == State.SPINNING || state == State.CRASHING) return false;
-        springCooldownMs = SPRING_COOLDOWN_MS;
+    /** The initial vertical speed of a forced jump, in jump forces: the high jump is three. */
+    private double forceJumpMul = 3.0;
+    /** The Jump Spring has been used since the kart last stood on the ground for a moment (a brush with a block's edge in the air does not count). */
+    private boolean springUsed;
+    private int springGroundMs;
+    /** The Floater, under the water's surface: the kart is lifted at this speed until it is at the surface. */
+    private boolean buoyant;
+    private static final int BUOYANT_RISE = 3000;
+
+    public void setBuoyant(boolean on) {
+        buoyant = on;
+    }
+
+    /**
+     * The Jump Spring upgrade, a double jump: a second jump press in the air gives the spring's high jump; the strength is 0 to 10 tenths, 5 (50 %) being the high jump itself (three jump
+     * forces) and 10 twice its initial speed. It works once between one landing and the next.
+     */
+    public boolean springJump(int tenths) {
+        if (tenths <= 0 || springUsed || grounded() || state == State.SPINNING || state == State.CRASHING) return false;
+        springUsed = true;
+        forceJumpMul = 3.0 * Math.min(tenths, 10) / 5.0;
         forceHighJump = true;
         return true;
     }
 
     /** VehPhysCrash_Attack: the kart that squashed another is thrown into a high jump (forcedJumpType = FORCED_JUMP_HIGH). */
     public void forceHighJump() {
+        forceJumpMul = 3.0;
         forceHighJump = true;
     }
 
@@ -736,7 +776,6 @@ public final class KartSim {
         padPrev = onPad;
         onPad = false;
         onSuperPad = false;
-        if (springCooldownMs > 0) springCooldownMs = Math.max(0, springCooldownMs - MS);
     }
 
     /**
@@ -1010,7 +1049,7 @@ public final class KartSim {
         fireSpeed = gas;
         // terrainMeta2's multiplier (VehPhysProc.c:1362-1388).
         int m = speedTerrain.speed();
-        boolean scaled = (flags & BRAKE_WITH_ACCEL) == 0 && m != 256;
+        boolean scaled = (flags & BRAKE_WITH_ACCEL) == 0 && !mask && m != 256;
         if (scaled) {
             baseSpeed = (gas * m) >> 8;
             terrainBase = (b * m) >> 8;
@@ -1065,6 +1104,7 @@ public final class KartSim {
     private int targetSpeed() {
         long w = Math.min(powerFruit, 9);
         int bonus = (int) ((w * POWER_FRUIT_NET_STAT / 10) >> 12);
+        if (mask) bonus += MASK_SPEED;
         int b = kartClass.speed;
         if (reserves != 0) {
             b += fireSpeedCap;
@@ -1303,6 +1343,8 @@ public final class KartSim {
         V3 l0 = l;
         boolean airborne = (flagsPrev & TOUCH_GROUND) == 0;
         double gs = airborne ? gravityScale : 1.0;
+        if (fluid == 1) gs *= WATER_GRAVITY;          // in water the kart is buoyant: a fall and a sink are soft, as with the Low Gravity Module
+        else if (fluid == 2) gs *= LAVA_GRAVITY;
         V3 g = moving.mulTransposed(new V3(0, -GRAVITY * gs, 0));
         double gx = g.x, gy = g.y, gz = g.z;
         if ((gz < 0 && fwdAccelImpulse > 0) || (gz > 0 && fwdAccelImpulse < 0)) gz = 0;
@@ -1320,11 +1362,12 @@ public final class KartSim {
         lx = Math.max(Math.min(l0.x, -side), Math.min(lx, Math.max(l0.x, side)));
         ly = Math.max(ly, Math.min(l0.y, -TERMINAL_VELOCITY * gs));
         l = new V3(lx, ly, lz);
-        boolean slowDrag = speedApprox > terrainBase && speedTerrain.speed() < 256;
+        boolean slowDrag = speedApprox > terrainBase && speedTerrain.speed() < 256 && !mask;
         // VehPhysForce_OnApplyForces: a blasted kart is rubbed even in the air (the tumble's bounces would otherwise carry the kart's speed on)
         if ((flagsPrev & TOUCH_GROUND) != 0 || slowDrag || tumbleMs > 0) l = friction(l);
         if (Math.abs(l.z) > 64) forwardDir = l.z >= 0 ? 1 : -1;
         vel = moving.mul(l).add(nudge);
+        if (buoyant) vel = new V3(vel.x, Math.max(vel.y, BUOYANT_RISE), vel.z);
         if (fluid != 0) {
             // in water or lava: the vertical speed is held down (a fall is cushioned, a dive is slowed), and lava is thick sideways too
             vel = new V3(vel.x * (fluid == 2 ? 0.9 : 1.0), vel.y * (fluid == 2 ? LAVA_DRAG : WATER_DRAG), vel.z * (fluid == 2 ? 0.9 : 1.0));
@@ -1376,7 +1419,7 @@ public final class KartSim {
             gripTimer = Math.min(gripTimer + MS, 0);
         }
         int tflags = terrain.flags();
-        if ((tflags & Terrain.FLAG_MUD_PHYSICS) != 0) {
+        if ((tflags & Terrain.FLAG_MUD_PHYSICS) != 0 && !mask) {
             perp = Math.max(perp, (int) Math.abs(l.x / 8));
             double z = l.z;
             double base = baseSpeed;
@@ -1488,7 +1531,10 @@ public final class KartSim {
             coyote = COYOTE_MS;
             airtime = 0;
             fall = 0;
+            springGroundMs += MS;
+            if (springGroundMs >= 3 * MS) springUsed = false;
         } else {
+            springGroundMs = 0;
             flags &= ~TOUCH_GROUND;
             terrain = Terrain.NONE;
             if (pos.y > groundHeight + 128.0) speedTerrain = Terrain.NONE;
@@ -1504,7 +1550,7 @@ public final class KartSim {
     // ---- JUMP_FRICTION (VehPhysGeneral_JumpAndFriction, VehPhysGeneral.c:1109-1590) ----
 
     private void jumpAndFriction() {
-        if (state != State.DRIFTING && reserves == 0) {
+        if (state != State.DRIFTING && !mask && reserves == 0) {
             int t = Math.abs(ampTurn >> 8);
             int dec = Math.min(map(t, 0, BACKWARD_TURN_RATE, 0, kartClass.turnDecrease), Math.abs(baseSpeed));
             baseSpeed -= Integer.signum(baseSpeed) * dec;
@@ -1531,7 +1577,7 @@ public final class KartSim {
             // forcedJumpType HIGH: the initial velocity is three times the jump force, whether or not the kart is on the ground
             forceHighJump = false;
             jumpForced = JUMP_FORCED_MS;
-            jumpVel = JUMP_FORCE * 3;
+            jumpVel = (int) (JUMP_FORCE * forceJumpMul);
             mv = processJump(mv);
             events.add(KartEvent.of(KartEvent.Type.HOP));
         } else if (grounded() && jumpForced != 0) {
@@ -1568,7 +1614,7 @@ public final class KartSim {
         if (wrongWay && !reverseSlide) return 0;
         int acc = kartClass.accel;
         if (reserves != 0 && base > 0) acc = ACCEL_RESERVES;
-        if (terrain.accel() != 256) acc = (acc * terrain.accel()) >> 8;
+        if (terrain.accel() != 256 && !mask) acc = (acc * terrain.accel()) >> 8;
         return acc;
     }
 

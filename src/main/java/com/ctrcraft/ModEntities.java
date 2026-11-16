@@ -53,6 +53,11 @@ public final class ModEntities {
             EntityType.Builder.<com.ctrcraft.pickup.ShieldBombEntity>of(com.ctrcraft.pickup.ShieldBombEntity::new, MobCategory.MISC)
                     .sized(0.6F, 0.6F).clientTrackingRange(10).updateInterval(1).noSave().build("shield_bomb"));
 
+    /** The Warp Orb power-up's orb (never saved). */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.ctrcraft.pickup.WarpOrbEntity>> WARP_ORB = ENTITIES.register("warp_orb", () ->
+            EntityType.Builder.<com.ctrcraft.pickup.WarpOrbEntity>of(com.ctrcraft.pickup.WarpOrbEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 0.6F).clientTrackingRange(16).updateInterval(1).noSave().build("warp_orb"));
+
     private ModEntities() {}
 
     public static void register(IEventBus modEventBus) {

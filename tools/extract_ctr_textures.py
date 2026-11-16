@@ -517,6 +517,37 @@ def main():
         shield_files.update(ctr_mesh_pack.mesh_pack_files(vram, pack[src], name, 0.4375 / 72.53, up=1, animated=False, honour_cull=(src == "highlight"), kart_frame=True, pivot_point=(0.0, 33.5, 58.5),
                                                           shade=True, additive=True, smooth=32, weld_smooth=0.0))
     shield_files.update(sheen_frames.frames(shield_files))        # the sheen's eight frames, wrapped onto the bubble (an approximation of the footage)
+    # the Aku Aku and Uka Uka masks that circle a kart under the Mask power-up (STATIC_AKUAKU / STATIC_UKAUKA, the pack's `akumouth` / `ukamouth`, frame 0) and the light round it (`akubeam` /
+    # `ukabeam`, added to the screen): in the kart's frame at the kart's scale, the origin at the model's origin (the game puts the head and the beam by it)
+    mask_files = {}
+    for who in ("aku", "uka"):
+        mask_files.update(ctr_mesh_pack.mesh_pack_files(vram, pack[who + "mouth"], "mask_" + who, 1.0 / 72.53, up=1, animated=False, honour_cull=False, kart_frame=True, pivot_point=(0.0, 0.0, 0.0), shade=True))
+        # Aku Aku's beam is drawn ADDED to the screen (its texture page's blend mode 1), Uka Uka's SUBTRACTED (mode 2: it darkens, and its pale green colours take the green away, which
+        # leaves a dark purple); client/MaskHead picks the blend. The picture is a dim grey gradient (its brightness is the transparency, which makes the streaks) and the colour comes from the
+        # vertices (rainbow for Aku, pale green for Uka): the console's add of texel x vertex colour / 128, with no extra gain (a gain also lifts the transparency and saturates the streaks away).
+        # the beam is an animation of 24 frames: a strip of 23 pairs of points that goes twice round an ellipse (124 x 64 units, in the model's x and y) while drifting along z (124 units), each
+        # frame's drift moved on a step. In the game it is a ring round the kart's VERTICAL axis, so the model's z is made the height, halved (the ring is 62 high), and its y, the ellipse's short
+        # axis, doubled (a round ring: 124 across); both laps are kept (the picture's dark-to-light gradient is the strip's transparency, so the second lap shows only as a faint trail below the bright end); the origin is the middle of the ellipse (0, -16) and of the drift (0.25)
+        for f in range(24):
+            mask_files.update(ctr_mesh_pack.mesh_pack_files(vram, pack[who + "beam"], "mask_beam_%s_%d" % (who, f), 1.0 / 72.53, frame=f, up=1, animated=False, honour_cull=False, kart_frame=True,
+                                                            pivot_point=(0.0, -16.0, 0.25), shade=True, additive=True, remap=lambda v: (v[0], 0.5 * v[2], 2.0 * v[1]), tri_space=True))
+    # the red beaker's rain cloud (`cloud`, 23 frames, one a game frame): a set of flat 32 x 32 panels (124 x 60 units, 5 thick) STANDING upright (the model's second coordinate is up, as the mask's; the footage shows vertical panels), that slide
+    # sideways over the frames so that they circle like a merry-go-round; the instance's rotation is the identity so it keeps its place in the world (no turn to the camera). All 32 triangles are in blend mode 2 (SUBTRACTED): the texels with the semi-transparency bit take
+    # their colour away from what is behind (the soft grey edge of each disc darkens the scene by its brightness) and the others are drawn as they are (the black middle, solid). So every
+    # frame is TWO models: rain_cloud_<n> the opaque texels, rain_cloud_sub_<n> the blended ones, which client/RainCloudFx draws subtracted.
+    cloud_files = {}
+    for f in range(23):
+        for suffix, select, add in (("", "opaque", False), ("sub_", "stp", True)):
+            cloud_files.update(ctr_mesh_pack.mesh_pack_files(vram, pack["cloud"], "rain_cloud_%s%d" % (suffix, f), 1.0 / 72.53, frame=f, up=1, animated=False, honour_cull=False, kart_frame=True,
+                                                             pivot_point=(0.0, 0.0, 0.0), shade=True, additive=add, texel_select=select))
+    # the Warp Orb (`warpball`, 16 frames, one a game frame): a star 551 units across and as tall (the second coordinate is up), with a gem and lightning arcs 300 deep in the middle, STANDING on the ground where the orb is (its
+    # instance has no rotation: it keeps its place in the world, so the depth of the arcs gives it a body), drawn ADDED to the screen (the textures' blend mode 1, black is nothing); the origin at the star's foot, mid-width
+    orb_files = {}
+    for f in range(16):
+        # as the PS1 draws a textured polygon in blend mode 1: the texels with the semi-transparency bit are ADDED to the screen, the others are drawn as they are (warp_orb_solid_<n>)
+        for prefix, select, add in (("", "stp", True), ("solid_", "opaque", False)):
+            orb_files.update(ctr_mesh_pack.mesh_pack_files(vram, pack["warpball"], "warp_orb_%s%d" % (prefix, f), 1.0 / 72.53, frame=f, up=1, animated=False, honour_cull=False, kart_frame=True,
+                                                           pivot_point=(1.3, 0.0, -24.0), shade=True, additive=add, tri_space=True, texel_select=select))
     rk = pack["rocket"]
     rk_abr = [((struct.unpack("<BBHBBHBBBB", ct.layout_bytes(rk, tx))[5] >> 5) & 3) if tx else 0 for (cn, tx, cl, fl) in ct.mesh_triangles(rk)]
     flame_ids = [i for i, a in enumerate(rk_abr) if a == 1]
@@ -569,6 +600,9 @@ def main():
         files.update(missile_files)
         files.update(burst_files)
         files.update(shield_files)
+        files.update(mask_files)
+        files.update(cloud_files)
+        files.update(orb_files)
         files.update(fx_files)
         files.update(crate_break_files)
         files.update(flame_files)
@@ -597,6 +631,9 @@ def main():
         files.update(missile_files)
         files.update(burst_files)
         files.update(shield_files)
+        files.update(mask_files)
+        files.update(cloud_files)
+        files.update(orb_files)
         files.update(fx_files)
         files.update(crate_break_files)
         files.update(flame_files)

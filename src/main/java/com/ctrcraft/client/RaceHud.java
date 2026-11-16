@@ -81,8 +81,9 @@ public final class RaceHud {
         Screen sc = new Screen(KartHud.PIXEL_ASPECT * g.guiHeight() / 216.0F, g.guiHeight() / 216.0F, g.guiWidth());
         switch (s.phase()) {
             case RacePayload.GATHER -> {
-                String text = Component.translatable("hud.ctrcraft.race.gather", Math.max(0, (s.ticksLeft() + 19) / 20), s.karts()).getString();
-                KartHud.outlined(g, mc, text, g.guiWidth() / 2 - (int) (mc.font.width(text) * 1.5F / 2), sc.y(14), 1.5F, YELLOW);
+                String text = s.cooldown() ? Component.translatable("hud.ctrcraft.race.cooldown", Math.max(0, (s.ticksLeft() + 19) / 20)).getString()
+                        : Component.translatable("hud.ctrcraft.race.gather", Math.max(0, (s.ticksLeft() + 19) / 20), s.karts()).getString();
+                KartHud.outlined(g, mc, text, g.guiWidth() / 2 - (int) (mc.font.width(text) * 1.5F / 2), sc.y(48), 1.5F, YELLOW);          // under the power fruit counter
             }
             case RacePayload.LIGHTS -> {
                 if (RaceClient.introMsLeft() > 0) break;          // the camera pans over the grid first: the lamps come after
@@ -160,20 +161,75 @@ public final class RaceHud {
         };
     }
 
+    /**
+     * The track bar (a stand-in for the original's map): a black line at the top left, over the clock, for one lap of the track, start line at the left, with a small box of each
+     * racer's head where they are on it; yours is bigger and drawn last. The top middle is the item box and the power fruit, the bottom the hotbar, health and the driving meters.
+     */
+    /** The clock, the lap times and the portraits are this much lower than the original's (reference units), to leave room for the track bar above them. */
+    private static final int LEFT_SHIFT = 6;
+    /** The clock, the lap rows and the portraits are lower by this much again, so the big time does not run into the "TIME" label above it. */
+    private static final int CLOCK_GAP = 3;
+    /** And a little more between the big time and the lap rows (and the portraits below them). */
+    private static final int LAP_GAP = 3;
+    /** A few pixels more between the clock's rows and the first portrait. */
+    private static final int PORTRAIT_GAP = 4;
+
+    private static void trackBar(GuiGraphics g, Minecraft mc, Screen sc, RacePayload s) {
+        if (s.barIds().isEmpty()) return;
+        int x0 = sc.x(20);
+        int width = Math.round(184 * sc.sx());          // twice as long as the clock is wide
+        int y = sc.y(4.5F) + 2;
+        int head = Math.max(8, Math.round(6.5F * sc.sy()));
+        int thick = Math.max(2, Math.round(sc.sy() * 0.5F));
+        g.fill(x0 - 1, y - thick / 2 - 1, x0 + width + 1, y + thick / 2 + thick % 2 + 1, 0x66FFFFFF);
+        g.fill(x0, y - thick / 2, x0 + width, y + thick / 2 + thick % 2, 0xFF000000);
+        int tick = Math.max(2, thick);
+        g.fill(x0 - tick / 2, y - head / 2, x0 + tick / 2 + 1, y + head / 2, 0xFFFFFFFF);                  // the start line
+        g.fill(x0 + width - tick / 2, y - head / 2, x0 + width + tick / 2 + 1, y + head / 2, 0xFFFFFFFF);
+        for (int pass = 0; pass < 2; pass++) {
+            for (int i = s.barIds().size() - 1; i >= 0; i--) {
+                UUID id = s.barIds().get(i);
+                boolean me = mc.player != null && id.equals(mc.player.getUUID());
+                if (me != (pass == 1)) continue;
+                int size = me ? head + Math.max(2, Math.round(sc.sy() * 0.6F)) : head;
+                int cx = x0 + Math.round(s.barPos().get(i) * width);
+                int left = cx - size / 2;
+                int top = y - size / 2;
+                g.fill(left - 1, top - 1, left + size + 1, top + size + 1, me ? 0xFFFFD21F : 0x99000000);
+                PlayerInfo info = mc.getConnection() == null ? null : mc.getConnection().getPlayerInfo(id);
+                PlayerSkin skin = info != null ? info.getSkin() : DefaultPlayerSkin.get(id);
+                PlayerFaceRenderer.draw(g, skin, left, top, size);
+                Long until = FLASH.get(id);
+                if (until != null && System.currentTimeMillis() < until) g.fill(left, top, left + size, top + size, 0x90FF1010);
+            }
+        }
+    }
+
+    /** "Wrong way" and "checkpoint skipped", under the item box in the middle; each can be switched off in the client config. */
+    private static void warnings(GuiGraphics g, Minecraft mc, Screen sc, RacePayload s) {
+        boolean wrong = s.wrongWay() && com.ctrcraft.CtrClientConfig.WRONG_WAY_WARNING.get();
+        boolean skipped = s.skipped() && com.ctrcraft.CtrClientConfig.SKIPPED_CHECKPOINT_WARNING.get();
+        if (!wrong && !skipped) return;
+        boolean blink = (System.currentTimeMillis() / 350) % 2 == 0;
+        String head = Component.translatable(wrong ? "hud.ctrcraft.race.wrong_way" : "hud.ctrcraft.race.skipped").getString();
+        int y = sc.y(52);
+        if (blink) KartHud.outlined(g, mc, head, g.guiWidth() / 2 - Math.round(mc.font.width(head) * 2.2F / 2), y, 2.2F, RED);
+    }
+
     private static void racing(GuiGraphics g, Minecraft mc, Screen sc, RacePayload s) {
         boolean done = s.phase() == RacePayload.DONE;
         int ms = s.timeMs();
         if (!done) ms += (int) Math.min(RaceClient.sinceUpdateMs(), 400);
 
         // UI_Clock: "TIME" small orange at (20, 8), the time big orange at (20, 16), a row for each lap below
-        text(g, mc, Component.translatable("hud.ctrcraft.race.time").getString(), 20, 8, false, sc, ORANGE);
-        text(g, mc, clock(ms), 20, 16, true, sc, ORANGE);
+        text(g, mc, Component.translatable("hud.ctrcraft.race.time").getString(), 20, 8 + LEFT_SHIFT, false, sc, ORANGE);
+        text(g, mc, clock(ms), 20, 16 + LEFT_SHIFT + CLOCK_GAP, true, sc, ORANGE);
         int finished = s.lapTimes().size();
         int sum = 0;
         for (int t : s.lapTimes()) sum += t;
         for (int n = 1; n <= Math.min(s.laps(), finished + (done ? 0 : 1)); n++) {
             int lapMs = n <= finished ? s.lapTimes().get(n - 1) : ms - sum;
-            float y = 8 + 8 * n + 16;
+            float y = 8 + 8 * n + 16 + LEFT_SHIFT + CLOCK_GAP + LAP_GAP;
             text(g, mc, "L" + n, 20, y, false, sc, RED);
             text(g, mc, clock(lapMs), 46, y, false, sc, PERIWINKLE);
         }
@@ -183,7 +239,7 @@ public final class RaceHud {
         int head = Math.round(24 * sc.sy());
         for (int i = 0; i < s.order().size(); i++) {
             UUID id = s.order().get(i);
-            int top = sc.y(57) + i * row;
+            int top = sc.y(57 + LEFT_SHIFT + CLOCK_GAP + LAP_GAP) + PORTRAIT_GAP + i * row;
             boolean me = mc.player != null && id.equals(mc.player.getUUID());
             g.fill(sc.x(20) - 1, top - 1, sc.x(20) + head + 1, top + head + 1, 0x99000000);      // the original's dark, half-transparent box; nobody is marked
             PlayerInfo info = mc.getConnection() == null ? null : mc.getConnection().getPlayerInfo(id);
@@ -191,8 +247,17 @@ public final class RaceHud {
             PlayerFaceRenderer.draw(g, skin, sc.x(20), top, head);
             Long until = FLASH.get(id);
             if (until != null && System.currentTimeMillis() < until) g.fill(sc.x(20), top, sc.x(20) + head, top + head, 0x90FF1010);      // damageColorTimer: the icon drawn red
-            text(g, mc, Integer.toString(i + 1), 20 + (head + 6) / sc.sx(), 56 + 27 * i, false, sc, WHITE);
+            // the place sits on the top right corner of the box, its right edge a pixel or so beyond it (the original's), not beside it
+            String placeText = Integer.toString(i + 1);
+            float numScale = sc.sy();
+            int numW = Math.round((mc.font.width(placeText) - 1) * numScale);
+            KartHud.outlined(g, mc, placeText, sc.x(20) + head + Math.max(1, Math.round(sc.sy() * 0.2F)) - numW, top - Math.round(1.5F * sc.sy()), numScale, WHITE);
         }
+
+        trackBar(g, mc, sc, s);
+        warnings(g, mc, sc, s);
+        String debug = RaceDebugClient.info();
+        if (debug != null) KartHud.outlined(g, mc, debug, g.guiWidth() - 6 - mc.font.width(debug), sc.y(112), 1.0F, WHITE);          // the debug view's line of text about the racer's progress
 
         // UI_DrawPosSuffix: the place in big digits, centred at (50, 191), its suffix big orange at (70, 171)
         String place = Integer.toString(done ? s.finishPlace() : s.place());
@@ -211,7 +276,7 @@ public final class RaceHud {
         KartHud.outlined(g, mc, lap, right - Math.round(mc.font.width(lap) * lapScale), top + 14, lapScale, PERIWINKLE);
         if (done) {
             String fin = Component.translatable("hud.ctrcraft.race.finished", s.finishPlace()).getString();
-            KartHud.outlined(g, mc, fin, g.guiWidth() / 2 - Math.round(mc.font.width(fin) * 2.0F / 2), sc.y(20), 2.0F, YELLOW);
+            KartHud.outlined(g, mc, fin, g.guiWidth() / 2 - Math.round(mc.font.width(fin) * 2.0F / 2), sc.y(70), 2.0F, YELLOW);
         }
     }
 }

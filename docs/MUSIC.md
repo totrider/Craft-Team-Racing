@@ -67,7 +67,7 @@ notes of the previous pass and playing it over and over is the endless loop. The
 
 **The mask songs.** Songs 1 and 2 of each pack are the Aku Aku and Uka Uka songs (full volume, `SongPool_Start`). They use the pack's instrument table, which differs between groups of
 levels, so there are nine Aku Aku and six Uka Uka versions (`ctr_aku_aku_<first level using it>.ogg`, `ctr_uka_uka_<...>.ogg`), listed under `music.aku_aku` and `music.uka_uka`.
-The mod plays neither yet.
+The mod plays them: while the local driver's kart has the Mask on during a race, the mask song (Aku Aku or Uka Uka by the kart's mask) replaces the level music and goes round again while the mask lasts; when the mask is gone the level music starts again (`RaceMusic`). A pack without them leaves the level music alone.
 
 ### What is ported, by C function
 
@@ -124,3 +124,16 @@ Nothing here has been compared with a recording of the real game: it was checked
 
 ## The last lap
 The original raises the level music's tempo by 20 bpm for the rest of the race once the final-lap jingle has played for a second (`HOWL_AudioState.c`: `Audio_SetMaskSong(20)`), the jingle playing at its own speed over it. The mod does the same with the rendered files by playing them 11 % faster (`RaceMusic.FINAL_LAP_SPEED`, about +20 bpm on songs of 150 to 230 bpm), which also raises the pitch by about two semitones; a true tempo-only change would need the songs re-rendered at the higher tempo (`ctr_cseq.sequence` takes the song's tempo from its bpm) and a way to switch between two files mid-song, which Minecraft's sound engine cannot do seamlessly.
+
+## Track music sheet
+
+A track's music is picked with the **Track Music Sheet** item (like the drop table: right-click in the air for its screen, right-click a Start node to apply it as the track's default or for the next race only).
+The screen has a text field (the title every racer is shown when the race begins) and a grid of the tracks this client has a sound for, by name; "Default" and "None" come first.
+
+- A track's music is a sound event `music.level.<level>` (`music.level.crash_cove`, ...). The default, `music.race`, is Crash Cove's music alone in the local pack (a track with no pick plays it); "None" plays no level music.
+  The mod itself has no music in the jar, so with no pack the default is silent.
+- The server stores only the id and the title and sends them to the racers, so the sounds never have to exist on a server. A player with the pack hears the track, a player without it still sees its title
+  (and it shows grey in their screen, kept as it is when they save). The grid is read from the sounds the loaded resource packs add, so other packs can add `music.level.<name>` events with their own
+  `music.ctrcraft.level.<name>` lang entries.
+- The Aku Aku / Uka Uka mask songs fade the level music out while they play and it carries on from where it was (it is not restarted or re-picked).
+

@@ -305,6 +305,8 @@ public class KartRenderer extends EntityRenderer<KartEntity> {
             w = null;                                  // one baked pose at a time: the jump's replaces the wheelie's
             applyAirTilt(pose, air);
         }
+        float boat = FloatState.tilt(entity, partialTick);
+        if (boat != 0.0F) pose.mulPose(Axis.XP.rotationDegrees(boat));          // the stern dips into the water
         if (w != null) {
             pose.translate(0.0, w.lift(), -w.forward());
             pose.mulPose(Axis.XP.rotationDegrees((float) -w.pitchDegrees()));
@@ -400,6 +402,7 @@ public class KartRenderer extends EntityRenderer<KartEntity> {
         drawBoostFlames(entity, pose, buffers, partialTick);
         pose.popPose();
         ShieldBubble.drawKart(entity, pose, buffers, partialTick, this.entityRenderDispatcher.camera);
+        MaskHead.draw(entity, pose, buffers, partialTick, packedLight);
         super.render(entity, entityYaw, partialTick, pose, buffers, packedLight);
     }
 }

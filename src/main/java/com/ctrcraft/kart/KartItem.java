@@ -19,6 +19,13 @@ public class KartItem extends Item {
         super(properties);
     }
 
+    /** A kart item whose kart has the Obsidian Floater: its item entity is not burned, melted in lava or blown up (like ancient debris), see {@link ObsidianProtection}. */
+    public static boolean isObsidian(ItemStack stack) {
+        if (!stack.is(com.ctrcraft.ModItems.KART.get())) return false;
+        var data = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+        return data != null && (data.copyTag().getInt("Upgrades") & KartEntity.UP_OBSIDIAN) != 0;
+    }
+
     /** A kart item right-clicked on a water cauldron is washed: the paint comes off (a level of water is used), as with leather armour. */
     public static void registerCauldron() {
         net.minecraft.core.cauldron.CauldronInteraction.WATER.map().put(com.ctrcraft.ModItems.KART.get(), (state, level, pos, player, hand, stack) -> {

@@ -55,10 +55,28 @@ public final class RaceIntroCamera {
             mc.options.setCameraType(CameraType.FIRST_PERSON);        // the camera sits at the marker, not behind it
             mc.setCameraEntity(camera);
         }
+        if (mc.options.getCameraType() != CameraType.FIRST_PERSON) mc.options.setCameraType(CameraType.FIRST_PERSON);          // a camera mod's own switch to third person is undone
         double t = 1.0 - (double) RaceClient.introMsLeft() / RaceClient.introTotalMs();
         Pose p = pose(s, Mth.clamp(t, 0.0, 1.0));
         camera.moveTo(p.x(), p.y(), p.z(), p.yaw(), p.pitch());
         camera.setOldPosAndRot();
+        lastPose = p;
+    }
+
+    private static Pose lastPose;
+
+    /** The camera's angles are the intro's, whatever a camera mod would add (free look), and the player's hand is not drawn over it. */
+    @SubscribeEvent
+    public static void onAngles(net.neoforged.neoforge.client.event.ViewportEvent.ComputeCameraAngles event) {
+        if (camera == null || lastPose == null) return;
+        event.setYaw(lastPose.yaw());
+        event.setPitch(lastPose.pitch());
+        event.setRoll(0.0F);
+    }
+
+    @SubscribeEvent
+    public static void onHand(net.neoforged.neoforge.client.event.RenderHandEvent event) {
+        if (camera != null) event.setCanceled(true);
     }
 
     private static void stop(Minecraft mc) {

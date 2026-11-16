@@ -55,6 +55,11 @@ public class CtrCraftMod {
         registrar.playToServer(com.ctrcraft.net.KartSettingsPayload.TYPE, com.ctrcraft.net.KartSettingsPayload.STREAM_CODEC, com.ctrcraft.net.KartSettingsPayload::handle);
         registrar.playToClient(com.ctrcraft.net.OpenSpotPayload.TYPE, com.ctrcraft.net.OpenSpotPayload.STREAM_CODEC, com.ctrcraft.net.OpenSpotPayload::handle);
         registrar.playToServer(com.ctrcraft.net.SetSpotPayload.TYPE, com.ctrcraft.net.SetSpotPayload.STREAM_CODEC, com.ctrcraft.net.SetSpotPayload::handle);
+        registrar.playToServer(com.ctrcraft.net.MusicSheetSavePayload.TYPE, com.ctrcraft.net.MusicSheetSavePayload.STREAM_CODEC, com.ctrcraft.net.MusicSheetSavePayload::handle);
+        registrar.playToClient(com.ctrcraft.track.RaceDebugPayload.TYPE, com.ctrcraft.track.RaceDebugPayload.STREAM_CODEC, com.ctrcraft.track.RaceDebugPayload::handle);
+        registrar.playToServer(com.ctrcraft.net.RaceDebugRequestPayload.TYPE, com.ctrcraft.net.RaceDebugRequestPayload.STREAM_CODEC, com.ctrcraft.net.RaceDebugRequestPayload::handle);
+        registrar.playToClient(com.ctrcraft.track.PodiumScenePayload.TYPE, com.ctrcraft.track.PodiumScenePayload.STREAM_CODEC, com.ctrcraft.track.PodiumScenePayload::handle);
+        registrar.playToClient(com.ctrcraft.track.MusicPayload.TYPE, com.ctrcraft.track.MusicPayload.STREAM_CODEC, com.ctrcraft.track.MusicPayload::handle);
         registrar.playToServer(com.ctrcraft.net.DropTableSavePayload.TYPE, com.ctrcraft.net.DropTableSavePayload.STREAM_CODEC, com.ctrcraft.net.DropTableSavePayload::handle);
         registrar.playToServer(com.ctrcraft.net.KartSquishPayload.TYPE, com.ctrcraft.net.KartSquishPayload.STREAM_CODEC,
                 com.ctrcraft.net.KartSquishPayload::handle);

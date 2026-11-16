@@ -170,10 +170,11 @@ public class BombEntity extends Entity {
     public void launch(ServerPlayer driver, KartEntity kart, boolean powered, boolean backward) {
         owner = driver.getUUID();
         raceId = RaceManager.raceIdOf(owner);
-        heading = Math.toRadians(kart.getYRot());
+        float launchYaw = launchYaw(kart);
+        heading = Math.toRadians(launchYaw);
         entityData.set(DATA_POWERED, powered);
         entityData.set(DATA_BACKWARD, backward);
-        setYRot(kart.getYRot());
+        setYRot(launchYaw);
         double side = backward ? -1.6 : 1.2;
         setPos(kart.getX() - Math.sin(heading) * side, kart.getY(), kart.getZ() + Math.cos(heading) * side);
         grounded = true;                          // it starts on the ground the kart is on: the first step puts it on the surface
@@ -182,11 +183,20 @@ public class BombEntity extends Entity {
         counted = true;
     }
 
+    /**
+     * The way a weapon leaves the kart. The bomb and the missile go the way the kart's MODEL looks (VehPickupItem_ShootNow: the weapon's matrix is a turn about the ground normal by
+     * rotCurr.y, the visual yaw = the heading + the drift angle + the wobble), so in a drift they fly along the nose, not along the heading; the thrown shield goes along the heading (tw->rotY =
+     * player->angle) and overrides this.
+     */
+    protected float launchYaw(KartEntity kart) {
+        return com.ctrcraft.kart.KartScale.angleToYaw(kart.getDrawnYawAngle());
+    }
+
     protected UUID chooseTarget(ServerPlayer driver, KartEntity from) {
         ServerPlayer best = null;
         double bestDist = TARGET_RANGE * TARGET_RANGE;
         for (ServerPlayer p : ((ServerLevel) level()).getServer().getPlayerList().getPlayers()) {
-            if (p == driver || !(p.getVehicle() instanceof KartEntity k) || k.level() != level()) continue;
+            if (p == driver || !(p.getVehicle() instanceof KartEntity k) || k.level() != level() || k.ethereal()) continue;
             double dx = k.getX() - from.getX();
             double dz = k.getZ() - from.getZ();
             double d2 = dx * dx + dz * dz;
@@ -366,7 +376,7 @@ public class BombEntity extends Entity {
     private boolean hitSomething(ServerLevel level) {
         AABB reach = getBoundingBox().inflate(HIT_RADIUS + 0.5, HIT_HEIGHT, HIT_RADIUS + 0.5);
         for (KartEntity kart : level.getEntitiesOfClass(KartEntity.class, reach)) {
-            if (!(kart.getControllingPassenger() instanceof ServerPlayer driver)) continue;
+            if (!(kart.getControllingPassenger() instanceof ServerPlayer driver) || kart.ethereal()) continue;
             if (driver.getUUID().equals(owner) && tickCount < ownerSparedTicks()) continue;
             double dx = kart.getX() - getX();
             double dz = kart.getZ() - getZ();
@@ -440,7 +450,7 @@ public class BombEntity extends Entity {
         AABB blast = new AABB(position(), position()).inflate(radius);
         List<KartEntity> karts = level.getEntitiesOfClass(KartEntity.class, blast);
         for (KartEntity kart : karts) {
-            if (!(kart.getControllingPassenger() instanceof ServerPlayer driver) || driver.getUUID().equals(owner)) continue;   // "the firing driver is excluded"
+            if (!(kart.getControllingPassenger() instanceof ServerPlayer driver) || driver.getUUID().equals(owner) || kart.ethereal()) continue;   // "the firing driver is excluded"
             if (kart.distanceToSqr(this) >= radius * radius) continue;
             if (ItemManager.applyEffect(driver, ItemManager.EFFECT_BLAST)) ItemManager.losePowerFruit(driver, ItemManager.BLAST_POWER_FRUIT_PENALTY);        // a shielded kart loses nothing
         }

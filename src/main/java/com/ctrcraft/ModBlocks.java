@@ -82,6 +82,20 @@ public final class ModBlocks {
         return BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(0.5F).sound(SoundType.METAL).noCollission().noOcclusion();
     }
 
+    /** Podium nodes (1st to 3rd): where the racers who finish are put, once a Track Tool has hooked them up to the Start node. */
+    public static final DeferredBlock<com.ctrcraft.track.TrackNodeBlock> PODIUM_1_NODE = BLOCKS.register("podium_1_node",
+            () -> new com.ctrcraft.track.TrackNodeBlock(nodeProps(), com.ctrcraft.track.TrackGraph.Kind.PODIUM_1));
+    public static final DeferredBlock<com.ctrcraft.track.TrackNodeBlock> PODIUM_2_NODE = BLOCKS.register("podium_2_node",
+            () -> new com.ctrcraft.track.TrackNodeBlock(nodeProps(), com.ctrcraft.track.TrackGraph.Kind.PODIUM_2));
+    public static final DeferredBlock<com.ctrcraft.track.TrackNodeBlock> PODIUM_3_NODE = BLOCKS.register("podium_3_node",
+            () -> new com.ctrcraft.track.TrackNodeBlock(nodeProps(), com.ctrcraft.track.TrackGraph.Kind.PODIUM_3));
+    public static final DeferredItem<BlockItem> PODIUM_1_NODE_ITEM = ModItems.ITEMS.register("podium_1_node",
+            () -> new com.ctrcraft.track.TrackNodeItem(PODIUM_1_NODE.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> PODIUM_2_NODE_ITEM = ModItems.ITEMS.register("podium_2_node",
+            () -> new com.ctrcraft.track.TrackNodeItem(PODIUM_2_NODE.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> PODIUM_3_NODE_ITEM = ModItems.ITEMS.register("podium_3_node",
+            () -> new com.ctrcraft.track.TrackNodeItem(PODIUM_3_NODE.get(), new Item.Properties()));
+
     private static BlockBehaviour.Properties nodeProps() {
         return BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).strength(0.5F).sound(SoundType.METAL)
                 .noCollission().noOcclusion();

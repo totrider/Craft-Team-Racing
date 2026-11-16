@@ -49,6 +49,27 @@ public class TrackData extends SavedData {
     private final Map<Long, com.ctrcraft.items.PowerupTable> defaultTables = new HashMap<>();
     private final Map<Long, com.ctrcraft.items.PowerupTable> temporaryTables = new HashMap<>();
 
+    /** The music of a Start node's track (default) and the one set for the next race only. */
+    private final Map<Long, com.ctrcraft.MusicSheetData> defaultMusic = new HashMap<>();
+    private final Map<Long, com.ctrcraft.MusicSheetData> temporaryMusic = new HashMap<>();
+
+    /** The music a race on this track starts with: the one for the next race, else the default, else the mod's default track. */
+    public com.ctrcraft.MusicSheetData music(long start) {
+        com.ctrcraft.MusicSheetData m = temporaryMusic.get(start);
+        if (m == null) m = defaultMusic.get(start);
+        return m == null ? com.ctrcraft.MusicSheetData.DEFAULT : m;
+    }
+
+    public void setDefaultMusic(long start, com.ctrcraft.MusicSheetData music) {
+        if (music.isDefault()) defaultMusic.remove(start);
+        else defaultMusic.put(start, music);
+        setDirty();
+    }
+
+    public void setTemporaryMusic(long start, com.ctrcraft.MusicSheetData music) {
+        temporaryMusic.put(start, music);
+    }
+
     /** The rules a race starts with: {@link #rules} with the drop table of the track (the one for the next race, else the default) in place of the rules' own, when there is one. */
     public com.ctrcraft.items.RuleSet effectiveRules(long start) {
         com.ctrcraft.items.RuleSet r = rules(start);
@@ -71,6 +92,7 @@ public class TrackData extends SavedData {
     public void clearTemporaryAll(long start) {
         temporaryRules.remove(start);
         temporaryTables.remove(start);
+        temporaryMusic.remove(start);
     }
 
     public void setDefaultRules(long start, com.ctrcraft.items.RuleSet rules) {
@@ -164,6 +186,17 @@ public class TrackData extends SavedData {
             });
         }
         tag.put("tables", tables);
+        ListTag music = new ListTag();
+        for (Map.Entry<Long, com.ctrcraft.MusicSheetData> e : defaultMusic.entrySet()) {
+            if (!graph.contains(e.getKey())) continue;
+            com.ctrcraft.MusicSheetData.CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, e.getValue()).result().ifPresent(t -> {
+                CompoundTag c = new CompoundTag();
+                c.putLong("start", e.getKey());
+                c.put("music", t);
+                music.add(c);
+            });
+        }
+        tag.put("music", music);
         return tag;
     }
 
@@ -206,6 +239,12 @@ public class TrackData extends SavedData {
             CompoundTag c = tableList.getCompound(i);
             long start = c.getLong("start");
             com.ctrcraft.DropTableData.TABLE_CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, c.get("table")).result().ifPresent(t -> data.defaultTables.put(start, t));
+        }
+        ListTag musicList = tag.getList("music", Tag.TAG_COMPOUND);
+        for (int i = 0; i < musicList.size(); i++) {
+            CompoundTag c = musicList.getCompound(i);
+            long start = c.getLong("start");
+            com.ctrcraft.MusicSheetData.CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, c.get("music")).result().ifPresent(t -> data.defaultMusic.put(start, t));
         }
         return data;
     }

@@ -65,6 +65,9 @@ public final class StartGridRenderer {
         if (mc.player == null || mc.level == null) return;
         boolean holding = TrackEvents.holdsTrackItem(mc.player) || TestDriveClient.active();
         long[] idle = TrackClient.gridStarts();
+        // the grid and the area are for lining up: once the race has reached the lights (the intro camera, then the race) they are not drawn, unless a track item is held
+        int phase = com.ctrcraft.track.RaceClient.state().phase();
+        if (phase == com.ctrcraft.track.RacePayload.LIGHTS || phase == com.ctrcraft.track.RacePayload.RACING || phase == com.ctrcraft.track.RacePayload.DONE) idle = new long[0];
         if (!holding && idle.length == 0) return;
 
         PoseStack pose = event.getPoseStack();

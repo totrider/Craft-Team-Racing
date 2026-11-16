@@ -124,6 +124,11 @@ public final class Fx {
 
     /** Plays an effect on the client at a place, facing {@code yawDegrees} (Minecraft's yaw: forward is (-sin, cos)); {@code params} are the numbers its profile may ask for. */
     public static void play(String id, double x, double y, double z, float yawDegrees, Map<String, Double> params) {
+        play(id, x, y, z, yawDegrees, params, null);
+    }
+
+    /** The same, with the puffs tied to a kart: they travel with it (the rain cloud over a kart). */
+    public static void play(String id, double x, double y, double z, float yawDegrees, Map<String, Double> params, com.ctrcraft.kart.KartEntity anchor) {
         ClientLevel level = Minecraft.getInstance().level;
         List<Emitter> list = profiles.get(id);
         if (level == null || list == null) return;
@@ -156,7 +161,12 @@ public final class Fx {
                 if (e.model() != null) {
                     ModelFx.spawn(e.model(), px, py, pz, level.getGameTime());
                 } else {
-                    level.addParticle(e.particle(), px, py, pz, vx, vy, vz);
+                    if (anchor != null) {
+                        net.minecraft.client.particle.Particle made = Minecraft.getInstance().particleEngine.createParticle(e.particle(), px, py, pz, vx, vy, vz);
+                        if (made instanceof DustPuffParticle puff) puff.anchorTo(anchor);
+                    } else {
+                        level.addParticle(e.particle(), px, py, pz, vx, vy, vz);
+                    }
                 }
             }
         }
@@ -172,6 +182,11 @@ public final class Fx {
     }
 
     /** Plays an effect with the one number the server sends. */
+    /** An effect that travels with a kart (a rain cloud's puffs). */
+    public static void playAnchored(String id, com.ctrcraft.kart.KartEntity kart, int tick) {
+        play(id, kart.getX(), kart.getY(), kart.getZ(), 0.0F, Map.of("arg", 0.0, "radius", 0.0, "tick", (double) tick), kart);
+    }
+
     public static void play(String id, double x, double y, double z, float yawDegrees, float arg, int tick) {
         play(id, x, y, z, yawDegrees, Map.of("arg", (double) arg, "radius", (double) arg, "tick", (double) tick));
     }

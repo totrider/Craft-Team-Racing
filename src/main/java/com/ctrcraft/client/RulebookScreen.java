@@ -31,8 +31,9 @@ public class RulebookScreen extends Screen {
     private boolean offroad;
     private boolean softBumper;
     private int floater;
-    private boolean spring;
+    private int spring;
     private int lowGravity;
+    private boolean paddle;
     private boolean asDefault;
     private int maxSpeed;
 
@@ -52,6 +53,7 @@ public class RulebookScreen extends Screen {
         floater = r.floater();
         spring = r.spring();
         lowGravity = r.lowGravity();
+        paddle = r.paddle();
         maxSpeed = r.maxSpeedPercent();
         asDefault = data.asDefault();
     }
@@ -83,7 +85,11 @@ public class RulebookScreen extends Screen {
             floater = (floater + 1) % 3;
             b.setMessage(floaterLabel());
         }).bounds(left, 120, 145, 20).build());
-        toggle(right, 120, "screen.ctrcraft.rulebook.spring", () -> spring, v -> spring = v);
+        addRenderableWidget(Button.builder(springLabel(), b -> {
+            spring = (spring + 1) % 11;
+            b.setMessage(springLabel());
+        }).bounds(right, 120, 145, 20).build());
+        toggle(right, 144, "screen.ctrcraft.rulebook.paddle", () -> paddle, v -> paddle = v);
         addRenderableWidget(Button.builder(gravityLabel(), b -> {
             lowGravity = (lowGravity + 1) % 11;
             b.setMessage(gravityLabel());
@@ -107,6 +113,10 @@ public class RulebookScreen extends Screen {
         return Component.translatable("screen.ctrcraft.rulebook.floater", Component.translatable("screen.ctrcraft.rulebook.floater_" + floater));
     }
 
+    private Component springLabel() {
+        return Component.translatable("screen.ctrcraft.rulebook.spring", spring == 0 ? Component.translatable("screen.ctrcraft.rulebook.off") : Component.literal(spring * 10 + "%"));
+    }
+
     private Component gravityLabel() {
         return Component.translatable("screen.ctrcraft.rulebook.low_gravity", lowGravity == 0 ? Component.translatable("screen.ctrcraft.rulebook.off") : Component.literal(lowGravity * 10 + "%"));
     }
@@ -120,7 +130,7 @@ public class RulebookScreen extends Screen {
     }
 
     private void save() {
-        RuleSet rules = new RuleSet(table, fruit, fruitCrates, powerupCrates, boostPads, maxSpeed, driverDamage, hunger, offroad, softBumper, floater, spring, lowGravity);
+        RuleSet rules = new RuleSet(table, fruit, fruitCrates, powerupCrates, boostPads, maxSpeed, driverDamage, hunger, offroad, softBumper, floater, spring, lowGravity, paddle);
         PacketDistributor.sendToServer(new RulebookSavePayload(hand.ordinal(), new RulebookData(rules, asDefault)));
         onClose();
     }

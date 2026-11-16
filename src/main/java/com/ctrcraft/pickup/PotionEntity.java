@@ -132,7 +132,7 @@ public class PotionEntity extends Entity implements MinePool.Mine {
         }
         AABB reach = getBoundingBox().inflate(HIT_RADIUS + 0.2);
         for (KartEntity kart : level.getEntitiesOfClass(KartEntity.class, reach)) {
-            if (!(kart.getControllingPassenger() instanceof ServerPlayer driver)) continue;
+            if (!(kart.getControllingPassenger() instanceof ServerPlayer driver) || kart.ethereal()) continue;
             if (driver.getUUID().equals(owner) && tickCount < OWNER_SPARED_TICKS) continue;
             if (kart.distanceToSqr(getX(), getY() + 0.3, getZ()) >= HIT_RADIUS * HIT_RADIUS) continue;
             if (ItemManager.applyEffect(driver, ItemManager.EFFECT_SPIN)) {          // false: the shield (or the moment after it) took the hit

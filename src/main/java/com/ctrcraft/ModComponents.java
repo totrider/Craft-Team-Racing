@@ -28,6 +28,10 @@ public final class ModComponents {
     public static final Supplier<DataComponentType<DropTableData>> DROP_TABLE = COMPONENTS.registerComponentType("drop_table",
             builder -> builder.persistent(DropTableData.CODEC).networkSynchronized(DropTableData.STREAM_CODEC));
 
+    /** The music a track music sheet holds (docs/MUSIC.md). */
+    public static final Supplier<DataComponentType<MusicSheetData>> MUSIC_SHEET = COMPONENTS.registerComponentType("music_sheet",
+            builder -> builder.persistent(MusicSheetData.CODEC).networkSynchronized(MusicSheetData.STREAM_CODEC));
+
     /** What a kart item is painted with: the frame's and the seat's colour (none: the kart's own). */
     public static final Supplier<DataComponentType<com.ctrcraft.kart.KartPaint>> KART_PAINT = COMPONENTS.registerComponentType("kart_paint",
             builder -> builder.persistent(com.ctrcraft.kart.KartPaint.CODEC).networkSynchronized(com.ctrcraft.kart.KartPaint.STREAM_CODEC));

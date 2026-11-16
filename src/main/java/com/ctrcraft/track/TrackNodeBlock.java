@@ -30,6 +30,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class TrackNodeBlock extends Block {
     /** 0-15 in 22.5 degree steps, like a standing sign: the way the node faces. */
     public static final IntegerProperty ROTATION = BlockStateProperties.ROTATION_16;
+    /** On while the node is "active": a Start node while its race is running, a podium node while a racer stands on it. It is a redstone source then (full strength). */
+    public static final net.minecraft.world.level.block.state.properties.BooleanProperty POWERED = BlockStateProperties.POWERED;
     private static final VoxelShape SHAPE = Block.box(4.0, 4.0, 4.0, 12.0, 12.0, 12.0);
 
     private final TrackGraph.Kind kind;
@@ -37,7 +39,7 @@ public class TrackNodeBlock extends Block {
     public TrackNodeBlock(Properties properties, TrackGraph.Kind kind) {
         super(properties);
         this.kind = kind;
-        registerDefaultState(stateDefinition.any().setValue(ROTATION, 0));
+        registerDefaultState(stateDefinition.any().setValue(ROTATION, 0).setValue(POWERED, false));
     }
 
     public TrackGraph.Kind kind() {
@@ -46,12 +48,33 @@ public class TrackNodeBlock extends Block {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(ROTATION);
+        builder.add(ROTATION, POWERED);
     }
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return defaultBlockState().setValue(ROTATION, RotationSegment.convertToSegment(context.getRotation()));
+    }
+
+    @Override
+    protected boolean isSignalSource(BlockState state) {
+        return true;
+    }
+
+    @Override
+    protected int getSignal(BlockState state, BlockGetter level, BlockPos pos, net.minecraft.core.Direction direction) {
+        return state.getValue(POWERED) ? 15 : 0;
+    }
+
+    @Override
+    protected int getDirectSignal(BlockState state, BlockGetter level, BlockPos pos, net.minecraft.core.Direction direction) {
+        return state.getValue(POWERED) ? 15 : 0;
+    }
+
+    /** Switches the node's redstone output on or off (the node keeps its place in the track). */
+    public static void setPowered(Level level, BlockPos pos, boolean on) {
+        BlockState state = level.getBlockState(pos);
+        if (state.getBlock() instanceof TrackNodeBlock && state.getValue(POWERED) != on) level.setBlock(pos, state.setValue(POWERED, on), 3);
     }
 
     @Override
@@ -66,7 +89,8 @@ public class TrackNodeBlock extends Block {
         // not look the tool up before items are registered
         if (context instanceof EntityCollisionContext && (context.isHoldingItem(ModItems.TRACK_TOOL.get())
                 || context.isHoldingItem(ModBlocks.START_NODE_ITEM.get()) || context.isHoldingItem(ModBlocks.CHECKPOINT_NODE_ITEM.get())
-                || (kind == TrackGraph.Kind.START && (context.isHoldingItem(ModItems.RULEBOOK.get()) || context.isHoldingItem(ModItems.DROP_TABLE.get()))))) {
+                || context.isHoldingItem(ModBlocks.PODIUM_1_NODE_ITEM.get()) || context.isHoldingItem(ModBlocks.PODIUM_2_NODE_ITEM.get()) || context.isHoldingItem(ModBlocks.PODIUM_3_NODE_ITEM.get())
+                || (kind == TrackGraph.Kind.START && (context.isHoldingItem(ModItems.RULEBOOK.get()) || context.isHoldingItem(ModItems.DROP_TABLE.get()) || context.isHoldingItem(ModItems.MUSIC_SHEET.get()))))) {
             return SHAPE;
         }
         return Shapes.empty();
@@ -90,6 +114,10 @@ public class TrackNodeBlock extends Block {
 
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
+        if (oldState.is(state.getBlock()) && oldState.getValue(ROTATION) == state.getValue(ROTATION)) {
+            super.onPlace(state, level, pos, oldState, isMoving);          // only the redstone output changed: the node is the same
+            return;
+        }
         if (level instanceof ServerLevel server) {
             // put() keeps the links and the ring size of a node already there (a replaced or turned node)
             TrackData data = TrackData.get(server);

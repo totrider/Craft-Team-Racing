@@ -26,6 +26,7 @@ public final class KartEffects {
     private static final Map<Integer, net.minecraft.world.phys.Vec3[]> SKID_LAST = new HashMap<>();
 
     public static void tick(KartEntity kart) {
+        FloatState.tick(kart);
         Level level = kart.level();
         if (!level.isClientSide) {
             return;
@@ -97,8 +98,9 @@ public final class KartEffects {
 
         // skidmarks (VehGroundSkids): while the rear wheels skid (a drift, a power brake) or the front ones, each skidding wheel that is on the ground lays a strip from where it was a tick ago
         // to where it is, on the ground under it (the original's last for 24 frames and fade; SkidMarkParticle). The wheels are at the markers of the kart's model (KartWheels).
-        boolean skidBack = KartFlags.has(flags, KartFlags.BACK_SKID);
-        boolean skidFront = KartFlags.has(flags, KartFlags.FRONT_SKID);
+        boolean onFluid = FloatState.onFluid(kart);          // a floating kart leaves no marks on the water
+        boolean skidBack = KartFlags.has(flags, KartFlags.BACK_SKID) && !onFluid;
+        boolean skidFront = KartFlags.has(flags, KartFlags.FRONT_SKID) && !onFluid;
         boolean onGround = !KartFlags.has(flags, KartFlags.AIRBORNE);
         net.minecraft.world.phys.Vec3[] last = SKID_LAST.computeIfAbsent(kart.getId(), k -> new net.minecraft.world.phys.Vec3[4]);
         java.util.List<com.ctrcraft.kart.KartWheels.Wheel> wheelList = com.ctrcraft.kart.KartWheels.get();

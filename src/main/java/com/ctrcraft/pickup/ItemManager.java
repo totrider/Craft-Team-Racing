@@ -90,7 +90,7 @@ public final class ItemManager {
      */
     public static void cloud(ServerPlayer p, boolean fresh) {
         State s = state(p);
-        if (s == null) return;
+        if (s == null || s.maskTicks > 0) return;
         int effect = fresh ? (s.held.isEmpty() ? 0 : 1) : RANDOM.nextInt(4);
         s.cloudTicks = CLOUD_TICKS;
         if (effect == 1 && !s.held.isEmpty() && s.roll == 0) {
@@ -103,6 +103,70 @@ public final class ItemManager {
         s.cloudDelay = 4;
     }
 
+    /**
+     * MASK_HEAD_DURATION_NORMAL 0x1e00 and _JUICED 0x2d00 in game ticks, and the fade that follows it (0x200, the mask still counts as on). The game takes elapsedTimeMS off the duration every
+     * frame and that is 0x20 a frame at 30 frames a second (MainFrame.c), so the "ms" are 32 to a frame: 240 frames (8 s) and 360 frames (12 s), the fade 16 frames. Here 20 ticks a second.
+     */
+    public static final int MASK_TICKS = 160;
+    public static final int MASK_TICKS_CHARGED = 240;
+    public static final int MASK_FADE_TICKS = 11;
+
+    /** A finished racer's kart touches nothing: no weapon, crate or fruit takes it into account. */
+    public static boolean ethereal(ServerPlayer p) {
+        return p.getVehicle() instanceof KartEntity k && k.ethereal();
+    }
+
+    /** Whether the driver's kart has the Mask on (the fade included): nothing hurts it, its fruit stay, it hurts the karts it touches. */
+    public static boolean maskActive(ServerPlayer p) {
+        State s = state(p);
+        return s != null && s.maskTicks > 0;
+    }
+
+    /** The synced mask state of a kart: 1 Aku Aku (light), 2 Uka Uka (dark), plus 4 while it fades. */
+    private static int maskCode(boolean dark, int ticksLeft) {
+        return (dark ? 2 : 1) | (ticksLeft <= MASK_FADE_TICKS ? 4 : 0);
+    }
+
+    /**
+     * VehPickupItem_MaskUseWeapon: the mask goes on (a second one while it is on only restarts it, with the sound), 7.68 s, 11.52 s with ten power fruit. The kart's own mask preference
+     * decides which one it is (the original picks by the driver: Crash, Coco, Polar, Pura and Penta get Aku Aku, everybody else Uka Uka). A rain cloud over the kart is gone (RB_RainCloud_Init).
+     */
+    private static void useMask(ServerPlayer p, State s) {
+        KartEntity kart = (KartEntity) p.getVehicle();
+        s.maskTicks = (s.powerFruit >= CHARGED ? MASK_TICKS_CHARGED : MASK_TICKS) + MASK_FADE_TICKS;
+        s.cloudTicks = 0;
+        s.cloudDelay = 0;
+        kart.setMaskState(maskCode(kart.darkMask(), s.maskTicks));
+        // OtherFX_Play_Echo(STATIC_AKUAKU / STATIC_UKAUKA + 0x1a): 0x53 and 0x54, the voice of the mask
+        p.serverLevel().playSound(null, p.blockPosition(), kart.darkMask() ? ModSounds.MASK_UKA.get() : ModSounds.MASK_AKU.get(), SoundSource.PLAYERS, 1.5F, 1.0F);
+        s.held = "";
+        sync(p, s);
+    }
+
+    /**
+     * VehPhysCrash_Attack, the mask: a kart with the mask on that touches one without it blasts that one (damage type 2, which a shield takes instead), whatever the impact.
+     * A kart under a turbo item boost squashes it instead (see {@link #squish}).
+     */
+    public static void contact(ServerPlayer attacker, ServerPlayer victim, KartEntity victimKart) {
+        State s = state(attacker);
+        State vs = state(victim);
+        if (s == null || vs == null || attacker == victim || ethereal(attacker) || ethereal(victim)) return;
+        if (s.maskTicks > 0) {
+            if (vs.maskTicks > 0) return;
+            int now = attacker.server.getTickCount();
+            Integer last = LAST_SQUISH.put(attacker.getUUID() + ":" + victim.getUUID(), now);
+            if (last != null && now - last < 40) return;
+            if (applyEffect(victim, EFFECT_BLAST)) losePowerFruit(victim, BLAST_POWER_FRUIT_PENALTY);
+            return;
+        }
+        squish(attacker, victim, victimKart);
+    }
+
+    /** The Warp Orb reached a kart: the explosion's hit (RB_Hazard_HurtDriver type 2, which a shield or the mask takes instead) and the power fruit it costs. */
+    public static void warpHit(ServerPlayer victim) {
+        if (applyEffect(victim, EFFECT_BLAST)) losePowerFruit(victim, BLAST_POWER_FRUIT_PENALTY);
+    }
+
     /** The TNT crate was shaken off: no more slowing. */
     public static final int EFFECT_CLEAR = 5;
     /** What being blasted costs in power fruit (VEH_TUMBLE_WUMPA_PENALTY). */
@@ -111,7 +175,7 @@ public final class ItemManager {
     /** The driver's kart loses fruit (CTR: not while the mask is on, which is not built yet). */
     public static void losePowerFruit(ServerPlayer p, int count) {
         State s = state(p);
-        if (s == null || s.powerFruit == 0) return;
+        if (s == null || s.powerFruit == 0 || s.maskTicks > 0) return;          // the mask keeps the fruit (RB_Player: no loss while ACTION_MASK_WEAPON)
         s.powerFruit = Math.max(0, s.powerFruit - count);
         sync(p, s);
     }
@@ -120,7 +184,10 @@ public final class ItemManager {
     public static boolean applyEffect(ServerPlayer p, int effect) {
         State s = state(p);
         if (s == null) return true;
+        if (ethereal(p) && harmful(effect)) return false;
         if (harmful(effect)) {
+            // VehPickState_NewState: a kart with the mask on is ignored first of all (the victim laughs)
+            if (s.maskTicks > 0) return false;
             // a hit pops the shield and does nothing else (VehPickState: SHIELD_FLAG_POP_ON_DAMAGE, then invincibleTimer 0x2a0 ms), and the driver cannot be hit again for that moment
             // (VehPickState_NewState returns 0: the hazard's own side effects, the power fruit lost, the rain cloud, a TNT crate landing on the head, do not happen)
             if (s.immune > 0) return false;
@@ -215,6 +282,8 @@ public final class ItemManager {
         int clockDelay;
         int cloudPending;
         int cloudDelay;
+        /** The Mask's ticks left, its fade included (0: none): ACTION_MASK_WEAPON is on while it lives. */
+        public int maskTicks;
         /** HELD_ITEM_STACK_COUNT: the shots a bomb_3x / missile_3x still has (numHeldItems), 0 for every other item. */
         int count;
         /** The cooldown between two shots of a stack, game ticks (noItemTimer: 5 frames). */
@@ -308,6 +377,7 @@ public final class ItemManager {
 
     /** The use key. */
     public static void use(ServerPlayer p, boolean forward, boolean back) {
+        if (ethereal(p)) return;          // a finished racer fires nothing
         State s = state(p);
         if (s == null) return;
         // a bomb of this driver is still rolling: the key detonates it (VehPhysProc: instBombThrow, tw->flags |= 2), before anything else the key does
@@ -405,6 +475,19 @@ public final class ItemManager {
             sync(p, s);
         } else if (id.equals(HeldItem.CLOCK.id())) {
             useClock(p, s);
+        } else if (id.equals(HeldItem.MASK.id())) {
+            useMask(p, s);
+        } else if (id.equals(HeldItem.WARPBALL.id())) {
+            // VehPickupItem_ShootNow, WEAPON_ID_WARPBALL: the orb is born at the kart and goes after the leader (see WarpOrbEntity); every other racer it touches is blasted, and with ten
+            // power fruit it goes on through all of them
+            WarpOrbEntity orb = com.ctrcraft.ModEntities.WARP_ORB.get().create(p.serverLevel());
+            if (orb != null) {
+                orb.launch(p, (KartEntity) p.getVehicle(), s.powerFruit >= CHARGED);
+                p.serverLevel().addFreshEntity(orb);
+                p.serverLevel().playSound(null, p.blockPosition(), ModSounds.WARP_LAUNCH.get(), SoundSource.PLAYERS, 2.0F, 1.0F);          // SOUND_WARPBALL 0x4d
+            }
+            s.held = "";
+            sync(p, s);
         } else {
             // not built yet: it is used up all the same, so the roulette and the icons can be tested one after another
             p.displayClientMessage(Component.translatable("message.ctrcraft.item.not_built", nameOf(s.held)), true);
@@ -425,7 +508,7 @@ public final class ItemManager {
         if (victims == null) {
             victims = new java.util.ArrayList<>();
             for (ServerPlayer o : p.serverLevel().players()) {
-                if (o != p && o.getVehicle() instanceof KartEntity && RaceManager.standing(o) == null && o.distanceToSqr(p) <= GLOBAL_EFFECT_RADIUS * GLOBAL_EFFECT_RADIUS) victims.add(o);
+                if (o != p && o.getVehicle() instanceof KartEntity ok && !ok.ethereal() && RaceManager.standing(o) == null && o.distanceToSqr(p) <= GLOBAL_EFFECT_RADIUS * GLOBAL_EFFECT_RADIUS) victims.add(o);
             }
         }
         for (ServerPlayer v : victims) {
@@ -511,6 +594,10 @@ public final class ItemManager {
                     p.serverLevel().playSound(null, p.blockPosition(), ModSounds.SHIELD_POP.get(), SoundSource.PLAYERS, 2.0F, 1.0F);
                 }
                 setKartShield(p, s);
+            }
+            if (s.maskTicks > 0) {
+                s.maskTicks--;
+                ((KartEntity) p.getVehicle()).setMaskState(s.maskTicks == 0 ? 0 : maskCode(((KartEntity) p.getVehicle()).darkMask(), s.maskTicks));
             }
             if (s.cloudTicks > 0) s.cloudTicks--;
             if (s.turboItemTicks > 0) s.turboItemTicks--;

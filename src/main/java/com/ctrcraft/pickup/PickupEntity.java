@@ -88,7 +88,7 @@ public class PickupEntity extends Entity {
         double half = (kind().width * com.ctrcraft.kart.KartScale.CRATE_LU / 2.0 + com.ctrcraft.physics.KartSim.SPHERE_RADIUS) / com.ctrcraft.kart.KartScale.LU_PER_BLOCK;
         AABB reach = new AABB(getX() - half, getY() - 0.4, getZ() - half, getX() + half, getY() + kind().height + 0.2, getZ() + half);
         for (KartEntity kart : level.getEntitiesOfClass(KartEntity.class, reach)) {
-            if (kart.getControllingPassenger() instanceof ServerPlayer driver && ItemManager.collect(this, be, driver)) {
+            if (kart.getControllingPassenger() instanceof ServerPlayer driver && !kart.ethereal() && ItemManager.collect(this, be, driver)) {
                 be.taken(this);
                 breakUp(level);
                 discard();

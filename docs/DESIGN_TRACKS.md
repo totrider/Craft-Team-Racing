@@ -139,3 +139,23 @@ progress (lap, node index, distance to the next node). Respawn and wrong-way han
 - **Lap count and settings:** set on the Start node via the tool (a small screen), default 3.
 - **Several tracks in one world:** yes (each Start node starts a track; nodes belong to the track they are linked into).
 - **A branch ring that should also count for the lap:** the main path decides what counts; branches are alternative routes between two main nodes, so passing either counts.
+
+## Podium nodes and finished racers
+
+Three extra node blocks, **Podium Node (1st / 2nd / 3rd)**, are hooked up to a Start node with the Track Tool (click the podium node, then the Start node; click again to unhook). They are not part of the course:
+they have no links to checkpoints and the recorded routes ignore them. A Start node has at most one node for each place.
+
+- With **all three** hooked up, the racers who finish 1st to 3rd are put on their podium (the kart is placed there and held in place until the race is over). With any missing, none of this happens.
+- When three racers have finished, the race ends a few seconds later (the finish jingle plays) for everyone. If the finish time runs out first, the racers who are next in the race take the places that are
+  left (they are not given a finish place, only a spot on the podium) and the race ends the same way.
+- A racer who has finished (podium or not) has an *ethereal* kart: karts do not collide with it, it picks up no crates or fruit, weapons and the Warp Orb pass through it and do not target it, and it cannot use items.
+  It cannot leave the kart by accident until the race is over; the leave-race key lets it go early without losing its result.
+- A finished racer is not shown on the track bar.
+
+### Redstone, the podium camera and the cool-down
+
+- **Redstone:** every track node block has a `powered` state. A Start node gives a full redstone signal while its race is running (from the lights until the race ends); a podium node gives one while a racer stands on it.
+- **Podium camera** (client setting `podiumCamera`, on by default): a racer on a podium sees their own kart from the front, the camera sweeping ±50° across it at 4.5 blocks (the sweep is drawn while a podium node is held). A racer who is not on a podium
+  sees all three places: the camera goes round the group and its look-at point glides from the third place to the second and the first (no cuts, whatever the nodes' layout). Both are pulled in by blocks like a third-person camera and give up
+  for the normal view when the space is too tight. The group shot needs the podium inside the player's loaded world (the server only sends chunks and entities round the player), otherwise the normal view stays.
+- **Cool-down:** after a race that had a podium ceremony, the Start node accepts no new race for 15 seconds after the ceremony; the usual race-starting text shows "Next race in N", and a race starts by itself when it ends if enough karts are waiting in the area.

@@ -71,6 +71,23 @@ public class TrackToolItem extends Item {
             return InteractionResult.FAIL;
         }
 
+        // a podium node is hooked up to a Start node (not linked into the course): either one clicked first
+        TrackGraph.Node selNode = graph.get(selected.pos().asLong());
+        if (clickedNode != null && selNode != null && (clickedNode.kind.isPodium() || selNode.kind.isPodium())) {
+            long podium = clickedNode.kind.isPodium() ? pos.asLong() : selected.pos().asLong();
+            long start = clickedNode.kind.isPodium() ? selected.pos().asLong() : pos.asLong();
+            TrackGraph.PodiumResult pr = graph.togglePodium(podium, start);
+            stack.set(ModComponents.SELECTED_NODE.get(), clicked);
+            switch (pr) {
+                case HOOKED, UNHOOKED -> {
+                    data.setDirty();
+                    int place = graph.get(podium).kind.place();
+                    player.displayClientMessage(Component.translatable(pr == TrackGraph.PodiumResult.HOOKED ? "message.ctrcraft.podium.hooked" : "message.ctrcraft.podium.unhooked", place), true);
+                }
+                default -> player.displayClientMessage(Component.translatable("message.ctrcraft.podium.needs_start"), true);
+            }
+            return InteractionResult.CONSUME;
+        }
         TrackGraph.LinkResult result = graph.toggleLink(selected.pos().asLong(), pos.asLong());
         switch (result) {
             case LINKED, UNLINKED -> {
@@ -103,7 +120,13 @@ public class TrackToolItem extends Item {
 
     private static Component describe(TrackGraph graph, BlockPos pos) {
         TrackGraph.Node n = graph.get(pos.asLong());
-        String kind = n != null && n.kind == TrackGraph.Kind.START ? "block.ctrcraft.start_node" : "block.ctrcraft.checkpoint_node";
+        String kind = n == null ? "block.ctrcraft.checkpoint_node" : switch (n.kind) {
+            case START -> "block.ctrcraft.start_node";
+            case PODIUM_1 -> "block.ctrcraft.podium_1_node";
+            case PODIUM_2 -> "block.ctrcraft.podium_2_node";
+            case PODIUM_3 -> "block.ctrcraft.podium_3_node";
+            default -> "block.ctrcraft.checkpoint_node";
+        };
         return Component.translatable(kind).append(" (" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + ")");
     }
 }

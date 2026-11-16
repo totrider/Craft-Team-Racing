@@ -106,7 +106,7 @@ public final class TrackGhostRenderer {
                 c = new float[] { 0.45F + 0.55F * c[0], 0.45F + 0.55F * c[1], 0.45F + 0.55F * c[2] };
             }
             float a = sel ? pulse : hover ? 1.0F : 0.9F;
-            drawNode(pose, p, lines, n.pos(), n.rotation(), n.ext(), c[0], c[1], c[2], a, sel || hover ? 0.8F : 0.4F, 1.6);
+            drawNode(pose, p, lines, n.pos(), n.rotation(), n.ext(), c[0], c[1], c[2], a, n.kind().isPodium() ? 0.0F : sel || hover ? 0.8F : 0.4F, 1.6);          // a podium node has no ring box
             if (TestDriveClient.isCandidate(n.pos())) {
                 target(p, lines, n.pos(), n.rotation(), n.ext(), pulse);
             }
@@ -116,7 +116,7 @@ public final class TrackGhostRenderer {
             }
             // links, once per pair
             for (long other : n.links()) {
-                if (other < n.pos() || TrackClient.get(other) == null) {
+                if ((other < n.pos() && !n.kind().isPodium()) || TrackClient.get(other) == null) {
                     continue;
                 }
                 BlockPos ob = BlockPos.of(other);
@@ -191,7 +191,13 @@ public final class TrackGhostRenderer {
     }
 
     private static float[] colour(TrackGraph.Kind kind) {
-        return kind == TrackGraph.Kind.START ? new float[] { 0.2F, 1.0F, 0.3F } : new float[] { 1.0F, 0.65F, 0.1F };
+        return switch (kind) {
+            case START -> new float[] { 0.2F, 1.0F, 0.3F };
+            case PODIUM_1 -> new float[] { 1.0F, 0.85F, 0.2F };
+            case PODIUM_2 -> new float[] { 0.8F, 0.85F, 0.9F };
+            case PODIUM_3 -> new float[] { 0.8F, 0.5F, 0.25F };
+            default -> new float[] { 1.0F, 0.65F, 0.1F };
+        };
     }
 
     /** A node: a small cube on the node block, an arrow of {@code arrow} blocks for the way it faces, and its box (the area a kart has to touch). */
@@ -210,7 +216,7 @@ public final class TrackGhostRenderer {
         line(p, lines, cx, cy, cz, tx, cy, tz, r, g, b, a);
         line(p, lines, tx, cy, tz, tx - fx * 0.4 + lx * 0.3, cy, tz - fz * 0.4 + lz * 0.3, r, g, b, a);
         line(p, lines, tx, cy, tz, tx - fx * 0.4 - lx * 0.3, cy, tz - fz * 0.4 - lz * 0.3, r, g, b, a);
-        box(p, lines, key, rotation, ext, 0.0, r, g, b, boxAlpha);
+        if (boxAlpha > 0.0F) box(p, lines, key, rotation, ext, 0.0, r, g, b, boxAlpha);
     }
 
     /** The edges of a node's box, {@code inset} blocks inside it. */

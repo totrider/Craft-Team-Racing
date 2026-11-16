@@ -28,6 +28,7 @@ public final class ItemHud {
 
     /** The icon texture of a power-up id, or null if there is none. With ten power fruit the "charged up" picture is used where the pack has one (<id>_charged). */
     private static ResourceLocation icon(String id) {
+        if (id.equals(HeldItem.MASK.id())) return GuiTextures.powerIcon(id);          // Aku Aku or Uka Uka, as the kart's mask preference says
         ResourceLocation rl = ResourceLocation.tryParse(id);
         if (rl == null) return null;
         if (ItemClient.powerFruit() >= ItemManager.CHARGED) {

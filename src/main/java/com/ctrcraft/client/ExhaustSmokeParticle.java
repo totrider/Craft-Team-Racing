@@ -23,7 +23,11 @@ import net.minecraft.core.particles.SimpleParticleType;
  * brightness is the alpha). In the original's draw modes it is drawn SUBTRACTIVELY while the engine runs (the smoke darkens what is behind it: dark smoke) and additively when the turbo
  * meter is in the other state (it lightens it): so it is dark grey and alpha blended normally ({@code glow} false) and bright and additive ({@code glow} true) while boosting.
  */
+@net.neoforged.fml.common.EventBusSubscriber(modid = com.ctrcraft.CtrCraftMod.MODID, value = net.neoforged.api.distmarker.Dist.CLIENT)
 public class ExhaustSmokeParticle extends TextureSheetParticle {
+    /** The dark puffs: drawn by {@link #drawDark} (they take light from the screen, which a particle sheet cannot do), not by the particle engine. */
+    private static final java.util.List<ExhaustSmokeParticle> DARK = new java.util.ArrayList<>();
+
     private final SpriteSet sprites;
     private final boolean glow;
     private final float startSize;
@@ -96,6 +100,7 @@ public class ExhaustSmokeParticle extends TextureSheetParticle {
             this.bCol = 0.0F;
         }
         setSpriteFromAge(sprites);
+        if (!glow) DARK.add(this);
     }
 
     @Override
@@ -127,7 +132,43 @@ public class ExhaustSmokeParticle extends TextureSheetParticle {
 
     @Override
     public ParticleRenderType getRenderType() {
-        return glow ? ADDITIVE : ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+        return glow ? ADDITIVE : ParticleRenderType.NO_RENDER;
+    }
+
+    /**
+     * The dark smoke is drawn SUBTRACTIVELY, as the original's draw mode 2 does (the colour of the puff's picture times its brightness is taken away from what is behind it, so it darkens the
+     * road and the sky by an amount, not by a share of what they are: a plain blend with black is thinner over a dark road). The picture is a white mask, so what is taken is its mask times the
+     * puff's brightness (the emitter's 16384 of 32768, falling).
+     */
+    @net.neoforged.bus.api.SubscribeEvent
+    public static void drawDark(net.neoforged.neoforge.client.event.RenderLevelStageEvent event) {
+        if (event.getStage() != net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_PARTICLES) return;
+        DARK.removeIf(p -> !p.isAlive());
+        if (DARK.isEmpty()) return;
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        float partial = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        net.minecraft.world.phys.Vec3 cam = event.getCamera().getPosition();
+        net.minecraft.client.renderer.MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
+        com.mojang.blaze3d.vertex.VertexConsumer vc = buffers.getBuffer(AdditiveTypes.PARTICLE_ATLAS_SUBTRACT);
+        for (ExhaustSmokeParticle p : DARK) p.drawSubtract(vc, cam, event.getCamera().rotation(), partial);
+        buffers.endBatch(AdditiveTypes.PARTICLE_ATLAS_SUBTRACT);
+    }
+
+    private void drawSubtract(com.mojang.blaze3d.vertex.VertexConsumer vc, net.minecraft.world.phys.Vec3 cam, org.joml.Quaternionf camRot, float partial) {
+        place(partial);
+        org.joml.Quaternionf q = new org.joml.Quaternionf(camRot);
+        if (roll != 0.0F) q.rotateZ(net.minecraft.util.Mth.lerp(partial, oRoll, roll));
+        float cx = (float) (x - cam.x);
+        float cy = (float) (y - cam.y);
+        float cz = (float) (z - cam.z);
+        float[][] corner = { { -1.0F, -1.0F }, { -1.0F, 1.0F }, { 1.0F, 1.0F }, { 1.0F, -1.0F } };
+        float[][] uv = { { getU1(), getV1() }, { getU1(), getV0() }, { getU0(), getV0() }, { getU0(), getV1() } };
+        int a = Math.max(0, Math.min(255, Math.round(alpha * 255.0F)));
+        for (int i = 0; i < 4; i++) {
+            org.joml.Vector3f v = new org.joml.Vector3f(corner[i][0], corner[i][1], 0.0F).rotate(q).mul(quadSize).add(cx, cy, cz);
+            vc.addVertex(v.x, v.y, v.z).setColor(255, 255, 255, a).setUv(uv[i][0], uv[i][1]).setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
+                    .setLight(0xF000F0).setNormal(0.0F, 1.0F, 0.0F);
+        }
     }
 
     private static final ParticleRenderType ADDITIVE = new ParticleRenderType() {

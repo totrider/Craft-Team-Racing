@@ -21,7 +21,8 @@ public class KartSettingsScreen extends Screen {
     private boolean softBumper;
     private boolean darkMask;
     private boolean floater;
-    private boolean spring;
+    private boolean paddle;
+    private int spring;                  // tenths, 0 to 10
     private int gravity;                 // tenths, 0 to 10
 
     public static void open(OpenKartSettingsPayload p) {
@@ -35,7 +36,8 @@ public class KartSettingsScreen extends Screen {
         this.upgrades = p.upgrades();
         this.darkMask = p.darkMask();
         this.floater = (p.upgrades() & KartEntity.UP_FLOATER_ON) != 0;
-        this.spring = (p.upgrades() & KartEntity.UP_SPRING_ON) != 0;
+        this.paddle = (p.upgrades() & KartEntity.UP_PADDLE_ON) != 0;
+        this.spring = (p.upgrades() & KartEntity.UP_SPRING_UNLOCKED) == 0 ? 0 : ((p.upgrades() >> KartEntity.UP_SPRING_SHIFT) & 15) == 0 && (p.upgrades() & KartEntity.UP_SPRING_ON) != 0 ? 5 : (p.upgrades() >> KartEntity.UP_SPRING_SHIFT) & 15;
         this.gravity = (p.upgrades() >> KartEntity.UP_GRAVITY_SHIFT) & 15;
         this.offroad = (p.upgrades() & KartEntity.UP_OFFROAD_ON) != 0;
         this.softBumper = (p.upgrades() & KartEntity.UP_BUMPER_ON) != 0;
@@ -56,9 +58,13 @@ public class KartSettingsScreen extends Screen {
         upgradeButton(x, y += 24, "screen.ctrcraft.kart.offroad", KartEntity.UP_OFFROAD_UNLOCKED, () -> offroad, v -> offroad = v, "screen.ctrcraft.kart.offroad_hint");
         upgradeButton(x, y += 24, "screen.ctrcraft.kart.soft_bumper", KartEntity.UP_BUMPER_UNLOCKED, () -> softBumper, v -> softBumper = v, "screen.ctrcraft.kart.bumper_hint");
         upgradeButton(x, y += 24, "screen.ctrcraft.kart.floater", KartEntity.UP_FLOATER_UNLOCKED, () -> floater, v -> floater = v, "screen.ctrcraft.kart.floater_hint");
-        upgradeButton(x, y += 24, "screen.ctrcraft.kart.spring", KartEntity.UP_SPRING_UNLOCKED, () -> spring, v -> spring = v, "screen.ctrcraft.kart.spring_hint");
+        upgradeButton(x, y += 24, "screen.ctrcraft.kart.paddle", KartEntity.UP_PADDLE_UNLOCKED, () -> paddle, v -> paddle = v, "screen.ctrcraft.kart.paddle_hint");
+        boolean hasSpring = (upgrades & KartEntity.UP_SPRING_UNLOCKED) != 0;
+        StrengthSlider springSlider = new StrengthSlider(x, y += 24, 200, 20, hasSpring, "screen.ctrcraft.kart.spring", () -> spring, v -> spring = v);
+        springSlider.setTooltip(Tooltip.create(Component.translatable(hasSpring ? "screen.ctrcraft.kart.spring_hint" : "screen.ctrcraft.kart.locked_hint")));
+        addRenderableWidget(springSlider);
         boolean hasGravity = (upgrades & KartEntity.UP_GRAVITY_UNLOCKED) != 0;
-        GravitySlider slider = new GravitySlider(x, y += 24, 200, 20, hasGravity);
+        StrengthSlider slider = new StrengthSlider(x, y += 24, 200, 20, hasGravity, "screen.ctrcraft.kart.gravity", () -> gravity, v -> gravity = v);
         slider.setTooltip(Tooltip.create(Component.translatable(hasGravity ? "screen.ctrcraft.kart.gravity_hint" : "screen.ctrcraft.kart.locked_hint")));
         addRenderableWidget(slider);
         addRenderableWidget(Button.builder(maskLabel(), b -> {
@@ -69,24 +75,30 @@ public class KartSettingsScreen extends Screen {
         addRenderableWidget(Button.builder(Component.translatable("screen.ctrcraft.rulebook.cancel"), b -> onClose()).bounds(x + 102, y, 98, 20).build());
     }
 
-    /** The Low Gravity Module's strength: 0 to 100 % in steps of 10. */
-    private final class GravitySlider extends net.minecraft.client.gui.components.AbstractSliderButton {
-        GravitySlider(int x, int y, int w, int h, boolean installed) {
-            super(x, y, w, h, Component.empty(), gravity / 10.0);
+    /** A strength upgrade's slider: 0 to 100 % in steps of 10 (the Low Gravity Module, the Jump Spring). */
+    private final class StrengthSlider extends net.minecraft.client.gui.components.AbstractSliderButton {
+        private final String key;
+        private final java.util.function.IntSupplier get;
+        private final java.util.function.IntConsumer set;
+
+        StrengthSlider(int x, int y, int w, int h, boolean installed, String key, java.util.function.IntSupplier get, java.util.function.IntConsumer set) {
+            super(x, y, w, h, Component.empty(), get.getAsInt() / 10.0);
+            this.key = key;
+            this.get = get;
+            this.set = set;
             this.active = installed;
             updateMessage();
         }
 
         @Override
         protected void updateMessage() {
-            setMessage(Component.translatable("screen.ctrcraft.kart.gravity",
-                    active ? Component.literal(gravity * 10 + "%") : Component.translatable("screen.ctrcraft.kart.not_installed")));
+            setMessage(Component.translatable(key, active ? Component.literal(get.getAsInt() * 10 + "%") : Component.translatable("screen.ctrcraft.kart.not_installed")));
         }
 
         @Override
         protected void applyValue() {
-            gravity = (int) Math.round(value * 10.0);
-            value = gravity / 10.0;
+            set.accept((int) Math.round(value * 10.0));
+            value = get.getAsInt() / 10.0;
         }
     }
 
@@ -106,7 +118,7 @@ public class KartSettingsScreen extends Screen {
     }
 
     private void save() {
-        PacketDistributor.sendToServer(new KartSettingsPayload(kartId, canStart, darkMask, (offroad ? KartEntity.UP_OFFROAD_ON : 0) | (softBumper ? KartEntity.UP_BUMPER_ON : 0) | (floater ? KartEntity.UP_FLOATER_ON : 0) | (spring ? KartEntity.UP_SPRING_ON : 0), gravity));
+        PacketDistributor.sendToServer(new KartSettingsPayload(kartId, canStart, darkMask, (offroad ? KartEntity.UP_OFFROAD_ON : 0) | (softBumper ? KartEntity.UP_BUMPER_ON : 0) | (floater ? KartEntity.UP_FLOATER_ON : 0) | (paddle ? KartEntity.UP_PADDLE_ON : 0), gravity, spring));
         onClose();
     }
 

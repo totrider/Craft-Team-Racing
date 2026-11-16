@@ -198,7 +198,7 @@ def stair_boxes(shape, half):
 
 
 def display():
-    return {"gui": {"rotation": [30, 225, 0], "translation": [0, -1, 0], "scale": [0.75, 0.75, 0.75]},
+    return {"gui": {"rotation": [30, 225, 0], "translation": [0, 0, 0], "scale": [0.625, 0.625, 0.625]},
             "ground": {"translation": [0, 2, 0], "scale": [0.4, 0.4, 0.4]},
             "fixed": {"scale": [0.75, 0.75, 0.75]},
             "thirdperson_righthand": {"rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.4, 0.4, 0.4]},

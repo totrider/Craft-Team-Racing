@@ -129,6 +129,7 @@ def decode_track(disc, filenum, channel, max_sectors):
 
 # ---------------------------------------------------------------------------------------------------------------- level music (CSEQ)
 
+DEFAULT_LEVEL = "crash_cove"      # the track music of a track with none set (music.race)
 TARGET_PEAK = 0.89            # the loudest level song peaks here after the one makeup gain every song gets (-1 dBFS)
 MAX_GAIN = 16.0
 
@@ -286,7 +287,13 @@ def render_level_music(disc, pack_dir, jobs):
             report["songs"][name] = entry
             oggenc.write_ogg(os.path.join(sounds_dir, name + ".ogg"), np.clip(audio, -1.0, 1.0), ctr_cseq.OUT_RATE, quality=0.5)
             ev = ("music.race", "music.aku_aku", "music.uka_uka")[sid]
-            events[ev].append("ctrcraft:music/" + name)
+            if sid == 0:
+                # a sound event of its own per level (the track music sheet picks one by name); music.race, the default, is Crash Cove's only
+                events.setdefault("music.level." + ctr_cseq.LEVELS[level], []).append("ctrcraft:music/" + name)
+                if ctr_cseq.LEVELS[level] != DEFAULT_LEVEL:
+                    ev = None
+            if ev:
+                events[ev].append("ctrcraft:music/" + name)
             print("  %-34s %6.1f s (%.1f s from the ticks) %3d bpm  peak %.2f  rms %5.1f dBFS  %4d notes" % (name, entry["seconds"], exp_s, info["bpm"], entry["peak"], spec["rms_dbfs"], info["notes_total"]))
         report["pitch_check"] = _pitch_check(howl, hwl)
         print("Pitch check (one instrument at notes 57/60/69/72):", report["pitch_check"])
@@ -338,7 +345,8 @@ def main():
     if not args.no_level_music:
         events, report = render_level_music(disc, pack, max(1, args.jobs))
         for event, files in events.items():
-            sj[event] = {"sounds": [{"name": n, "stream": True} for n in sorted(files)]}
+            # NOT streamed: the sound engine loops a sound it holds in memory sample-exactly (a streamed one cannot loop, and restarting it leaves a gap); the mod loops these
+            sj[event] = {"sounds": [{"name": n, "stream": False} for n in sorted(files)]}
         with open(os.path.join(pack, "music-report.json"), "w", encoding="utf-8", newline="\n") as f:
             json.dump(report, f, indent=2)
     with open(os.path.join(pack, "assets", "ctrcraft", "sounds.json"), "w", encoding="utf-8", newline="\n") as f:

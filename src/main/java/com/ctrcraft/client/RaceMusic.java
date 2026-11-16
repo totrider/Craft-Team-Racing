@@ -46,6 +46,9 @@ public final class RaceMusic {
     public static final String FINAL_LAP = "music.final_lap";
     public static final String RACE_END_FIRST = "music.race_end.first";
     public static final String RACE_END_OTHER = "music.race_end.other";
+    /** The mask songs (songs 1 and 2 of the level's pack): they replace the level music while the local kart has the Mask on. */
+    public static final String AKU_SONG = "music.aku_aku";
+    public static final String UKA_SONG = "music.uka_uka";
 
     /** The music's level while a jingle plays over it: the original lowers it to 90 of its usual 190. */
     private static final float DUCKED = 90.0F / 190.0F;
@@ -62,6 +65,7 @@ public final class RaceMusic {
     private static int lastPhase = RacePayload.OFF;
     private static int lastLap;
     private static Instance loop;
+    private static Instance maskSong;
     private static Instance jingle;
     private static int loopAge;
     private static int seenFinish;
@@ -77,8 +81,13 @@ public final class RaceMusic {
         float ease = 0.25F;
 
         Instance(SoundEvent event, boolean level) {
+            this(event, level, false);
+        }
+
+        /** {@code looped}: the sound engine repeats it itself (only a sound that is not streamed can be; a streamed one ends and {@link RaceMusic#tick} starts it again). */
+        Instance(SoundEvent event, boolean level, boolean looped) {
             super(event, SoundSource.MUSIC, RandomSource.create());
-            this.looping = false;
+            this.looping = level || looped;
             this.delay = 0;
             this.relative = true;
             this.attenuation = SoundInstance.Attenuation.NONE;
@@ -106,14 +115,27 @@ public final class RaceMusic {
 
     private static boolean warned;
 
+    /** The sound event of the track's own music: the default one ({@link #RACE}), or the track's pick; null for none (a track set to no music), or when this client has no sound for the pick. */
+    private static String levelPath() {
+        String id = MusicTitles.raceMusic().id();
+        if (id.isEmpty()) return RACE;
+        if (id.equals(com.ctrcraft.MusicSheetData.NONE)) return null;
+        return id;
+    }
+
+    private static boolean isLevel(String path) {
+        return path.equals(RACE) || path.startsWith(com.ctrcraft.MusicSheetData.LEVEL_PREFIX);
+    }
+
     private static Instance play(Minecraft mc, String path) {
+        if (path == null) return null;
         SoundEvent event = event(path);
         if (!hasSounds(mc, event)) return null;
         if (!warned && mc.options.getSoundSourceVolume(SoundSource.MUSIC) <= 0.0F && mc.player != null) {
             warned = true;                                  // the Music slider is also the race music's: at 0 it plays nothing
             mc.player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.ctrcraft.music.muted"), false);
         }
-        Instance instance = new Instance(event, path.equals(RACE));
+        Instance instance = new Instance(event, isLevel(path), path.equals(AKU_SONG) || path.equals(UKA_SONG));
         mc.getSoundManager().play(instance);
         return instance;
     }
@@ -184,7 +206,7 @@ public final class RaceMusic {
                 }
                 case RacePayload.RACING -> {
                     if (lastPhase == RacePayload.LIGHTS) {
-                        loop = play(mc, RACE);
+                        loop = play(mc, levelPath());
                         loopAge = 0;
                     }
                 }
@@ -207,18 +229,36 @@ public final class RaceMusic {
             lastLap = Math.max(lastLap, s.lap());
             // the race music goes round again when it has ended (a short grace after the start, while the engine takes the sound up)
             loopAge++;
-            if (loopAge > 10 && loop != null && !active(mc, loop)) {
-                loop = play(mc, RACE);
+            if (loopAge > 10 && loop != null && !active(mc, loop) && maskSong == null) {
+                loop = play(mc, levelPath());
                 loopAge = 0;
-            } else if (loop == null && loopAge > 40 && hasSounds(mc, event(RACE))) {
-                loop = play(mc, RACE);                      // a pack that was switched on during the race
+            } else if (loop == null && maskSong == null && loopAge > 40 && levelPath() != null && hasSounds(mc, event(levelPath()))) {
+                loop = play(mc, levelPath());                      // a pack that was switched on during the race
                 loopAge = 0;
             }
+        }
+        // the Mask: while the kart has it on the mask song plays in place of the level music (VehPickupItem_MaskUseWeapon sets AKU_SONG or UKA_SONG; HOWL_AudioState goes back to the level music
+        // when no driver has the mask any more); a pack with no mask song leaves the level music as it is
+        if (phase == RacePayload.RACING) {
+            int mask = mc.player.getVehicle() instanceof com.ctrcraft.kart.KartEntity k ? k.maskState() : 0;
+            if (mask != 0 && maskSong == null) {
+                Instance song = play(mc, (mask & 3) == 2 ? UKA_SONG : AKU_SONG);
+                if (song != null) maskSong = song;          // the level music keeps running underneath, faded out (see below), so it is where it was when the mask is gone
+            } else if (mask == 0 && maskSong != null) {
+                stop(mc, maskSong);
+                maskSong = null;
+            } else if (maskSong != null && !active(mc, maskSong)) {
+                maskSong = play(mc, (mask & 3) == 2 ? UKA_SONG : AKU_SONG);          // the song goes round again while the mask lasts
+            }
+        } else if (maskSong != null) {
+            stop(mc, maskSong);
+            maskSong = null;
         }
         if (speedDelay > 0 && --speedDelay == 0) speed = FINAL_LAP_SPEED;        // from here on, also for every repeat of the music
         if (loop != null) {
             loop.targetPitch = speed;
-            loop.target = active(mc, jingle) ? DUCKED : 1.0F;
+            loop.target = maskSong != null ? 0.0F : active(mc, jingle) ? DUCKED : 1.0F;          // the mask song takes the level music's place for as long as it lasts
+            loop.ease = maskSong != null ? 0.12F : 0.06F;
             if (loopAge % 20 == 0) mc.getMusicManager().stopPlaying();       // the world's own music stays out of the race
         }
     }

@@ -17,6 +17,12 @@ import com.ctrcraft.kart.KartEntity;
  * (sound 0x4c, the plain blast). Green, or blue when the shield was the charged one.
  */
 public class ShieldBombEntity extends BombEntity {
+    /** The thrown shield goes along the kart's heading (RB_ShieldDark_ThTick_Grow: tw->rotY = player->angle), not along its model. */
+    @Override
+    protected float launchYaw(com.ctrcraft.kart.KartEntity kart) {
+        return kart.getYRot();
+    }
+
     private static final EntityDataAccessor<Boolean> DATA_BLUE = SynchedEntityData.defineId(ShieldBombEntity.class, EntityDataSerializers.BOOLEAN);
 
     public ShieldBombEntity(EntityType<?> type, Level level) {

@@ -34,6 +34,9 @@ public final class ModItems {
     /** Used on a kart: it floats on water like a boat, with no water slowdown. */
     public static final DeferredItem<Item> FLOATER = ITEMS.register("floater", () -> new Item(new Item.Properties().stacksTo(16)));
 
+    /** Used on a kart: with the Floater it drives at full speed on the water instead of the water's slowdown. */
+    public static final DeferredItem<Item> PADDLE = ITEMS.register("paddle", () -> new Item(new Item.Properties().stacksTo(16)));
+
     /** Used on a kart: replaces its Floater with one that floats on lava too and keeps the rider from lava's damage and fire. */
     public static final DeferredItem<Item> OBSIDIAN_FLOATER = ITEMS.register("obsidian_floater", () -> new Item(new Item.Properties().stacksTo(16)));
 
@@ -46,6 +49,10 @@ public final class ModItems {
     /** Holds a drop table (see docs/DESIGN_ITEMS.md): right-click to set it, crouch and right-click a Start node to apply it. */
     public static final DeferredItem<com.ctrcraft.track.DropTableItem> DROP_TABLE = ITEMS.register("drop_table",
             () -> new com.ctrcraft.track.DropTableItem(new Item.Properties().stacksTo(1)));
+
+    /** Holds the music of a track (see docs/MUSIC.md): right-click to pick it, right-click a Start node to apply it. */
+    public static final DeferredItem<com.ctrcraft.track.MusicSheetItem> MUSIC_SHEET = ITEMS.register("track_music_sheet",
+            () -> new com.ctrcraft.track.MusicSheetItem(new Item.Properties().stacksTo(1)));
 
     private ModItems() {}
 

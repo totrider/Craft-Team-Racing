@@ -43,11 +43,40 @@ public final class AdditiveTypes extends RenderType {
         RenderSystem.defaultBlendFunc();
     });
 
+    /** Lines (the rain's streaks): gradient lines added to the screen, and taken from it. */
+    public static final RenderType LINES_ADD = create("ctrcraft_lines_add", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, 1536, false, false,
+            CompositeState.builder()
+                    .setShaderState(RENDERTYPE_LINES_SHADER)
+                    .setLineState(new RenderStateShard.LineStateShard(java.util.OptionalDouble.empty()))
+                    .setTransparencyState(ADD)
+                    .setCullState(NO_CULL)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false));
+    public static final RenderType LINES_SUBTRACT = create("ctrcraft_lines_subtract", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, 1536, false, false,
+            CompositeState.builder()
+                    .setShaderState(RENDERTYPE_LINES_SHADER)
+                    .setLineState(new RenderStateShard.LineStateShard(java.util.OptionalDouble.empty()))
+                    .setTransparencyState(SUBTRACT)
+                    .setCullState(NO_CULL)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false));
+
     /** The same, but the picture is TAKEN from the screen (the console's subtractive blend: the flame's outer shell, which is what leaves the red and orange). */
     public static final RenderType BLOCK_ATLAS_SUBTRACT = create("ctrcraft_subtractive_atlas", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, true, true,
             CompositeState.builder()
                     .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
                     .setTextureState(new RenderStateShard.TextureStateShard(TextureAtlas.LOCATION_BLOCKS, false, false))
+                    .setTransparencyState(SUBTRACT)
+                    .setCullState(NO_CULL)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .setOverlayState(OVERLAY)
+                    .createCompositeState(false));
+
+    /** The particle atlas, taken from the screen (the console's subtractive blend): the dark exhaust smoke. */
+    public static final RenderType PARTICLE_ATLAS_SUBTRACT = create("ctrcraft_subtractive_particles", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, true, true,
+            CompositeState.builder()
+                    .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
+                    .setTextureState(new RenderStateShard.TextureStateShard(TextureAtlas.LOCATION_PARTICLES, false, false))
                     .setTransparencyState(SUBTRACT)
                     .setCullState(NO_CULL)
                     .setWriteMaskState(COLOR_WRITE)

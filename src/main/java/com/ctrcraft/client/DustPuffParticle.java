@@ -14,6 +14,14 @@ import net.minecraft.core.particles.SimpleParticleType;
  */
 public class DustPuffParticle extends TextureSheetParticle {
     private final SpriteSet sprites;
+    /** A puff of a cloud over a kart goes with the kart (as the exhaust's puffs do): the kart's move each tick is added to the puff's. */
+    private com.ctrcraft.kart.KartEntity anchor;
+    private net.minecraft.world.phys.Vec3 anchorLast;
+
+    public void anchorTo(com.ctrcraft.kart.KartEntity kart) {
+        this.anchor = kart;
+        this.anchorLast = kart.position();
+    }
 
     protected DustPuffParticle(ClientLevel level, double x, double y, double z, double vx, double vy, double vz, SpriteSet sprites) {
         super(level, x, y, z, vx, vy, vz);
@@ -37,6 +45,19 @@ public class DustPuffParticle extends TextureSheetParticle {
     @Override
     public void tick() {
         super.tick();
+        if (anchor != null && !anchor.isRemoved()) {
+            net.minecraft.world.phys.Vec3 now = anchor.position();
+            double dx = now.x - anchorLast.x;
+            double dy = now.y - anchorLast.y;
+            double dz = now.z - anchorLast.z;
+            this.x += dx;
+            this.y += dy;
+            this.z += dz;
+            this.xo += dx;
+            this.yo += dy;
+            this.zo += dz;
+            anchorLast = now;
+        }
         setSpriteFromAge(sprites);
         float life = age / (float) lifetime;
         this.quadSize *= 1.045F;

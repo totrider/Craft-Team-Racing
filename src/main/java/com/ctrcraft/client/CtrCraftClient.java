@@ -29,10 +29,6 @@ public final class CtrCraftClient {
     public static final KeyMapping KEY_BRAKE =
             new KeyMapping("key.ctrcraft.brake", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_X, CATEGORY);
 
-    /** The Jump Spring upgrade: the kart's own high jump. */
-    public static final KeyMapping KEY_SPRING =
-            new KeyMapping("key.ctrcraft.spring", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, CATEGORY);
-
     /** During a race: back to the last checkpoint you passed. */
     public static final KeyMapping KEY_RESPAWN =
             new KeyMapping("key.ctrcraft.respawn", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, CATEGORY);
@@ -64,6 +60,14 @@ public final class CtrCraftClient {
         event.register(PickupRenderer.FRUIT_CRATE);
         event.register(PickupRenderer.POWERUP_CRATE);
         event.register(PickupRenderer.POWERUP_CRATE_BLANK);
+        event.register(MaskHead.AKU);
+        event.register(MaskHead.UKA);
+        for (var frame : RainCloudFx.CLOUD) event.register(frame);
+        for (var frame : WarpOrbRenderer.FRAME) event.register(frame);
+        for (var frame : WarpOrbRenderer.SOLID) event.register(frame);
+        for (var frame : RainCloudFx.CLOUD_SUB) event.register(frame);
+        for (var frame : MaskHead.BEAM_AKU) event.register(frame);
+        for (var frame : MaskHead.BEAM_UKA) event.register(frame);
     }
 
     /** The kart item shows its paint: the frame's faces (tint 0) and the seat's (tint 1). */
@@ -96,6 +100,8 @@ public final class CtrCraftClient {
     @SubscribeEvent
     public static void registerParticles(net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(com.ctrcraft.ModParticles.DUST_PUFF.get(), DustPuffParticle.Provider::new);
+        event.registerSpriteSet(com.ctrcraft.ModParticles.CONFETTI.get(), sprites -> new ConfettiParticle.Provider(sprites, false));
+        event.registerSpriteSet(com.ctrcraft.ModParticles.STREAMER.get(), sprites -> new ConfettiParticle.Provider(sprites, true));
         event.registerSpriteSet(com.ctrcraft.ModParticles.SKID_MARK.get(), SkidMarkParticle.Provider::new);
         event.registerSpriteSet(com.ctrcraft.ModParticles.EXHAUST_SMOKE.get(), sprites -> new ExhaustSmokeParticle.Provider(sprites, false));
         event.registerSpriteSet(com.ctrcraft.ModParticles.EXHAUST_GLOW.get(), sprites -> new ExhaustSmokeParticle.Provider(sprites, true));
@@ -118,6 +124,7 @@ public final class CtrCraftClient {
         event.registerEntityRenderer(ModEntities.BOMB.get(), BombRenderer::new);
         event.registerEntityRenderer(ModEntities.MISSILE.get(), MissileRenderer::new);
         event.registerEntityRenderer(ModEntities.SHIELD_BOMB.get(), ShieldBombRenderer::new);
+        event.registerEntityRenderer(ModEntities.WARP_ORB.get(), WarpOrbRenderer::new);
         event.registerBlockEntityRenderer(com.ctrcraft.ModBlockEntities.PICKUP_SPOT.get(), PickupSpotRenderer::new);
     }
 
@@ -143,7 +150,6 @@ public final class CtrCraftClient {
     @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event) {
         event.register(KEY_HOP2);
-        event.register(KEY_SPRING);
         event.register(KEY_BRAKE);
         event.register(KEY_RESPAWN);
         event.register(KEY_LEAVE);

@@ -17,71 +17,77 @@ package com.ctrcraft.items;
  * @param softBumper      every racing kart does no collision damage to the entities it bumps into, whatever the karts' own upgrades are set to; off by default
  *                        (in a race the track's rules always override the karts' own settings of these two upgrades)
  * @param floater         every racing kart floats: 0 not, 1 on water, 2 on water and lava (the Floater / Obsidian Floater upgrades); off by default, and the karts' own upgrades do not count in a race
- * @param spring          every racing kart can jump with the Jump Spring key; off by default
+ * @param spring          every racing kart has the Jump Spring's double jump at this strength, 0 (off) to 10 tenths (5 is the spring's own high jump); off by default
+ * @param paddle         every racing kart's floating is at full speed on the water instead of the water's slowdown (the karts' own Paddles do not count in a race); off by default
  * @param lowGravity      every racing kart falls slower, 0 (off) to 10 tenths (the Low Gravity Module's strength); off by default
  */
 public record RuleSet(PowerupTable powerups, boolean fruit, boolean fruitCrates, boolean powerupCrates, boolean boostPads, int maxSpeedPercent, boolean driverDamage, boolean hunger,
-                      boolean offroad, boolean softBumper, int floater, boolean spring, int lowGravity) {
+                      boolean offroad, boolean softBumper, int floater, int spring, int lowGravity, boolean paddle) {
     /** The original game's rules. */
-    public static final RuleSet CTR = new RuleSet(PowerupTable.ctr(), true, true, true, true, 0, false, false, false, false, 0, false, 0);
+    public static final RuleSet CTR = new RuleSet(PowerupTable.ctr(), true, true, true, true, 0, false, false, false, false, 0, 0, 0, false);
 
     public RuleSet {
         if (powerups == null) throw new IllegalArgumentException("powerups");
         if (floater < 0 || floater > 2) throw new IllegalArgumentException("floater is 0 (off), 1 (water) or 2 (water and lava)");
+        if (spring < 0 || spring > 10) throw new IllegalArgumentException("spring is 0 to 10 tenths");
         if (lowGravity < 0 || lowGravity > 10) throw new IllegalArgumentException("lowGravity is 0 to 10 tenths");
         if (maxSpeedPercent < 0 || maxSpeedPercent > 100) throw new IllegalArgumentException("maxSpeedPercent is 0 (no cap) to 100");
     }
 
     public RuleSet withPowerups(PowerupTable t) {
-        return new RuleSet(t, fruit, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, driverDamage, hunger, offroad, softBumper, floater, spring, lowGravity);
+        return new RuleSet(t, fruit, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, driverDamage, hunger, offroad, softBumper, floater, spring, lowGravity, paddle);
     }
 
     public RuleSet withFruit(boolean on) {
-        return new RuleSet(powerups, on, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, driverDamage, hunger, offroad, softBumper, floater, spring, lowGravity);
+        return new RuleSet(powerups, on, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, driverDamage, hunger, offroad, softBumper, floater, spring, lowGravity, paddle);
     }
 
     public RuleSet withFruitCrates(boolean on) {
-        return new RuleSet(powerups, fruit, on, powerupCrates, boostPads, maxSpeedPercent, driverDamage, hunger, offroad, softBumper, floater, spring, lowGravity);
+        return new RuleSet(powerups, fruit, on, powerupCrates, boostPads, maxSpeedPercent, driverDamage, hunger, offroad, softBumper, floater, spring, lowGravity, paddle);
     }
 
     public RuleSet withPowerupCrates(boolean on) {
-        return new RuleSet(powerups, fruit, fruitCrates, on, boostPads, maxSpeedPercent, driverDamage, hunger, offroad, softBumper, floater, spring, lowGravity);
+        return new RuleSet(powerups, fruit, fruitCrates, on, boostPads, maxSpeedPercent, driverDamage, hunger, offroad, softBumper, floater, spring, lowGravity, paddle);
     }
 
     public RuleSet withBoostPads(boolean on) {
-        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, on, maxSpeedPercent, driverDamage, hunger, offroad, softBumper, floater, spring, lowGravity);
+        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, on, maxSpeedPercent, driverDamage, hunger, offroad, softBumper, floater, spring, lowGravity, paddle);
     }
 
     public RuleSet withMaxSpeedPercent(int percent) {
-        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, boostPads, percent, driverDamage, hunger, offroad, softBumper, floater, spring, lowGravity);
+        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, boostPads, percent, driverDamage, hunger, offroad, softBumper, floater, spring, lowGravity, paddle);
     }
 
     public RuleSet withDriverDamage(boolean on) {
-        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, on, hunger, offroad, softBumper, floater, spring, lowGravity);
+        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, on, hunger, offroad, softBumper, floater, spring, lowGravity, paddle);
     }
 
     public RuleSet withHunger(boolean on) {
-        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, driverDamage, on, offroad, softBumper, floater, spring, lowGravity);
+        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, driverDamage, on, offroad, softBumper, floater, spring, lowGravity, paddle);
     }
 
     public RuleSet withOffroad(boolean on) {
-        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, driverDamage, hunger, on, softBumper, floater, spring, lowGravity);
+        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, driverDamage, hunger, on, softBumper, floater, spring, lowGravity, paddle);
     }
 
     public RuleSet withSoftBumper(boolean on) {
-        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, driverDamage, hunger, offroad, on, floater, spring, lowGravity);
+        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, driverDamage, hunger, offroad, on, floater, spring, lowGravity, paddle);
     }
 
     public RuleSet withFloater(int mode) {
-        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, driverDamage, hunger, offroad, softBumper, mode, spring, lowGravity);
+        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, driverDamage, hunger, offroad, softBumper, mode, spring, lowGravity, paddle);
     }
 
-    public RuleSet withSpring(boolean on) {
-        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, driverDamage, hunger, offroad, softBumper, floater, on, lowGravity);
+    public RuleSet withSpring(int tenths) {
+        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, driverDamage, hunger, offroad, softBumper, floater, tenths, lowGravity, paddle);
     }
 
     public RuleSet withLowGravity(int tenths) {
-        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, driverDamage, hunger, offroad, softBumper, floater, spring, tenths);
+        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, driverDamage, hunger, offroad, softBumper, floater, spring, tenths, paddle);
+    }
+
+    public RuleSet withPaddle(boolean on) {
+        return new RuleSet(powerups, fruit, fruitCrates, powerupCrates, boostPads, maxSpeedPercent, driverDamage, hunger, offroad, softBumper, floater, spring, lowGravity, on);
     }
 
     public boolean isCtr() {

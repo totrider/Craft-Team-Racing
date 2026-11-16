@@ -50,6 +50,8 @@ public final class RaceManager {
     private static final int RESPAWN_COOLDOWN_TICKS = 60;
     /** Once somebody has finished, the others have this long (ticks) to follow. */
     private static final int FINISH_GRACE_TICKS = 1200;
+    /** After the podium is full: a few seconds to hear the finish jingle before everyone is let go. */
+    private static final int PODIUM_END_TICKS = 160;
     private static final int TICK_MS = 50;
 
     private record Key(ResourceKey<Level> dimension, long start) {}
@@ -71,6 +73,10 @@ public final class RaceManager {
         int lastRespawnTick = -1000;
         int placeSeq;
         RaceGrid.Slot slot;
+        /** Put on a podium: locked in place, out of the race's way. */
+        boolean podium;
+        /** 1 to 3 once put on a podium. */
+        int podiumPlace;
 
         Racer(UUID id, Component name) {
             this.id = id;
@@ -91,9 +97,16 @@ public final class RaceManager {
         int goTick;
         int firstFinishTick = -1;
         int finished;
+        /** The tick the race ends at once the podium is full or the time is up (-1: not set). */
+        int endTick = -1;
+        boolean podiumFilled;
         final Map<UUID, Racer> racers = new LinkedHashMap<>();
+        /** Players near the start who were sent the gathering countdown without being in the area: they are told when it is over (the text would stay on their screen otherwise). */
+        final java.util.Set<UUID> bystanders = new java.util.HashSet<>();
         /** The rules the race runs by, fixed when it begins to gather (the track's temporary or default ones). */
         final com.ctrcraft.items.RuleSet rules;
+        /** The track's music, fixed with the rules when the race begins to gather. */
+        com.ctrcraft.MusicSheetData music = com.ctrcraft.MusicSheetData.DEFAULT;
 
         Race(Key key, int laps, UUID starter, int graphVersion, boolean manual, com.ctrcraft.items.RuleSet rules) {
             this.manual = manual;
@@ -116,13 +129,73 @@ public final class RaceManager {
         return new Standing(r.racers.size(), Math.max(0, ranking(r).indexOf(rc)), rc.progress.laps());
     }
 
+    /** The racers still racing in the order of the race (first place first), the player included, or null when the player is not racing (the Warp Orb goes by this). */
+    public static List<ServerPlayer> rankedRacers(ServerPlayer player) {
+        Race r = BY_PLAYER.get(player.getUUID());
+        if (r == null || r.phase != RacePayload.RACING) return null;
+        List<ServerPlayer> out = new ArrayList<>();
+        for (Racer rc : ranking(r)) {
+            if (rc.finishPlace != 0 || rc.out || rc.podium) continue;
+            ServerPlayer p = player.server.getPlayerList().getPlayer(rc.id);
+            if (p != null) out.add(p);
+        }
+        return out;
+    }
+
+    /** The centres of the rings of the main path of the race this player races in (the course the Warp Orb follows), or null when the player is not racing. */
+    public static List<net.minecraft.world.phys.Vec3> courseNodes(ServerPlayer player) {
+        Race r = BY_PLAYER.get(player.getUUID());
+        if (r == null || r.phase != RacePayload.RACING) return null;
+        List<Long> main = TrackData.get(player.serverLevel()).routes(r.key.start()).main();
+        List<net.minecraft.world.phys.Vec3> out = new ArrayList<>();
+        for (int i = 0; i < main.size() - 1; i++) {          // the last entry is the start again
+            BlockPos p = BlockPos.of(main.get(i));
+            out.add(new net.minecraft.world.phys.Vec3(p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5));
+        }
+        return out;
+    }
+
+    /** The rings of the branch a racer is on that it has passed (empty when it is on the main path): the orb follows them to the racer. */
+    public static List<net.minecraft.world.phys.Vec3> courseBranch(ServerPlayer player) {
+        Race r = BY_PLAYER.get(player.getUUID());
+        Racer rc = r == null ? null : r.racers.get(player.getUUID());
+        List<net.minecraft.world.phys.Vec3> out = new ArrayList<>();
+        if (rc == null) return out;
+        for (long ring : rc.progress.branchRings()) {
+            BlockPos p = BlockPos.of(ring);
+            out.add(new net.minecraft.world.phys.Vec3(p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5));
+        }
+        return out;
+    }
+
+    /** The branches of the course this player races on (empty when not racing). */
+    public static List<RaceProgress.BranchView> courseBranches(ServerPlayer player) {
+        Race r = BY_PLAYER.get(player.getUUID());
+        Racer rc = r == null ? null : r.racers.get(player.getUUID());
+        return rc == null ? List.of() : rc.progress.branchViews();
+    }
+
+    /** Where the branch a racer is on rejoins the main path (an index in it), or -1 when the racer is on the main path. */
+    public static int courseBranchExit(ServerPlayer player) {
+        Race r = BY_PLAYER.get(player.getUUID());
+        Racer rc = r == null ? null : r.racers.get(player.getUUID());
+        return rc == null ? -1 : rc.progress.branchExitIdx();
+    }
+
+    /** Where on the course (index in the main path) a racer is, or -1. */
+    public static int courseIndex(ServerPlayer player) {
+        Race r = BY_PLAYER.get(player.getUUID());
+        Racer rc = r == null ? null : r.racers.get(player.getUUID());
+        return rc == null ? -1 : rc.progress.courseIdx();
+    }
+
     /** The other racers of the race this player is racing in (the lights are out; those who have finished are not in it any more), or null when the player is not racing. */
     public static List<ServerPlayer> opponents(ServerPlayer player) {
         Race r = BY_PLAYER.get(player.getUUID());
         if (r == null || r.phase != RacePayload.RACING) return null;
         List<ServerPlayer> out = new ArrayList<>();
         for (Racer rc : r.racers.values()) {
-            if (rc.id.equals(player.getUUID()) || rc.finishPlace != 0 || rc.out) continue;
+            if (rc.id.equals(player.getUUID()) || rc.finishPlace != 0 || rc.out || rc.podium) continue;
             ServerPlayer p = player.server.getPlayerList().getPlayer(rc.id);
             if (p != null) out.add(p);
         }
@@ -183,7 +256,10 @@ public final class RaceManager {
         if (!routes.valid(data.graph(), start)) return "message.ctrcraft.race.not_valid";
         Key key = new Key(level.dimension(), start);
         if (RACES.containsKey(key)) return "message.ctrcraft.race.running";
-        RACES.put(key, new Race(key, routes.laps(), starter.getUUID(), data.graph().version(), true, data.effectiveRules(start)));
+        if (coolingDown(level, key)) return "message.ctrcraft.race.cooldown";
+        Race created = new Race(key, routes.laps(), starter.getUUID(), data.graph().version(), true, data.effectiveRules(start));
+        created.music = data.music(start);
+        RACES.put(key, created);
         broadcastGather(level, RACES.get(key), startPos);
         return null;
     }
@@ -201,13 +277,21 @@ public final class RaceManager {
         Race r = BY_PLAYER.get(id);
         if (r == null || (r.phase != RacePayload.LIGHTS && r.phase != RacePayload.RACING)) return false;
         Racer rc = r.racers.get(id);
-        return rc != null && !rc.out && rc.finishPlace == 0;
+        return rc != null && !rc.out;
     }
 
     /** The driver chose to leave the race: out of it (the kart is theirs again). */
     public static void forfeit(ServerPlayer p) {
         if (!locked(p.getUUID())) return;
-        leave(p.getUUID());
+        Race r = BY_PLAYER.get(p.getUUID());
+        Racer rc = r == null ? null : r.racers.get(p.getUUID());
+        if (rc != null && (rc.finishPlace != 0 || rc.podium)) {
+            // a racer who has finished keeps their place; leaving only lets them go
+            BY_PLAYER.remove(p.getUUID());
+            releaseKart(p);
+        } else {
+            leave(p.getUUID());
+        }
         PacketDistributor.sendToPlayer(p, RacePayload.off());
         p.displayClientMessage(Component.translatable("message.ctrcraft.race.left"), true);
     }
@@ -245,15 +329,32 @@ public final class RaceManager {
 
     private static void broadcastGather(ServerLevel level, Race r, BlockPos start) {
         List<ServerPlayer> in = inArea(level, start, r.manual);
-        RacePayload payload = new RacePayload(RacePayload.GATHER, r.ticks, 0, r.laps, 0, 0, 0, 0, 0, 0, false, 0, 0, 0, 0, 0, 0, in.size(), List.of(), List.of());
+        RacePayload payload = new RacePayload(RacePayload.GATHER, r.ticks, 0, r.laps, 0, 0, 0, 0, 0, 0, false, 0, 0, 0, 0, 0, 0, in.size(), List.of(), List.of(), List.of(), List.of(), false, false, false, false);
         for (ServerPlayer p : level.players()) {
             // everybody near sees the countdown, so drivers can find the area; those in it are counted
-            if (inArea(p, start, r.manual) || p.distanceToSqr(start.getX(), start.getY(), start.getZ()) < 64 * 64) PacketDistributor.sendToPlayer(p, payload);
+            boolean near = inArea(p, start, r.manual) || p.distanceToSqr(start.getX(), start.getY(), start.getZ()) < 64 * 64;
+            if (near) {
+                PacketDistributor.sendToPlayer(p, payload);
+                r.bystanders.add(p.getUUID());
+            } else if (r.bystanders.remove(p.getUUID())) {
+                PacketDistributor.sendToPlayer(p, RacePayload.off());          // walked away: the countdown is not theirs to see any more
+            }
         }
+    }
+
+    /** The gathering is over: everybody who was shown its countdown and is not racing is told it is gone (the racers get the race's own state). */
+    private static void clearBystanders(ServerLevel level, Race r) {
+        for (UUID id : r.bystanders) {
+            if (r.racers.containsKey(id)) continue;
+            ServerPlayer p = level.getServer().getPlayerList().getPlayer(id);
+            if (p != null) PacketDistributor.sendToPlayer(p, RacePayload.off());
+        }
+        r.bystanders.clear();
     }
 
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
+        tickCooldowns(event.getServer());
         if (RACES.isEmpty()) return;
         MinecraftServer server = event.getServer();
         for (Race r : new ArrayList<>(RACES.values())) {
@@ -301,11 +402,15 @@ public final class RaceManager {
             rc.placeSeq = ++placeCounter;
             r.racers.put(p.getUUID(), rc);
             BY_PLAYER.put(p.getUUID(), r);
-            com.ctrcraft.pickup.ItemManager.reset(p);          // a new race starts with nothing in the kart
+            com.ctrcraft.pickup.ItemManager.reset(p);
+            if (p.getVehicle() instanceof KartEntity ek) ek.setEthereal(false);          // a new race starts with nothing in the kart
             PacketDistributor.sendToPlayer(p, new RulesPayload(r.rules));        // the rules the client's own sim needs (boost pads, the top speed cap)
+            PacketDistributor.sendToPlayer(p, new MusicPayload(r.music));        // the track's music (its name shows even where the sound is missing)
             put(level, p, rc);
         }
+        clearBystanders(level, r);
         r.phase = RacePayload.LIGHTS;
+        setPower(level, r.key.start(), true);
         r.ticks = RaceGrid.INTRO_TICKS + RaceGrid.LIGHTS_TICKS + 20;       // the intro (jingle and camera pan), then a second to settle on the grid before the first light
         r.lastLights = 0;
         sendAll(level, r, 0);
@@ -343,11 +448,195 @@ public final class RaceManager {
             anyActive = true;
         }
         boolean timeUp = r.firstFinishTick >= 0 && now - r.firstFinishTick > FINISH_GRACE_TICKS;
-        if (!anyActive || timeUp) {
+        boolean podiums = podiumsReady(level, r);
+        if (podiums && !r.podiumFilled && (r.finished >= 3 || timeUp || !anyActive)) {
+            // the podium is full, or the time is up: whoever is next in the race takes the places that are left, and the race ends a moment later
+            fillPodium(level, r);
+            sendScene(level, r);
+            r.podiumFilled = true;
+            r.endTick = now + PODIUM_END_TICKS;
+        }
+        if (podiums && now % 3 == 0) celebrate(level, r);
+        if (r.endTick >= 0 && now >= r.endTick) {
+            end(level.getServer(), r, null, true);
+            return;
+        }
+        if (!podiums && (!anyActive || timeUp)) {
             end(level.getServer(), r, null, true);
             return;
         }
         if (now % 4 == 0) sendAll(level, r, now);
+    }
+
+    /** Players who asked for the debug view of their race progress (see RaceDebugClient). */
+    private static final java.util.Set<UUID> DEBUG = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    public static void setDebug(UUID id, boolean on) {
+        if (on) DEBUG.add(id);
+        else DEBUG.remove(id);
+    }
+
+    private static void sendDebug(ServerLevel level, Race r, ServerPlayer p, Racer rc) {
+        TrackGraph graph = TrackData.get(level).graph();
+        RaceProgress.Debug d = rc.progress.debug();
+        List<RaceDebugPayload.Ring> rings = new ArrayList<>();
+        for (long pos : d.rings()) {
+            TrackGraph.Node node = graph.get(pos);
+            if (node == null) continue;
+            int state = pos == d.head() ? RaceDebugPayload.HEAD : d.next().contains(pos) ? RaceDebugPayload.NEXT : d.passed().contains(pos) ? RaceDebugPayload.PASSED : RaceDebugPayload.OTHER;
+            rings.add(new RaceDebugPayload.Ring(pos, node.rotation, node.ext, state));
+        }
+        PacketDistributor.sendToPlayer(p, new RaceDebugPayload(rings, d.seg(), d.point(), d.info() + "; race phase " + r.phase + (rc.podium ? ", on a podium" : "") + (rc.out ? ", out" : "")));
+    }
+
+    /** After a race with a podium ceremony the track is not free for a while: a new race cannot start until the ceremony is over and this many ticks more (15 s). */
+    private static final int COOLDOWN_TICKS = 300;
+    private static final Map<Key, Integer> COOLDOWN = new HashMap<>();
+    /** Players who were shown a cool-down count (so it can be taken off their screen). */
+    private static final Set<UUID> COOLDOWN_SEEN = new HashSet<>();
+
+    private static boolean coolingDown(ServerLevel level, Key key) {
+        Integer end = COOLDOWN.get(key);
+        return end != null && level.getServer().getTickCount() < end;
+    }
+
+    private static RacePayload cooldownPayload(int left) {
+        return new RacePayload(RacePayload.GATHER, left, 0, 0, 0, 0, 0, 0, 0, 0, false, 0, 0, 0, 0, 0, 0, 0, List.of(), List.of(), List.of(), List.of(), false, false, false, true);
+    }
+
+    /** The count of the cool-down is shown in the usual race-starting place to everybody near the Start node; when it ends a race starts at once if enough karts are waiting in the area. */
+    private static void tickCooldowns(MinecraftServer server) {
+        if (COOLDOWN.isEmpty()) return;
+        int now = server.getTickCount();
+        for (Map.Entry<Key, Integer> e : new ArrayList<>(COOLDOWN.entrySet())) {
+            Key key = e.getKey();
+            ServerLevel level = server.getLevel(key.dimension());
+            int left = e.getValue() - now;
+            if (level == null) {
+                COOLDOWN.remove(key);
+                continue;
+            }
+            BlockPos start = BlockPos.of(key.start());
+            if (left <= 0) {
+                COOLDOWN.remove(key);
+                for (UUID id : new ArrayList<>(COOLDOWN_SEEN)) {
+                    ServerPlayer p = server.getPlayerList().getPlayer(id);
+                    if (p != null && !BY_PLAYER.containsKey(id)) PacketDistributor.sendToPlayer(p, RacePayload.off());
+                }
+                COOLDOWN_SEEN.clear();
+                Set<UUID> in = INSIDE.get(key);
+                if (in != null && !in.isEmpty()) entered(level, key, in.size());
+                continue;
+            }
+            if (now % 10 != 0) continue;
+            RacePayload payload = cooldownPayload(left);
+            for (ServerPlayer p : level.players()) {
+                if (BY_PLAYER.containsKey(p.getUUID())) continue;
+                if (p.distanceToSqr(start.getX(), start.getY(), start.getZ()) < 64 * 64) {
+                    PacketDistributor.sendToPlayer(p, payload);
+                    COOLDOWN_SEEN.add(p.getUUID());
+                } else if (COOLDOWN_SEEN.remove(p.getUUID())) {
+                    PacketDistributor.sendToPlayer(p, RacePayload.off());
+                }
+            }
+        }
+    }
+
+    /** A Start node gives a redstone signal while its race is running, a podium node while a racer stands on it. */
+    private static void setPower(ServerLevel level, long node, boolean on) {
+        TrackNodeBlock.setPowered(level, BlockPos.of(node), on);
+    }
+
+    private static void powerAll(ServerLevel level, Race r, boolean on) {
+        setPower(level, r.key.start(), on);
+        if (on) return;
+        TrackGraph graph = TrackData.get(level).graph();
+        for (int place = 1; place <= 3; place++) {
+            Long pos = graph.podiumPos(r.key.start(), place);
+            if (pos != null) setPower(level, pos, false);
+        }
+    }
+
+    /** Tells every racer the podium ceremony has begun and where the places are (the cameras of those not on a podium look over them). */
+    private static void sendScene(ServerLevel level, Race r) {
+        List<PodiumScenePayload.Spot> spots = new ArrayList<>();
+        for (int place = 1; place <= 3; place++) {
+            RaceGrid.Slot s = podiumSlot(level, r, place);
+            if (s != null) spots.add(new PodiumScenePayload.Spot(s.x(), s.y(), s.z(), s.yaw(), place));
+        }
+        PodiumScenePayload payload = new PodiumScenePayload(spots);
+        for (Racer rc : r.racers.values()) {
+            ServerPlayer p = level.getServer().getPlayerList().getPlayer(rc.id);
+            if (p != null) PacketDistributor.sendToPlayer(p, payload);
+        }
+    }
+
+    /** Confetti and streamers over each podium node that has a racer on it, while they are on display. */
+    private static void celebrate(ServerLevel level, Race r) {
+        TrackGraph graph = TrackData.get(level).graph();
+        for (Racer rc : r.racers.values()) {
+            if (!rc.podium || rc.podiumPlace == 0) continue;
+            Long pos = graph.podiumPos(r.key.start(), rc.podiumPlace);
+            if (pos == null) continue;
+            // at random places inside the node's 3 x 3 x 3 box (it stands on the floor of the node's block)
+            for (int i = 0; i < 8; i++) {
+                double x = NodeGeometry.x(pos) + level.random.nextDouble() * 3.0 - 1.0;
+                double y = NodeGeometry.y(pos) + level.random.nextDouble() * 3.0;
+                double z = NodeGeometry.z(pos) + level.random.nextDouble() * 3.0 - 1.0;
+                level.sendParticles(i < 6 ? com.ctrcraft.ModParticles.CONFETTI.get() : com.ctrcraft.ModParticles.STREAMER.get(), x, y, z, 1, 0.0, 0.0, 0.0, 0.1);
+            }
+        }
+    }
+
+    /** Whether the track has a podium node hooked up for each of the three places (without all three, the podium does nothing). */
+    private static boolean podiumsReady(ServerLevel level, Race r) {
+        TrackGraph graph = TrackData.get(level).graph();
+        for (int place = 1; place <= 3; place++) if (graph.podiumPos(r.key.start(), place) == null) return false;
+        return true;
+    }
+
+    private static RaceGrid.Slot podiumSlot(ServerLevel level, Race r, int place) {
+        TrackGraph graph = TrackData.get(level).graph();
+        Long pos = graph.podiumPos(r.key.start(), place);
+        if (pos == null) return null;
+        TrackGraph.Node node = graph.get(pos);
+        double yaw = Math.toDegrees(Math.atan2(-NodeGeometry.facingX(node.rotation), NodeGeometry.facingZ(node.rotation)));
+        return new RaceGrid.Slot(NodeGeometry.x(pos) + 0.5, NodeGeometry.y(pos), NodeGeometry.z(pos) + 0.5, (float) yaw);
+    }
+
+    /** Puts the racer on the podium for {@code place}: the kart goes there, is locked in place and from now on touches nothing (see KartEntity#ethereal). */
+    private static void toPodium(ServerLevel level, Race r, Racer rc, int place) {
+        RaceGrid.Slot slot = podiumSlot(level, r, place);
+        ServerPlayer p = level.getServer().getPlayerList().getPlayer(rc.id);
+        if (slot == null || p == null) return;
+        rc.slot = slot;
+        rc.placeSeq = ++placeCounter;
+        rc.podium = true;
+        rc.podiumPlace = place;
+        Long node = TrackData.get(level).graph().podiumPos(r.key.start(), place);
+        if (node != null) setPower(level, node, true);
+        put(level, p, rc);
+        sendOne(level, r, rc, level.getServer().getTickCount());
+    }
+
+    /** The places of the podium that nobody has: filled by the racers who are next in the race. */
+    private static void fillPodium(ServerLevel level, Race r) {
+        List<Racer> rank = ranking(r);
+        boolean[] taken = new boolean[4];
+        for (Racer rc : rank) if (rc.podium && rc.finishPlace >= 1 && rc.finishPlace <= 3) taken[rc.finishPlace] = true;
+        int next = 0;
+        for (int place = 1; place <= 3; place++) {
+            if (taken[place]) continue;
+            while (next < rank.size() && (rank.get(next).podium || rank.get(next).out)) next++;
+            if (next >= rank.size()) return;
+            toPodium(level, r, rank.get(next++), place);
+        }
+    }
+
+    /** The kart is the driver's again: no more locked, no more ethereal. */
+    private static void releaseKart(ServerPlayer p) {
+        if (p.getVehicle() instanceof KartEntity kart) kart.setEthereal(false);
+        PacketDistributor.sendToPlayer(p, RacePayload.off());
     }
 
     /** Moves the racer's kart and rider to the slot the racer holds (grid or respawn). The driver's client then places its sim there. */
@@ -409,11 +698,12 @@ public final class RaceManager {
     }
 
     private static void entered(ServerLevel level, Key key, int count) {
-        if (RACES.containsKey(key) || count < CtrConfig.RACE_MIN_RACERS.get()) return;
+        if (RACES.containsKey(key) || count < CtrConfig.RACE_MIN_RACERS.get() || coolingDown(level, key)) return;
         TrackData data = TrackData.get(level);
         TrackRoutes routes = data.routes(key.start());
         if (!routes.valid(data.graph(), key.start())) return;
         Race race = new Race(key, routes.laps(), null, data.graph().version(), false, data.effectiveRules(key.start()));
+        race.music = data.music(key.start());
         RACES.put(key, race);
         broadcastGather(level, race, BlockPos.of(key.start()));
     }
@@ -441,6 +731,8 @@ public final class RaceManager {
         if (rc == null || rc.out || rc.finishPlace != 0) return;
         rc.x = x1;
         rc.z = z1;
+        rc.progress.track(x1, y1, z1);
+        rc.progress.noteDirection();
         RaceProgress.Result res = rc.progress.move(x0, y0, z0, x1, y1, z1);
         if (res.kind() != RaceProgress.Kind.LAP) return;
         ServerLevel level = player.serverLevel();
@@ -455,6 +747,8 @@ public final class RaceManager {
             rc.finishMs = (now - r.goTick) * TICK_MS;
             if (r.firstFinishTick < 0) r.firstFinishTick = now;
             com.ctrcraft.pickup.ItemManager.onRaceFinished(player);
+            if (player.getVehicle() instanceof KartEntity fk) fk.setEthereal(true);          // the finished kart touches nothing and nothing touches it
+            if (rc.finishPlace <= 3 && podiumsReady(level, r)) toPodium(level, r, rc, rc.finishPlace);
             level.playSound(null, player.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0F, 1.0F);
             for (Racer other : r.racers.values()) {
                 ServerPlayer op = level.getServer().getPlayerList().getPlayer(other.id);
@@ -463,7 +757,10 @@ public final class RaceManager {
             sendOne(level, r, rc, now);
         } else {
             player.displayClientMessage(Component.translatable("message.ctrcraft.race.lap", rc.progress.laps() + 1, r.laps, fmt(lapMs)), true);
-            level.playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.8F, 1.4F);
+            // PlayLevel.c: OtherFX_Play(0x66) when the farthest-ahead human crosses the line without finishing (every lap); a racer who is not the first across this lap hears nothing
+            boolean first = true;
+            for (Racer other : r.racers.values()) if (other != rc && other.progress.laps() >= rc.progress.laps()) first = false;
+            if (first) level.playSound(null, player.blockPosition(), com.ctrcraft.ModSounds.LAP.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
         }
     }
 
@@ -473,7 +770,7 @@ public final class RaceManager {
         list.sort(Comparator
                 .comparingInt((Racer a) -> a.out ? 1 : 0)
                 .thenComparingInt(a -> a.finishPlace != 0 ? a.finishPlace : Integer.MAX_VALUE)
-                .thenComparing(Comparator.comparingDouble((Racer a) -> -a.progress.progress()))
+                .thenComparing(Comparator.comparingDouble((Racer a) -> -a.progress.continuous()))
                 .thenComparingDouble(a -> a.progress.distanceToNextSq(a.x, a.z)));
         return list;
     }
@@ -497,10 +794,15 @@ public final class RaceManager {
         if (rc.finishPlace != 0) timeMs = rc.finishMs;
         boolean hold = r.phase == RacePayload.LIGHTS;
         int phase = rc.finishPlace != 0 ? RacePayload.DONE : r.phase;
+        boolean racing = phase == RacePayload.RACING && !rc.podium;
         int lap = Math.min(r.laps, rc.progress.laps() + 1);
+        if (DEBUG.contains(rc.id) && (r.phase == RacePayload.RACING || r.phase == RacePayload.LIGHTS)) sendDebug(level, r, p, rc);
         PacketDistributor.sendToPlayer(p, new RacePayload(phase, r.ticks, r.lastLights, r.laps, lap, place, r.racers.size(), timeMs, rc.lastLapMs,
                 rc.bestLapMs, hold, rc.placeSeq, rc.slot.x(), rc.slot.y(), rc.slot.z(), rc.slot.yaw(), rc.finishPlace, 0,
-                rank.stream().limit(4).map(o -> o.id).toList(), List.copyOf(rc.lapTimes)));
+                rank.stream().limit(4).map(o -> o.id).toList(), List.copyOf(rc.lapTimes),
+                rank.stream().filter(o -> o.finishPlace == 0 && !o.podium).map(o -> o.id).toList(),          // a racer who has finished is not on the track bar
+                rank.stream().filter(o -> o.finishPlace == 0 && !o.podium).map(o -> o.progress.barFraction()).toList(), rc.podium,
+                racing && rc.progress.wrongWay(), racing && rc.progress.skipped(), false));
     }
 
     /** An id for the race the player is in (its track), or null. */
@@ -512,6 +814,10 @@ public final class RaceManager {
     private static void end(MinecraftServer server, Race r, String reasonKey, boolean results) {
         RACES.remove(r.key);
         ServerLevel level = server.getLevel(r.key.dimension());
+        if (level != null) {
+            powerAll(level, r, false);
+            if (r.podiumFilled) COOLDOWN.put(r.key, server.getTickCount() + COOLDOWN_TICKS);
+        }
         if (level != null) TrackData.get(level).clearTemporaryAll(r.key.start());          // a rule set set for one race is used up by it
         if (level != null) com.ctrcraft.pickup.MinePool.clearRace(r.key.dimension().location() + "@" + r.key.start(), level);
         List<Racer> rank = ranking(r);
@@ -519,8 +825,10 @@ public final class RaceManager {
             BY_PLAYER.remove(rc.id);
             ServerPlayer p = server.getPlayerList().getPlayer(rc.id);
             if (p == null) continue;
+            if (p.getVehicle() instanceof KartEntity ek) ek.setEthereal(false);
             PacketDistributor.sendToPlayer(p, RacePayload.off());
             PacketDistributor.sendToPlayer(p, new RulesPayload(com.ctrcraft.items.RuleSet.CTR));
+            PacketDistributor.sendToPlayer(p, new MusicPayload(com.ctrcraft.MusicSheetData.DEFAULT));
             if (reasonKey != null) p.displayClientMessage(Component.translatable(reasonKey), true);
             if (results) {
                 p.sendSystemMessage(Component.translatable("message.ctrcraft.race.results"));
@@ -532,6 +840,7 @@ public final class RaceManager {
                 }
             }
         }
+        if (level != null) clearBystanders(level, r);
         if (level != null && r.racers.isEmpty()) {
             // gathering that was cancelled: tell the people who were watching the countdown it is off
             BlockPos start = BlockPos.of(r.key.start());

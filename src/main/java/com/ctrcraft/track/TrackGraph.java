@@ -18,7 +18,19 @@ import java.util.Set;
  * A connected group of nodes is one track; a track has at most one start node.
  */
 public final class TrackGraph {
-    public enum Kind { START, CHECKPOINT }
+    /** PODIUM_1 to PODIUM_3: where the racers who finish first, second and third are put (see {@link Node#podiumStart}); they are not part of the course. */
+    public enum Kind {
+        START, CHECKPOINT, PODIUM_1, PODIUM_2, PODIUM_3;
+
+        public boolean isPodium() {
+            return this == PODIUM_1 || this == PODIUM_2 || this == PODIUM_3;
+        }
+
+        /** 1 to 3 for a podium node, else 0. */
+        public int place() {
+            return this == PODIUM_1 ? 1 : this == PODIUM_2 ? 2 : this == PODIUM_3 ? 3 : 0;
+        }
+    }
 
     public static final class Node {
         public final Kind kind;
@@ -27,13 +39,21 @@ public final class TrackGraph {
         /** The box a kart has to touch to pass this node, see {@link NodeGeometry}: six extents in blocks, adjusted with the Track Tool. */
         public final float[] ext = NodeGeometry.DEFAULT_EXTENTS.clone();
         final Set<Long> links = new LinkedHashSet<>();
+        /** For a podium node: the Start node it is hooked up to (a podium node has no links to checkpoints, and nothing links to it), or null. */
+        Long podiumStart;
 
         Node(Kind kind, int rotation) {
             this.kind = kind;
             this.rotation = rotation & 15;
+            if (kind.isPodium()) {
+                java.util.Arrays.fill(ext, PODIUM_EXTENT);
+                ext[NodeGeometry.UP] = 2.5F;          // the box stands on the floor of the node's block: 0.5 below the node's middle, 2.5 above it
+                ext[NodeGeometry.DOWN] = 0.5F;
+            }
         }
 
         public Set<Long> links() {
+            if (kind.isPodium()) return podiumStart == null ? Collections.emptySet() : Collections.singleton(podiumStart);
             return Collections.unmodifiableSet(links);
         }
     }
@@ -89,8 +109,9 @@ public final class TrackGraph {
         Node old = nodes.get(pos);
         Node n = new Node(kind, rotation);
         if (old != null) {
-            System.arraycopy(old.ext, 0, n.ext, 0, n.ext.length);
-            n.links.addAll(old.links);
+            if (!kind.isPodium()) System.arraycopy(old.ext, 0, n.ext, 0, n.ext.length);
+            if (!kind.isPodium()) n.links.addAll(old.links);
+            else n.podiumStart = old.podiumStart;
         }
         nodes.put(pos, n);
         version++;
@@ -100,19 +121,25 @@ public final class TrackGraph {
     /** Loads a saved node (no version bump); its links may point to nodes loaded later, see {@link #pruneLinks()}. */
     public void restore(long pos, Kind kind, int rotation, float[] ext, long[] links) {
         Node n = new Node(kind, rotation);
-        if (ext != null && ext.length == n.ext.length) {
+        if (ext != null && ext.length == n.ext.length && !kind.isPodium()) {          // a podium node keeps its fixed size
             for (int i = 0; i < ext.length; i++) {
                 n.ext[i] = Math.max(NodeGeometry.MIN_EXTENT, Math.min(NodeGeometry.MAX_EXTENT, ext[i]));
             }
         }
-        for (long l : links) n.links.add(l);
+        if (kind.isPodium()) {
+            if (links.length > 0) n.podiumStart = links[0];
+        } else {
+            for (long l : links) n.links.add(l);
+        }
         nodes.put(pos, n);
     }
 
     /** After loading: drops links to nodes that are gone, and makes every link two-way. */
     public void pruneLinks() {
         for (Map.Entry<Long, Node> e : nodes.entrySet()) {
-            e.getValue().links.removeIf(l -> !nodes.containsKey(l) || l.equals(e.getKey()));
+            Node n = e.getValue();
+            n.links.removeIf(l -> !nodes.containsKey(l) || l.equals(e.getKey()) || nodes.get(l).kind.isPodium());
+            if (n.podiumStart != null && (!nodes.containsKey(n.podiumStart) || nodes.get(n.podiumStart).kind != Kind.START)) n.podiumStart = null;
         }
         for (Map.Entry<Long, Node> e : nodes.entrySet()) {
             for (long l : new ArrayList<>(e.getValue().links)) nodes.get(l).links.add(e.getKey());
@@ -122,7 +149,7 @@ public final class TrackGraph {
     /** Moves one side of a node's box by {@code delta} blocks (clamped); returns the new extent, or -1 if there is no such node. */
     public float resize(long pos, int side, float delta) {
         Node n = nodes.get(pos);
-        if (n == null || side < 0 || side >= n.ext.length) return -1;
+        if (n == null || n.kind.isPodium() || side < 0 || side >= n.ext.length) return -1;
         n.ext[side] = Math.max(NodeGeometry.MIN_EXTENT, Math.min(NodeGeometry.MAX_EXTENT, n.ext[side] + delta));
         version++;
         return n.ext[side];
@@ -132,6 +159,7 @@ public final class TrackGraph {
     public void remove(long pos) {
         Node n = nodes.remove(pos);
         if (n == null) return;
+        for (Node o : nodes.values()) if (o.podiumStart != null && o.podiumStart == pos) o.podiumStart = null;
         for (long other : n.links) {
             Node o = nodes.get(other);
             if (o != null) o.links.remove(pos);
@@ -158,6 +186,36 @@ public final class TrackGraph {
         nb.links.add(a);
         version++;
         return LinkResult.LINKED;
+    }
+
+    /** A podium node's box is 3 x 3 x 3 blocks, standing on the floor of the node's block (it only marks a place, and is where the confetti is thrown from) and is not adjustable. */
+    public static final float PODIUM_EXTENT = 1.5F;
+
+    public enum PodiumResult { HOOKED, UNHOOKED, MISSING, NOT_START }
+
+    /** Hooks a podium node up to a Start node (or unhooks it, if it already is): a Start node has at most one node for each place, a new one takes the place of the old. */
+    public PodiumResult togglePodium(long podium, long start) {
+        Node p = nodes.get(podium);
+        Node s = nodes.get(start);
+        if (p == null || s == null || !p.kind.isPodium()) return PodiumResult.MISSING;
+        if (s.kind != Kind.START) return PodiumResult.NOT_START;
+        version++;
+        if (p.podiumStart != null && p.podiumStart == start) {
+            p.podiumStart = null;
+            return PodiumResult.UNHOOKED;
+        }
+        for (Node o : nodes.values()) if (o.kind == p.kind && o.podiumStart != null && o.podiumStart == start) o.podiumStart = null;
+        p.podiumStart = start;
+        return PodiumResult.HOOKED;
+    }
+
+    /** The position of the podium node for {@code place} (1 to 3) that is hooked up to the Start node, or null. */
+    public Long podiumPos(long start, int place) {
+        for (Map.Entry<Long, Node> e : nodes.entrySet()) {
+            Node n = e.getValue();
+            if (n.kind.place() == place && n.podiumStart != null && n.podiumStart == start) return e.getKey();
+        }
+        return null;
     }
 
     /** Whether the node at {@code pos} may become {@code kind}: a track may only have one start, so a checkpoint cannot turn into a second one. */

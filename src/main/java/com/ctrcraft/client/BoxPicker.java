@@ -30,6 +30,7 @@ public final class BoxPicker {
         Vec3 look = player.getViewVector(1.0F);
         Pick best = null;
         for (NodeView n : TrackClient.nodes()) {
+            if (n.kind().isPodium()) continue;          // a podium node only marks a place: no ring box to pick or resize
             double cx = NodeGeometry.x(n.pos()) + 0.5;
             double cy = NodeGeometry.y(n.pos()) + 0.5;
             double cz = NodeGeometry.z(n.pos()) + 0.5;

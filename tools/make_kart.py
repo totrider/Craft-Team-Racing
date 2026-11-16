@@ -71,7 +71,7 @@ def kart_parts():
 
 
 def display():
-    return {"gui": {"rotation": [30, 225, 0], "translation": [0, 0, 0], "scale": [0.55, 0.55, 0.55]},
+    return {"gui": {"rotation": [30, 225, 0], "translation": [0, 0, 0], "scale": [0.45, 0.45, 0.45]},
             "ground": {"translation": [0, 2, 0], "scale": [0.4, 0.4, 0.4]},
             "fixed": {"rotation": [0, 180, 0], "scale": [0.55, 0.55, 0.55]},
             "thirdperson_righthand": {"rotation": [0, 90, 0], "translation": [0, 3, 1], "scale": [0.35, 0.35, 0.35]},

@@ -40,8 +40,9 @@ public final class KartDamage {
      * The reaction to a damage source. {@code racing}: the kart's driver is in a race. In a race nothing breaks the kart; out of one an explosion or lava does (it is picked up again as
      * an item: "critical damage"). The mod's own weapons do their own damage through their effects, so a vanilla explosion made by one of them does nothing here.
      */
-    public static Reaction classify(DamageSource source, boolean racing) {
+    public static Reaction classify(DamageSource source, boolean racing, boolean obsidian) {
         Entity direct = source.getDirectEntity();
+        if (obsidian && (source.is(DamageTypes.LAVA) || source.is(DamageTypeTags.IS_FIRE))) return Reaction.NONE;          // the Obsidian Floater: lava and fire do nothing to the kart
         if (direct instanceof TntEntity || direct instanceof BombEntity || direct instanceof PotionEntity) return Reaction.NONE;
         if (source.is(DamageTypes.LAVA)) return racing ? Reaction.BURN : Reaction.BREAK;
         if (source.is(DamageTypeTags.IS_FIRE)) return Reaction.BURN;
@@ -64,8 +65,9 @@ public final class KartDamage {
             return true;
         }
         ServerPlayer driver = kart.getControllingPassenger() instanceof ServerPlayer p ? p : null;
+        if (driver != null && ItemManager.maskActive(driver)) return true;          // the mask: invulnerable to attacks
         boolean racing = driver != null && RaceManager.raceIdOf(driver.getUUID()) != null;
-        Reaction r = classify(source, racing);
+        Reaction r = classify(source, racing, kart.floaterMode() == 2);
         if (r == Reaction.NONE) return true;
         if (r == Reaction.BREAK) {
             kart.breakApart();

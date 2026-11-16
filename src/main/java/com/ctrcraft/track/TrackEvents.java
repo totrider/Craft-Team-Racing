@@ -45,11 +45,12 @@ public final class TrackEvents {
     }
 
     public static boolean isStartViewItem(ItemStack stack) {
-        return stack.getItem() instanceof RulebookItem || stack.getItem() instanceof DropTableItem;
+        return stack.getItem() instanceof RulebookItem || stack.getItem() instanceof DropTableItem || stack.getItem() instanceof MusicSheetItem;
     }
 
     public static boolean isTrackItem(ItemStack stack) {
-        return stack.is(ModItems.TRACK_TOOL.get()) || stack.is(ModBlocks.START_NODE_ITEM.get()) || stack.is(ModBlocks.CHECKPOINT_NODE_ITEM.get());
+        return stack.is(ModItems.TRACK_TOOL.get()) || stack.is(ModBlocks.START_NODE_ITEM.get()) || stack.is(ModBlocks.CHECKPOINT_NODE_ITEM.get())
+                || stack.is(ModBlocks.PODIUM_1_NODE_ITEM.get()) || stack.is(ModBlocks.PODIUM_2_NODE_ITEM.get()) || stack.is(ModBlocks.PODIUM_3_NODE_ITEM.get());
     }
 
     @SubscribeEvent

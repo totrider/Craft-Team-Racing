@@ -55,6 +55,12 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> TRACKER_BEEP = reg("tracker_beep");
     public static final DeferredHolder<SoundEvent, SoundEvent> ITEM_ROLL = reg("item_roll");
     public static final DeferredHolder<SoundEvent, SoundEvent> ITEM_GET = reg("item_get");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MASK_AKU = reg("mask_aku");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WARP_LAUNCH = reg("warp_launch");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WARP_FLY = reg("warp_fly");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WARP_END = reg("warp_end");
+    public static final DeferredHolder<SoundEvent, SoundEvent> LAP = reg("lap");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MASK_UKA = reg("mask_uka");
     public static final DeferredHolder<SoundEvent, SoundEvent> ITEM_GET_CHARGED = reg("item_get_charged");
     public static final DeferredHolder<SoundEvent, SoundEvent> CRASH_SOFT = reg("crash_soft");
     public static final DeferredHolder<SoundEvent, SoundEvent> CRASH_MID = reg("crash_mid");

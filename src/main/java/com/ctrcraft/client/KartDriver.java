@@ -7,6 +7,7 @@ import com.ctrcraft.CtrCraftMod;
 import com.ctrcraft.ModSounds;
 import com.ctrcraft.CtrConfig;
 import com.ctrcraft.kart.ContactRules;
+import com.ctrcraft.kart.FloatSurface;
 import com.ctrcraft.kart.KartEntity;
 import com.ctrcraft.kart.KartFlags;
 import com.ctrcraft.physics.KartEvent;
@@ -76,6 +77,13 @@ public final class KartDriver {
     private static int curDrawn;
 
     private static void reset() {
+        // jump presses made out of the kart (on foot, or before getting in) must not be waiting when the driving starts: they would fire the double jump at once
+        Minecraft rm = Minecraft.getInstance();
+        if (rm.options != null) {
+            while (rm.options.keyJump.consumeClick()) { }
+            while (CtrCraftClient.KEY_HOP2.consumeClick()) { }
+        }
+        springLatch = false;
         com.ctrcraft.pickup.ItemClient.clear();
         sim = null;
         simEntityId = -1;
@@ -119,7 +127,8 @@ public final class KartDriver {
         boolean l1 = CtrCraftClient.KEY_HOP2.isDown();
         latchR1 |= r1;
         latchL1 |= l1;
-        springLatch |= CtrCraftClient.KEY_SPRING.consumeClick();
+        // a jump press (either jump key) while in the air is the Jump Spring's double jump
+        springLatch |= o.keyJump.consumeClick() | CtrCraftClient.KEY_HOP2.consumeClick();
         if (world == null || worldLevel != mc.level) {
             world = new TerrainCollider(new TerrainField(new McBlockSource(mc.level, kart)), KartScale.LU_PER_BLOCK);
             worldLevel = mc.level;
@@ -146,6 +155,7 @@ public final class KartDriver {
                     mc.getSoundManager().play(SimpleSoundInstance.forUI(ModSounds.BOOST_FAIL.get(), 1.0F, 1.0F));
                 }
                 input = new KartInput(0.0, false, true, false, false, false);
+                sim.clearBoost();          // a boost left over from before the grid (a pad, an item) does not go on carrying the kart
             } else if (rev != null) {
                 RevEngine.StartBoost boost = rev.release();
                 rev = null;
@@ -153,17 +163,25 @@ public final class KartDriver {
                     sim.startBoost(boost);
                 }
             }
+            if (RaceClient.podium()) input = new KartInput(0.0, false, true, false, false, false);          // on the podium: the kart stays where it was put
             latchR1 = false;
             latchL1 = false;
             // in a race the rules decide what a kart may do (the karts' own upgrades do not count); outside one its own upgrades do
+            sim.setMask(kart.maskState() != 0);
             boolean race = RaceClient.active();
             int floaterMode = race ? RaceClient.rules().floater() : kart.floaterMode();
             boolean floating = floaterMode >= 1;
             McBlockSource.floaterMode = floaterMode;
+            McBlockSource.paddleActive = race ? RaceClient.rules().paddle() : kart.paddleOn();
+            double feetY = KartScale.toBlocks(sim.position().y);
+            McBlockSource.floaterFeetY = feetY;
+            // under the surface with the Floater: lifted to it (the water is not a floor down there, see McBlockSource)
+            double surfaceTop = floating && mc.level != null ? FloatSurface.top(mc.level, KartScale.toBlocks(sim.position().x), feetY + 0.05, KartScale.toBlocks(sim.position().z), floaterMode) : Double.NaN;
+            sim.setBuoyant(!Double.isNaN(surfaceTop) && feetY < surfaceTop - FloatSurface.SINK - 0.3);
             sim.setLowGravity(race ? RaceClient.rules().lowGravity() : kart.gravityStrength());
             if (springLatch) {
                 springLatch = false;
-                if (race ? RaceClient.rules().spring() : kart.springOn()) sim.springJump();
+                sim.springJump(race ? RaceClient.rules().spring() : kart.springStrength());
             }
             world.prepare(sim.position(), sim.velocity().y / 256.0);
             int surface = world.surfaceAt(sim.position());
@@ -174,7 +192,7 @@ public final class KartDriver {
                         || sim.groundType == com.ctrcraft.physics.Terrain.SNOW || sim.groundType == com.ctrcraft.physics.Terrain.MUD)) {
                     sim.groundType = com.ctrcraft.physics.Terrain.ASPHALT;
                 }
-                if (Surface.isPad(surface) && sim.grounded() && com.ctrcraft.track.RaceClient.rules().boostPads()) {
+                if (Surface.isPad(surface) && sim.grounded() && com.ctrcraft.track.RaceClient.rules().boostPads() && !RaceClient.hold()) {          // not while held on the grid: a pad under the kart's slot must not set it off
                     if (Surface.isSuperPad(surface)) sim.superTurboPad();
                     else sim.turboPad();
                 }
@@ -189,7 +207,7 @@ public final class KartDriver {
             if (fluidKind != 0 && sim.grounded()) sim.groundType = com.ctrcraft.physics.Terrain.WATER;
             if (sim.cloudActive() && mc.level != null) {
                 // the rain cloud over the kart (the original's is a 3D cloud model with a rain emitter; these particles stand in for it)
-                Fx.play("rain_cloud", kart.getX(), kart.getY(), kart.getZ(), 0.0F, 0.0F, kart.tickCount);
+                // (the cloud and its rain are drawn by RainCloudFx)
             }
             if (sim.cloudIce()) sim.groundType = com.ctrcraft.physics.Terrain.ICE;          // RAIN_CLOUD_EFFECT_ICE_TERRAIN
             sim.setOthers(nearbyKarts(mc, kart));
@@ -224,6 +242,7 @@ public final class KartDriver {
             sim.speedCapPercent = com.ctrcraft.track.RaceClient.rules().maxSpeedPercent();
             sim.tick(world, input);
             sendHits(mc, kart, sim.drainBumps());
+            maskContacts(mc, kart);
             playEvents(mc, sim.drainEvents());
             snapshot(false);
         }
@@ -247,8 +266,11 @@ public final class KartDriver {
     private static List<KartBump.Other> nearbyKarts(Minecraft mc, KartEntity self) {
         double reach = KartScale.toBlocks(2.0 * KartBump.HIT_RADIUS) + 1.0;
         boolean entities = contactOn();
+        // a kart with the mask on drives through the others, and they through it (it hurts what it touches, see maskContacts): no kart is a body to it, nor it to them
+        boolean ghost = self.maskState() != 0 || self.ethereal();          // a finished kart is as good as not there, to the others and to itself
         List<Entity> near = mc.level.getEntitiesOfClass(Entity.class, self.getBoundingBox().inflate(reach),
-                e -> e != self && !e.isRemoved() && !e.isSpectator() && !self.hasPassenger(e) && (e instanceof KartEntity || (entities && bumpable(e))));
+                e -> e != self && !e.isRemoved() && !e.isSpectator() && !self.hasPassenger(e)
+                        && (e instanceof KartEntity k ? !ghost && k.maskState() == 0 && !k.ethereal() : entities && bumpable(e)));
         if (near.isEmpty()) {
             return List.of();
         }
@@ -317,6 +339,25 @@ public final class KartDriver {
 
     private static final java.util.Map<Integer, Long> LAST_HIT_SENT = new java.util.HashMap<>();
     private static long lastSquishSent;
+    private static final java.util.Map<Integer, Long> MASK_SENT = new java.util.HashMap<>();
+
+    /**
+     * The mask's touch (VehPhysCrash_Attack): the kart that has it on goes through the karts it touches (they are no body to it, see nearbyKarts) and hurts each one, whatever the speed of
+     * the touch. The server checks the rest (distance, the victim's shield, the mask on both).
+     */
+    private static void maskContacts(Minecraft mc, KartEntity kart) {
+        if (!sim.maskActive() || kart.ethereal()) return;
+        long now = System.currentTimeMillis();
+        double reach = KartScale.toBlocks(2.0 * KartBump.HIT_RADIUS) + 0.3;
+        for (KartEntity other : mc.level.getEntitiesOfClass(KartEntity.class, kart.getBoundingBox().inflate(reach), e -> e != kart && !e.isRemoved() && !e.ethereal() && e.getControllingPassenger() != null)) {
+            if (other.distanceTo(kart) > reach) continue;
+            Long last = MASK_SENT.get(other.getId());
+            if (last != null && now - last < 500L) continue;
+            MASK_SENT.put(other.getId(), now);
+            PacketDistributor.sendToServer(new com.ctrcraft.net.KartSquishPayload(kart.getId(), other.getId()));
+        }
+        if (MASK_SENT.size() > 64) MASK_SENT.values().removeIf(t -> now - t > 5000);
+    }
 
     /** Whether the kart ignores rough terrain: in a race its rules say so (they override the kart's own switch); otherwise the kart's offroad tires are installed and switched on. */
     private static boolean offroadActive(KartEntity kart) {
@@ -324,6 +365,12 @@ public final class KartDriver {
     }
 
     private static boolean springLatch;
+
+    /** A rain cloud is over the local kart (the sim's rain cloud timer runs): RainCloudFx draws it. */
+    public static boolean cloudActive() {
+        return sim != null && sim.cloudActive();
+    }
+
     private static boolean dismountSent;
     private static net.minecraft.world.level.Level worldLevel;
 

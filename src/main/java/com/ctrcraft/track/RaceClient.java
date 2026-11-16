@@ -66,6 +66,16 @@ public final class RaceClient {
         return state.phase() != RacePayload.OFF;
     }
 
+    /** The text on screen is the track's cool-down after a race (a new one cannot start yet), not a gathering. */
+    public static boolean cooldown() {
+        return state.cooldown();
+    }
+
+    /** The racer has been put on a podium: the kart stays where it is until the race is over. */
+    public static boolean podium() {
+        return state.podium();
+    }
+
     /** The kart stands on the grid, revving, until GO. */
     public static boolean hold() {
         return state.hold();

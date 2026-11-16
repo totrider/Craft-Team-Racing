@@ -87,9 +87,13 @@ class RaceProgressTest {
         double[][] route = { { 2, 64.5, 0.5 }, { 38, 64.5, 0.5 }, { 43, 64.5, 0.5 }, { 40.5, 64.5, 38 }, { 40.5, 64.5, 43 },
                 { 3, 64.5, 40.5 }, { -3, 64.5, 40.5 }, { 0.5, 64.5, 3 }, { 0.5, 64.5, -3 } };
         int laps = 0;
+        p.track(route[0][0], route[0][1], route[0][2]);
+        p.noteDirection();
         for (int i = 1; i < route.length; i++) {
             double[] a = route[i - 1];
             double[] b = route[i];
+            p.track(b[0], b[1], b[2]);          // as the race manager does with each report: where the racer is on the course, and which way they are going on it
+            p.noteDirection();
             if (p.move(a[0], a[1], a[2], b[0], b[1], b[2]).kind() == Kind.LAP) laps++;
         }
         assertEquals(1, laps);
@@ -150,9 +154,9 @@ class RaceProgressTest {
         }
     }
 
-    /** A branch across the start line on a course of four nodes: which end it is entered from follows the length of the stretch it replaces, not the node count. */
+    /** A branch is entered at the one of its two main nodes that is closer to the start along the main path, whichever way it was recorded. */
     @Test
-    void aBranchAcrossTheStartLineIsEnteredFromTheNodeBeforeIt() {
+    void aBranchIsEnteredFromTheEndCloserToTheStart() {
         long s = TestDriveTest.at(0, 0);
         long a = TestDriveTest.at(100, 0);
         long b = TestDriveTest.at(100, 40);
@@ -170,16 +174,17 @@ class RaceProgressTest {
         g.toggleLink(c, s);
         g.toggleLink(a, y);
         g.toggleLink(y, c);
-        TrackRoutes r = new TrackRoutes();
-        r.setMain(java.util.List.of(s, a, b, c, s));
-        r.addBranch(new TrackRoutes.Branch(a, c, new long[] { y }));       // recorded the way the course does not go
-        RaceProgress p = new RaceProgress(g, r);
-        p.reach(a);
-        p.reach(b);
-        p.reach(c);
-        assertTrue(p.expected().contains(y), "at C the branch over the start line is one of the ways on");
-        assertEquals(Kind.NODE, p.reach(y).kind());
-        assertEquals(Kind.LAP, p.reach(a).kind(), "it rejoins at A, past the start line: the lap counts");
-        assertEquals(1, p.laps());
+        for (boolean recordedBackwards : new boolean[] { false, true }) {
+            TrackRoutes r = new TrackRoutes();
+            r.setMain(java.util.List.of(s, a, b, c, s));
+            r.addBranch(recordedBackwards ? new TrackRoutes.Branch(c, a, new long[] { y }) : new TrackRoutes.Branch(a, c, new long[] { y }));
+            RaceProgress p = new RaceProgress(g, r);
+            p.reach(a);
+            assertTrue(p.expected().contains(y), "at A (the end nearer the start) the branch is one of the ways on");
+            assertEquals(Kind.NODE, p.reach(y).kind());
+            assertEquals(Kind.NODE, p.reach(c).kind(), "it rejoins at C");
+            assertEquals(0, p.laps());
+            assertEquals(Kind.LAP, p.reach(s).kind());
+        }
     }
 }

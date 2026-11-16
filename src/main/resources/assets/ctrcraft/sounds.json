@@ -229,6 +229,36 @@
       "ctrcraft:fruit_arrive"
     ]
   },
+  "mask_aku": {
+    "sounds": [
+      "ctrcraft:mask_aku"
+    ]
+  },
+  "mask_uka": {
+    "sounds": [
+      "ctrcraft:mask_uka"
+    ]
+  },
+  "warp_launch": {
+    "sounds": [
+      "ctrcraft:warp_launch"
+    ]
+  },
+  "warp_fly": {
+    "sounds": [
+      "ctrcraft:warp_fly"
+    ]
+  },
+  "warp_end": {
+    "sounds": [
+      "ctrcraft:warp_end"
+    ]
+  },
+  "lap": {
+    "sounds": [
+      "ctrcraft:lap"
+    ]
+  },
   "music.race_intro": {
     "sounds": []
   },
@@ -242,6 +272,12 @@
     "sounds": []
   },
   "music.race_end.other": {
+    "sounds": []
+  },
+  "music.aku_aku": {
+    "sounds": []
+  },
+  "music.uka_uka": {
     "sounds": []
   },
   "silent": {

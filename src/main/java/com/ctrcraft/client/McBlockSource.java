@@ -18,6 +18,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public final class McBlockSource implements BlockSource {
     /** The Floater for the kart driving here (set by KartDriver each step): 0 none, 1 water is a floor for it, 2 lava is too. */
     public static volatile int floaterMode;
+    /** The kart has the Paddle (or the race's rules give it): a floating kart is not slowed by the water. */
+    public static volatile boolean paddleActive;
+    /** The driven kart's feet, in blocks (set by KartDriver): a kart far under the surface has no slab to rest on. */
+    public static volatile double floaterFeetY;
 
     private final Level level;
     private final Entity context;
@@ -36,16 +40,18 @@ public final class McBlockSource implements BlockSource {
             shape.forAllBoxes(visitor::box);
         }
         if (floaterMode > 0) {
-            // the water (and lava, for the Obsidian Floater) is a floor for a floating kart: each water cell is a box up to the water's surface (a full cell under more water)
+            // the surface is a floor for a floating kart: a slab, half a block thick, whose top is FloatSurface.SINK under the fluid's surface, in the cell at the top of each column. A kart that
+            // is down in the water (its feet well under that top) has no slab: it is lifted to the surface (KartSim.setBuoyant) and the slab, which would hold it down from below, is not there.
             BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
             for (int bx = (int) Math.floor(x0); bx <= (int) Math.floor(x1 - 1e-4); bx++) {
-                for (int by = (int) Math.floor(y0); by <= (int) Math.floor(y1 - 1e-4); by++) {
+                for (int by = (int) Math.floor(y0 - 1.0); by <= (int) Math.floor(y1 + 1.0); by++) {
                     for (int bz = (int) Math.floor(z0); bz <= (int) Math.floor(z1 - 1e-4); bz++) {
                         at.set(bx, by, bz);
                         var fluid = level.getFluidState(at);
-                        if (!floatsOn(fluid)) continue;
-                        double h = floatsOn(level.getFluidState(at.set(bx, by + 1, bz))) ? 1.0 : fluid.getHeight(level, at.set(bx, by, bz));
-                        visitor.box(bx, by, bz, bx + 1, by + h, bz + 1);
+                        if (!floatsOn(fluid) || floatsOn(level.getFluidState(at.set(bx, by + 1, bz)))) continue;
+                        double top = by + fluid.getHeight(level, at.set(bx, by, bz)) - com.ctrcraft.kart.FloatSurface.SINK;
+                        if (floaterFeetY < top - 0.3) continue;
+                        visitor.box(bx, top - 0.5, bz, bx + 1, top, bz + 1);
                     }
                 }
             }
@@ -60,7 +66,7 @@ public final class McBlockSource implements BlockSource {
     @Override
     public int surface(int bx, int by, int bz) {
         pos.set(bx, by, bz);
-        if (floaterMode > 0 && floatsOn(level.getFluidState(pos))) return Surface.ASPHALT;          // the Floater has no water slowdown
+        if (floaterMode > 0 && floatsOn(level.getFluidState(pos))) return paddleActive ? Surface.ASPHALT : Surface.WATER;          // a floating kart is slowed as in water; the Paddle takes the slowdown away
         BlockState state = level.getBlockState(pos);
         int code;
         // a copycat (Create, Copycats+) is the block it copies
