@@ -1,0 +1,23 @@
+{
+  "values": [
+    "craftteamracing:power_palm_log",
+    "craftteamracing:power_palm_wood",
+    "craftteamracing:stripped_power_palm_log",
+    "craftteamracing:stripped_power_palm_wood",
+    "craftteamracing:power_palm_planks",
+    "craftteamracing:power_palm_stairs",
+    "craftteamracing:power_palm_slab",
+    "craftteamracing:power_palm_fence",
+    "craftteamracing:power_palm_fence_gate",
+    "craftteamracing:power_palm_door",
+    "craftteamracing:power_palm_trapdoor",
+    "craftteamracing:power_palm_button",
+    "craftteamracing:power_palm_pressure_plate",
+    "craftteamracing:item_crate",
+    "craftteamracing:fruit_crate",
+    "craftteamracing:item_crate_random",
+    "craftteamracing:item_crate_planked",
+    "craftteamracing:fruit_crate_planked",
+    "craftteamracing:power_fruit_bag"
+  ]
+}

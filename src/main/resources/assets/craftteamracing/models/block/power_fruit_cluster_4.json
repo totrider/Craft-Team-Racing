@@ -1,0 +1,1926 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "pickups": "craftteamracing:item/pickups",
+    "particle": "craftteamracing:item/pickups"
+  },
+  "elements": [
+    {
+      "from": [
+        2.5,
+        10.5,
+        2.5
+      ],
+      "to": [
+        7.5,
+        14.5,
+        7.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            8,
+            10.5,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "east": {
+          "uv": [
+            8,
+            8,
+            10.5,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "south": {
+          "uv": [
+            8,
+            8,
+            10.5,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "west": {
+          "uv": [
+            8,
+            8,
+            10.5,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "up": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "down": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_0"
+    },
+    {
+      "from": [
+        3,
+        9.5,
+        3
+      ],
+      "to": [
+        7,
+        10.5,
+        7
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        },
+        "east": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        },
+        "south": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        },
+        "west": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        },
+        "up": {
+          "uv": [
+            12,
+            8,
+            14,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "down": {
+          "uv": [
+            14,
+            8,
+            16,
+            10
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_1"
+    },
+    {
+      "from": [
+        3,
+        14.5,
+        3
+      ],
+      "to": [
+        7,
+        15,
+        7
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "east": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "south": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "west": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "up": {
+          "uv": [
+            12,
+            8,
+            14,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "down": {
+          "uv": [
+            14,
+            8,
+            16,
+            10
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_2"
+    },
+    {
+      "from": [
+        0.775,
+        15.25,
+        0.975
+      ],
+      "to": [
+        3.025,
+        15.25,
+        4.975
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            9,
+            14,
+            8,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_3",
+      "rotation": {
+        "origin": [
+          1.9,
+          15.25,
+          2.975
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        2.6003,
+        15.5671,
+        0.975
+      ],
+      "to": [
+        5.1003,
+        15.5671,
+        4.975
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            9,
+            12,
+            10.5,
+            14
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_4",
+      "rotation": {
+        "origin": [
+          3.8503,
+          15.5671,
+          2.975
+        ],
+        "axis": "z",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        4.8997,
+        15.5671,
+        5.025
+      ],
+      "to": [
+        7.3997,
+        15.5671,
+        9.025
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            10.5,
+            14,
+            9,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_5",
+      "rotation": {
+        "origin": [
+          6.1497,
+          15.5671,
+          7.025
+        ],
+        "axis": "z",
+        "angle": 22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        6.975,
+        15.25,
+        5.025
+      ],
+      "to": [
+        9.225,
+        15.25,
+        9.025
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            8,
+            12,
+            9,
+            14
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_6",
+      "rotation": {
+        "origin": [
+          8.1,
+          15.25,
+          7.025
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        0.775,
+        15.21,
+        0.975
+      ],
+      "to": [
+        3.025,
+        15.21,
+        4.975
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            9,
+            12,
+            8,
+            14
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_7",
+      "rotation": {
+        "origin": [
+          1.9,
+          15.21,
+          2.975
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        2.6003,
+        15.5271,
+        0.975
+      ],
+      "to": [
+        5.1003,
+        15.5271,
+        4.975
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            9,
+            14,
+            10.5,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_8",
+      "rotation": {
+        "origin": [
+          3.8503,
+          15.5271,
+          2.975
+        ],
+        "axis": "z",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        4.8997,
+        15.5271,
+        5.025
+      ],
+      "to": [
+        7.3997,
+        15.5271,
+        9.025
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            10.5,
+            12,
+            9,
+            14
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_9",
+      "rotation": {
+        "origin": [
+          6.1497,
+          15.5271,
+          7.025
+        ],
+        "axis": "z",
+        "angle": 22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        6.975,
+        15.21,
+        5.025
+      ],
+      "to": [
+        9.225,
+        15.21,
+        9.025
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            8,
+            14,
+            9,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_10",
+      "rotation": {
+        "origin": [
+          8.1,
+          15.21,
+          7.025
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        8.5,
+        9.5,
+        2.5
+      ],
+      "to": [
+        13.5,
+        13.5,
+        7.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            8,
+            10.5,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "east": {
+          "uv": [
+            8,
+            8,
+            10.5,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "south": {
+          "uv": [
+            8,
+            8,
+            10.5,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "west": {
+          "uv": [
+            8,
+            8,
+            10.5,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "up": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "down": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_11"
+    },
+    {
+      "from": [
+        9,
+        8.5,
+        3
+      ],
+      "to": [
+        13,
+        9.5,
+        7
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        },
+        "east": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        },
+        "south": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        },
+        "west": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        },
+        "up": {
+          "uv": [
+            12,
+            8,
+            14,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "down": {
+          "uv": [
+            14,
+            8,
+            16,
+            10
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_12"
+    },
+    {
+      "from": [
+        9,
+        13.5,
+        3
+      ],
+      "to": [
+        13,
+        14,
+        7
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "east": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "south": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "west": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "up": {
+          "uv": [
+            12,
+            8,
+            14,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "down": {
+          "uv": [
+            14,
+            8,
+            16,
+            10
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_13"
+    },
+    {
+      "from": [
+        6.775,
+        14.25,
+        0.975
+      ],
+      "to": [
+        9.025,
+        14.25,
+        4.975
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            9,
+            14,
+            8,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_14",
+      "rotation": {
+        "origin": [
+          7.9,
+          14.25,
+          2.975
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        8.6003,
+        14.5671,
+        0.975
+      ],
+      "to": [
+        11.1003,
+        14.5671,
+        4.975
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            9,
+            12,
+            10.5,
+            14
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_15",
+      "rotation": {
+        "origin": [
+          9.8503,
+          14.5671,
+          2.975
+        ],
+        "axis": "z",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        10.8997,
+        14.5671,
+        5.025
+      ],
+      "to": [
+        13.3997,
+        14.5671,
+        9.025
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            10.5,
+            14,
+            9,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_16",
+      "rotation": {
+        "origin": [
+          12.1497,
+          14.5671,
+          7.025
+        ],
+        "axis": "z",
+        "angle": 22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        12.975,
+        14.25,
+        5.025
+      ],
+      "to": [
+        15.225,
+        14.25,
+        9.025
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            8,
+            12,
+            9,
+            14
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_17",
+      "rotation": {
+        "origin": [
+          14.1,
+          14.25,
+          7.025
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        6.775,
+        14.21,
+        0.975
+      ],
+      "to": [
+        9.025,
+        14.21,
+        4.975
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            9,
+            12,
+            8,
+            14
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_18",
+      "rotation": {
+        "origin": [
+          7.9,
+          14.21,
+          2.975
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        8.6003,
+        14.5271,
+        0.975
+      ],
+      "to": [
+        11.1003,
+        14.5271,
+        4.975
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            9,
+            14,
+            10.5,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_19",
+      "rotation": {
+        "origin": [
+          9.8503,
+          14.5271,
+          2.975
+        ],
+        "axis": "z",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        10.8997,
+        14.5271,
+        5.025
+      ],
+      "to": [
+        13.3997,
+        14.5271,
+        9.025
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            10.5,
+            12,
+            9,
+            14
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_20",
+      "rotation": {
+        "origin": [
+          12.1497,
+          14.5271,
+          7.025
+        ],
+        "axis": "z",
+        "angle": 22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        12.975,
+        14.21,
+        5.025
+      ],
+      "to": [
+        15.225,
+        14.21,
+        9.025
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            8,
+            14,
+            9,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_21",
+      "rotation": {
+        "origin": [
+          14.1,
+          14.21,
+          7.025
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        2.5,
+        9.5,
+        8.5
+      ],
+      "to": [
+        7.5,
+        13.5,
+        13.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            8,
+            10.5,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "east": {
+          "uv": [
+            8,
+            8,
+            10.5,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "south": {
+          "uv": [
+            8,
+            8,
+            10.5,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "west": {
+          "uv": [
+            8,
+            8,
+            10.5,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "up": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "down": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_22"
+    },
+    {
+      "from": [
+        3,
+        8.5,
+        9
+      ],
+      "to": [
+        7,
+        9.5,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        },
+        "east": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        },
+        "south": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        },
+        "west": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        },
+        "up": {
+          "uv": [
+            12,
+            8,
+            14,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "down": {
+          "uv": [
+            14,
+            8,
+            16,
+            10
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_23"
+    },
+    {
+      "from": [
+        3,
+        13.5,
+        9
+      ],
+      "to": [
+        7,
+        14,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "east": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "south": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "west": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "up": {
+          "uv": [
+            12,
+            8,
+            14,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "down": {
+          "uv": [
+            14,
+            8,
+            16,
+            10
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_24"
+    },
+    {
+      "from": [
+        0.775,
+        14.25,
+        6.975
+      ],
+      "to": [
+        3.025,
+        14.25,
+        10.975
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            9,
+            14,
+            8,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_25",
+      "rotation": {
+        "origin": [
+          1.9,
+          14.25,
+          8.975
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        2.6003,
+        14.5671,
+        6.975
+      ],
+      "to": [
+        5.1003,
+        14.5671,
+        10.975
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            9,
+            12,
+            10.5,
+            14
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_26",
+      "rotation": {
+        "origin": [
+          3.8503,
+          14.5671,
+          8.975
+        ],
+        "axis": "z",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        4.8997,
+        14.5671,
+        11.025
+      ],
+      "to": [
+        7.3997,
+        14.5671,
+        15.025
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            10.5,
+            14,
+            9,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_27",
+      "rotation": {
+        "origin": [
+          6.1497,
+          14.5671,
+          13.025
+        ],
+        "axis": "z",
+        "angle": 22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        6.975,
+        14.25,
+        11.025
+      ],
+      "to": [
+        9.225,
+        14.25,
+        15.025
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            8,
+            12,
+            9,
+            14
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_28",
+      "rotation": {
+        "origin": [
+          8.1,
+          14.25,
+          13.025
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        0.775,
+        14.21,
+        6.975
+      ],
+      "to": [
+        3.025,
+        14.21,
+        10.975
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            9,
+            12,
+            8,
+            14
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_29",
+      "rotation": {
+        "origin": [
+          1.9,
+          14.21,
+          8.975
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        2.6003,
+        14.5271,
+        6.975
+      ],
+      "to": [
+        5.1003,
+        14.5271,
+        10.975
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            9,
+            14,
+            10.5,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_30",
+      "rotation": {
+        "origin": [
+          3.8503,
+          14.5271,
+          8.975
+        ],
+        "axis": "z",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        4.8997,
+        14.5271,
+        11.025
+      ],
+      "to": [
+        7.3997,
+        14.5271,
+        15.025
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            10.5,
+            12,
+            9,
+            14
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_31",
+      "rotation": {
+        "origin": [
+          6.1497,
+          14.5271,
+          13.025
+        ],
+        "axis": "z",
+        "angle": 22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        6.975,
+        14.21,
+        11.025
+      ],
+      "to": [
+        9.225,
+        14.21,
+        15.025
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            8,
+            14,
+            9,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_32",
+      "rotation": {
+        "origin": [
+          8.1,
+          14.21,
+          13.025
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        8.5,
+        10.5,
+        8.5
+      ],
+      "to": [
+        13.5,
+        14.5,
+        13.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            8,
+            10.5,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "east": {
+          "uv": [
+            8,
+            8,
+            10.5,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "south": {
+          "uv": [
+            8,
+            8,
+            10.5,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "west": {
+          "uv": [
+            8,
+            8,
+            10.5,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "up": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "down": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_33"
+    },
+    {
+      "from": [
+        9,
+        9.5,
+        9
+      ],
+      "to": [
+        13,
+        10.5,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        },
+        "east": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        },
+        "south": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        },
+        "west": {
+          "uv": [
+            8,
+            11.5,
+            10,
+            12
+          ],
+          "texture": "#pickups"
+        },
+        "up": {
+          "uv": [
+            12,
+            8,
+            14,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "down": {
+          "uv": [
+            14,
+            8,
+            16,
+            10
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_34"
+    },
+    {
+      "from": [
+        9,
+        14.5,
+        9
+      ],
+      "to": [
+        13,
+        15,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "east": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "south": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "west": {
+          "uv": [
+            8,
+            11,
+            10,
+            11.5
+          ],
+          "texture": "#pickups"
+        },
+        "up": {
+          "uv": [
+            12,
+            8,
+            14,
+            10
+          ],
+          "texture": "#pickups"
+        },
+        "down": {
+          "uv": [
+            14,
+            8,
+            16,
+            10
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_35"
+    },
+    {
+      "from": [
+        6.775,
+        15.25,
+        6.975
+      ],
+      "to": [
+        9.025,
+        15.25,
+        10.975
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            9,
+            14,
+            8,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_36",
+      "rotation": {
+        "origin": [
+          7.9,
+          15.25,
+          8.975
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        8.6003,
+        15.5671,
+        6.975
+      ],
+      "to": [
+        11.1003,
+        15.5671,
+        10.975
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            9,
+            12,
+            10.5,
+            14
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_37",
+      "rotation": {
+        "origin": [
+          9.8503,
+          15.5671,
+          8.975
+        ],
+        "axis": "z",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        10.8997,
+        15.5671,
+        11.025
+      ],
+      "to": [
+        13.3997,
+        15.5671,
+        15.025
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            10.5,
+            14,
+            9,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_38",
+      "rotation": {
+        "origin": [
+          12.1497,
+          15.5671,
+          13.025
+        ],
+        "axis": "z",
+        "angle": 22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        12.975,
+        15.25,
+        11.025
+      ],
+      "to": [
+        15.225,
+        15.25,
+        15.025
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            8,
+            12,
+            9,
+            14
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_39",
+      "rotation": {
+        "origin": [
+          14.1,
+          15.25,
+          13.025
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        6.775,
+        15.21,
+        6.975
+      ],
+      "to": [
+        9.025,
+        15.21,
+        10.975
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            9,
+            12,
+            8,
+            14
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_40",
+      "rotation": {
+        "origin": [
+          7.9,
+          15.21,
+          8.975
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        8.6003,
+        15.5271,
+        6.975
+      ],
+      "to": [
+        11.1003,
+        15.5271,
+        10.975
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            9,
+            14,
+            10.5,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_41",
+      "rotation": {
+        "origin": [
+          9.8503,
+          15.5271,
+          8.975
+        ],
+        "axis": "z",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        10.8997,
+        15.5271,
+        11.025
+      ],
+      "to": [
+        13.3997,
+        15.5271,
+        15.025
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            10.5,
+            12,
+            9,
+            14
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_42",
+      "rotation": {
+        "origin": [
+          12.1497,
+          15.5271,
+          13.025
+        ],
+        "axis": "z",
+        "angle": 22.5,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        12.975,
+        15.21,
+        11.025
+      ],
+      "to": [
+        15.225,
+        15.21,
+        15.025
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            8,
+            14,
+            9,
+            12
+          ],
+          "texture": "#pickups"
+        }
+      },
+      "name": "p4_43",
+      "rotation": {
+        "origin": [
+          14.1,
+          15.21,
+          13.025
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      }
+    }
+  ],
+  "display": {}
+}

@@ -123,3 +123,53 @@ def blank(rgba, half_width=BRACE_HALF_WIDTH):
             break
         left = later
     return out
+
+
+def exclaim(question, blank):
+    """The trigger crate's face for the local pack: the blank face (the "?" taken out, see blank) with a "!" in the "?"'s own look. Where the "?" stood is found by comparing the two
+    faces, its yellow and its red outline are taken from its own pixels, and the "!" (a bar that narrows downwards, a gap, a dot) is drawn to the height of the "?", smoothed, with an
+    outline as thick as the "?"'s. {question} and {blank}: PIL images of the same size; the "!" stands upright, or lies when the "?" does (a face seen from the side of the crate)."""
+    from PIL import Image, ImageDraw, ImageFilter
+    q = np.asarray(question.convert("RGBA")).astype(int)
+    b = np.asarray(blank.convert("RGBA")).astype(int)
+    diff = (np.abs(q - b)[:, :, :3].sum(axis=2) > 60) & (q[:, :, 3] > 0)
+    if diff.sum() < 20:
+        return blank
+    ys, xs = np.nonzero(diff)
+    y0, y1, x0, x1 = ys.min(), ys.max(), xs.min(), xs.max()
+    px = q[diff]
+    yellow = px[(px[:, 1] > 0.75 * px[:, 0]) & (px[:, 2] < 0.5 * px[:, 0])]
+    red = px[(px[:, 1] < 0.35 * px[:, 0]) & (px[:, 0] > 100)]
+    fill = tuple(int(v) for v in np.median(yellow[:, :3], axis=0)) if len(yellow) else (250, 210, 40)
+    edge = tuple(int(v) for v in np.median(red[:, :3], axis=0)) if len(red) else (200, 40, 40)
+    h, w = int(y1 - y0 + 1), int(x1 - x0 + 1)
+    lying = w > h * 1.1
+    long_side, short_side = (w, h) if lying else (h, w)
+    thick = max(1, int(round(long_side / 18.0)))
+    ss = 4
+    glyph = Image.new("L", (long_side * ss, long_side * ss), 0)               # drawn upright in a square, turned afterwards when lying
+    g = ImageDraw.Draw(glyph)
+    top, bottom = thick * ss * 1.5, (long_side - thick * 1.5) * ss
+    bar_w = max(3, long_side * 0.30) * ss
+    cx = long_side * ss / 2.0
+    stem_end = top + (bottom - top) * 0.66
+    g.polygon([(cx - bar_w / 2, top), (cx + bar_w / 2, top), (cx + bar_w * 0.28, stem_end), (cx - bar_w * 0.28, stem_end)], fill=255)
+    dot = bar_w * 0.62
+    g.rectangle([cx - dot / 2, bottom - dot, cx + dot / 2, bottom], fill=255)
+    glyph = glyph.resize((long_side, long_side), Image.LANCZOS)
+    if lying:
+        glyph = glyph.rotate(90)
+    ring = glyph.filter(ImageFilter.MaxFilter(2 * thick + 1))
+    out = blank.convert("RGBA").copy()
+    layer_edge = Image.new("RGBA", out.size, edge + (255,))
+    layer_fill = Image.new("RGBA", out.size, fill + (255,))
+    cx_mid, cy_mid = (x0 + x1) // 2, (y0 + y1) // 2
+    size = glyph.size[0]
+    ox, oy = cx_mid - size // 2, cy_mid - size // 2
+    ring_full = Image.new("L", out.size, 0)
+    ring_full.paste(ring, (ox, oy))
+    glyph_full = Image.new("L", out.size, 0)
+    glyph_full.paste(glyph, (ox, oy))
+    out.paste(layer_edge, (0, 0), ring_full)
+    out.paste(layer_fill, (0, 0), glyph_full)
+    return out

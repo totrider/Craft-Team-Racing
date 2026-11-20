@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:book"
+    },
+    {
+      "item": "craftteamracing:power_nugget"
+    },
+    {
+      "tag": "craftteamracing:item_crates"
+    }
+  ],
+  "result": {
+    "id": "craftteamracing:drop_table",
+    "count": 1
+  }
+}

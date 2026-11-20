@@ -57,3 +57,9 @@ CTR Source/
 *.cue
 *.iso
 local-assets/
+
+# the asset extractor: its packaged scripts are generated (tools/package_asset_extractor.py), its output and the user's disc images are never committed
+asset-extractor/ctr/
+asset-extractor/output/
+asset-extractor/iso/*
+!asset-extractor/iso/README.txt

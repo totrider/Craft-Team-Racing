@@ -6,6 +6,8 @@ The boost blocks: a plate, a full block, a slab and stairs, each with a directio
 Models are Blockbench's: blockbench/boost_pad/*.bbmodel are the SOURCE (each is written once from the shapes below if it is
 missing, then it is yours; this script only reads them). Non-obvious structure, read this before editing in Blockbench:
   * Texture slot "top" is the chevron arrow, slot "side" the plain metal. Only the UP faces that carry the arrow use "top".
+  * The glow is generated, not in the bbmodels: every "top" face gets a flat overlay (slot "glow", boost_top_glow.png: only the arrow and border pixels) that is lit by
+    NeoForge's per face light, and Fusion's metadata of the glow sheet says "emissive": true (Fusion rebuilds the model and drops the per face light, so it needs that).
   * The arrow's uv and face rotation are GENERATED per direction (an up face using "top" is re-mapped here: the arrow points
     north in the file, and is turned 0/90/180/270 for the game). Change an arrow face's size by changing its element; do not
     fiddle with its uv, it is recomputed (a centred slice of the arrow texture at 1:1 pixel scale, so a half-block tread shows
@@ -36,9 +38,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bbmodel  # noqa: E402
 
 RES = os.path.join("src", "main", "resources")
-ASSETS = os.path.join(RES, "assets", "ctrcraft")
+ASSETS = os.path.join(RES, "assets", "craftteamracing")
 DATA = os.path.join(RES, "data")
-NS = "ctrcraft"
+NS = "craftteamracing"
 TEX_DIR = os.path.join(ASSETS, "textures", "block")
 TEX_TOP = os.path.join(TEX_DIR, "boost_top.png")
 TEX_SIDE = os.path.join(TEX_DIR, "boost_side.png")
@@ -225,6 +227,29 @@ def sources():
     return out
 
 
+def glow_map(sheet, accent):
+    """The glow picture of a sheet of the arrow texture: only the pixels in the family's accent colour (the arrows and the border line), everything else transparent."""
+    src = sheet.convert("RGBA")
+    out = Image.new("RGBA", src.size, (0, 0, 0, 0))
+    sp, op = src.load(), out.load()
+    for y in range(src.height):
+        for x in range(src.width):
+            r, g, b, a = sp[x, y]
+            if a and abs(r - accent[0]) + abs(g - accent[1]) + abs(b - accent[2]) < 24:
+                op[x, y] = (r, g, b, 255)
+    return out
+
+
+def write_glow(path_png, accent, emissive=False):
+    """Writes {name}_glow.png beside path_png (made from it) with a copy of its metadata; emissive adds Fusion's "emissive": true to the metadata's fusion section."""
+    base = path_png[:-4]
+    glow_map(Image.open(path_png), accent).save(base + "_glow.png")
+    meta = json.load(open(path_png + ".mcmeta", encoding="utf-8"))
+    if emissive and "fusion" in meta:
+        meta["fusion"]["emissive"] = True
+    dump(base + "_glow.png.mcmeta", meta)
+
+
 def ensure_sources():
     os.makedirs(TEX_DIR, exist_ok=True)
     for fam in FAMILIES:
@@ -232,6 +257,7 @@ def ensure_sources():
         draw_top(fam["accent"]).save(os.path.join(TEX_DIR, fam["key"] + "_top.png"))
         draw_side(fam["accent"]).save(os.path.join(TEX_DIR, fam["key"] + "_side.png"))
         dump(os.path.join(TEX_DIR, fam["key"] + "_top.png.mcmeta"), {"animation": {"frametime": 1}})
+        write_glow(os.path.join(TEX_DIR, fam["key"] + "_top.png"), fam["accent"])
     for name, groups in sources().items():
         path = os.path.join(BB_DIR, name + ".bbmodel")
         if not os.path.exists(path):
@@ -263,10 +289,34 @@ def turned(elements, r):
     return out
 
 
+LIFT = 0.01                                 # the glowing overlay floats this many sixteenths above the arrow face (no z-fighting)
+LIT = {"block_light": 15, "sky_light": 15}
+
+
+def glow(elements):
+    """The arrows glow: next to every face that shows the top picture there is a flat overlay with the glow picture (only the arrow pixels, the rest transparent). Fusion
+    (which rebuilds the models of blocks with its textures and drops NeoForge's per face light) is told that the glow texture is emissive in its metadata; without Fusion the
+    overlay's own per face light (block_light / sky_light 15) does it. The base face keeps the plain picture, so the dark metal does not glow."""
+    out = []
+    for el in elements:
+        out.append(el)
+        face = el["faces"].get("up")
+        if face and face.get("texture") == "#top":
+            top = el["to"][1] + LIFT
+            overlay = {"from": [el["from"][0], top, el["from"][2]], "to": [el["to"][0], top, el["to"][2]],
+                       "faces": {"up": {k: v for k, v in face.items() if k not in ("neoforge_data", "cullface")}}}
+            overlay["faces"]["up"]["texture"] = "#glow"
+            overlay["faces"]["up"]["neoforge_data"] = LIT
+            out.append(overlay)
+    return out
+
+
 def write_model(name, elements, fam):
     key = fam["key"]
+    elements = glow(elements)
     dump(os.path.join(ASSETS, "models", "block", name + ".json"), {
-        "textures": {"top": f"{NS}:block/{key}_top", "side": f"{NS}:block/{key}_side", "particle": f"{NS}:block/{key}_side"},
+        "render_type": "minecraft:cutout",
+        "textures": {"top": f"{NS}:block/{key}_top", "glow": f"{NS}:block/{key}_top_glow", "side": f"{NS}:block/{key}_side", "particle": f"{NS}:block/{key}_side"},
         "elements": elements})
 
 
@@ -343,6 +393,7 @@ def write_fusion(preview=False):
         dump(os.path.join(OVERRIDES, fam["key"] + "_top.png.mcmeta"), {
             "animation": {"frametime": 1, "width": 80, "height": 16},
             "fusion": {"type": "connecting", "layout": "pieced", "connections": {"type": "is_same_state"}}})
+        write_glow(os.path.join(OVERRIDES, fam["key"] + "_top.png"), accent, emissive=True)
         if preview and fam["key"] == "boost":
             draw_preview(sheet.crop((0, 0, 80, 16)))
     # the mod's own pack.mcmeta: tells Fusion where the optional files are (it reads it for every mod). The formats cover resources
@@ -365,7 +416,7 @@ def write_static_pack():
     os.makedirs(tex, exist_ok=True)
     os.makedirs(fus, exist_ok=True)
     dump(os.path.join(STATIC, "pack.mcmeta"), {
-        "pack": {"description": "Craft Team Racing: still boost pad arrows", "pack_format": 34, "supported_formats": {"min_inclusive": 34, "max_inclusive": 48}},
+        "pack": {"description": "CTR: Still Boost Pad Arrows", "pack_format": 34, "supported_formats": {"min_inclusive": 34, "max_inclusive": 48}},
         "fusion": {"overrides_folder": "fusion-overrides"}})
     for fam in FAMILIES:
         key = fam["key"]
@@ -375,6 +426,8 @@ def write_static_pack():
         dump(os.path.join(fus, key + "_top.png.mcmeta"), {
             "animation": {"frames": [0], "width": 80, "height": 16},
             "fusion": {"type": "connecting", "layout": "pieced", "connections": {"type": "is_same_state"}}})
+        write_glow(os.path.join(tex, key + "_top.png"), fam["accent"])
+        write_glow(os.path.join(fus, key + "_top.png"), fam["accent"], emissive=True)
 
 
 def draw_preview(sheet):

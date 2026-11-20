@@ -5,7 +5,7 @@ The kart's ground shadow, made from the kart's own model.
 
 Looks straight down on blockbench/kart/kart_ctr.bbmodel: every exported cube (turned as it is) and the four wheel markers are projected onto the ground, their outlines filled, softened and
 darkened; the result is textures/entity/kart_shadow.png (40 texels a block, front at the top, always rewritten: it comes from the model, so repaint the model, not this) and
-assets/ctrcraft/kart/kart_shadow.json, where the picture lies in blocks from the kart's origin ({x0, x1, z0, z1}, the front being -z), which the renderer puts it on. So the shadow follows
+assets/craftteamracing/kart/kart_shadow.json, where the picture lies in blocks from the kart's origin ({x0, x1, z0, z1}, the front being -z), which the renderer puts it on. So the shadow follows
 whatever sticks out of the kart, wheels, exhausts, the nose and the rest, and the original's picture (made for the original's kart, with its own wheels and tail) is not used. Needs numpy and
 Pillow.
 """
@@ -17,7 +17,7 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ASSETS = os.path.join(ROOT, "src", "main", "resources", "assets", "ctrcraft")
+ASSETS = os.path.join(ROOT, "src", "main", "resources", "assets", "craftteamracing")
 BB = os.path.join(ROOT, "blockbench", "kart", "kart_ctr.bbmodel")
 TEX = os.path.join(ASSETS, "textures", "entity", "kart_shadow.png")
 DATA = os.path.join(ASSETS, "kart", "kart_shadow.json")

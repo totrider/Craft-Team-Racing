@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": {
+      "item": "minecraft:cobblestone"
+    },
+    "P": {
+      "item": "craftteamracing:power_ingot"
+    }
+  },
+  "pattern": [
+    "SSS",
+    "SPS",
+    "SSS"
+  ],
+  "result": {
+    "id": "craftteamracing:boost_block",
+    "count": 8
+  }
+}

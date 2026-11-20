@@ -130,7 +130,7 @@
  ],
  "textures": [
   {
-   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\ctrcraft\\textures\\item\\crate_blank.png",
+   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\craftteamracing\\textures\\item\\crate_blank.png",
    "name": "blank.png",
    "folder": "",
    "namespace": "",
@@ -146,8 +146,8 @@
    "mode": "bitmap",
    "saved": true,
    "uuid": "c72d5fa0-e63f-4201-8bc8-e496f3b4cb90",
-   "relative_path": "../../src/main/resources/assets/ctrcraft/textures/item/crate_blank.png",
-   "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABMklEQVR4nGP8vy/lPwMDA8P0SVsZaAky87yxijMxDDBggTE6znCC6YeLnFAUXN93hCoWwczxWPALTFeYfB8cIcAISwPoPtV0siHKAFJDCGYuLM0xMQwwYIG5xEGHH0WC2rli8OcCXCDTBhIy0498xBpS6ODAlY9Y9eFKM0wMgz0Eph/B7iP0OIWlGVw+xwWYGAZ7CDhA4xwjJNByCa60AksTQzcEDqD5AD1uCaWNA1e2DrEQ0ISW1YRcTmpqx1VnMDEM9jRArM9x5Q5CgIlhqIRA5ogtCTNx+AhXXOOqOwZ/CGjiaAMSG5fk6mNiGKxpwIFAy4fS1jMsFzExDDBgnBYgCe4XMHh1gymHRy1UtQA9hOTj9qH0wJgYBksayFQ5AGGooPZcKAXotWqFCar8gIcAANZZiOMDbs1dAAAAAElFTkSuQmCC",
+   "relative_path": "../../src/main/resources/assets/craftteamracing/textures/item/crate_blank.png",
+   "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABYklEQVR4nGM8siDlPwMDA8OuQ5cZaAnc7HSxijMxDDBggTG80iaC6T835qAoePfhC1UsgpkjZlEAprfNyh9kIfDqxAQUCSEBHhQaFyA1hNBDmIlhgAELLPWb6CmiSFR1rqOqRW3lQVjFmRgGSxrABbrmbwPT06piwLSKvBgDPnDn4SswndW2BEyXJXrhTTNMDIM9BKZBfR7iZwKm12w6A6ZNdGRQ1J258gRFHUwfIcDEMNhDQAUa5zCfo4cEDKCLw/Q9eP5uiIfAHWiqhgFCPkdPG4QAE8NgCwEhAmU/DOBKC6TWGUwMgz0NoANicwGxgIlhqIRACIHUTqicGLohkAWt1dDLdljZjw5gPsdVGw7eEBDCkf8J+QAXIFYfE8NgTQMl6W5EGUBsyYleEsJ6SkwMgyUE1L3bwfTxpbkkGUCoX4Dev2DRSEHpHzAxDJYQuLm1EkzDXEqz3vIhSJ9w0KQBAKBhfrhPVzXuAAAAAElFTkSuQmCC",
    "width": 32,
    "height": 32
   }

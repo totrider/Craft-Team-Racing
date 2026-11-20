@@ -4,7 +4,7 @@ The Power Shield bubble: the jar's stand-in 3D model (a translucent ball) and it
   python tools/make_shield_model.py
 
 The model is Blockbench's: blockbench/pickups/shield.bbmodel is the source (written once from the shape below if it is missing, then it is yours; this script only reads it). Writes
-src/main/resources/assets/ctrcraft/models/item/pickup_shield.json and, once if missing, textures/item/shield.png (a 16 x 16 pale, see-through picture with a brighter patch, yours to
+src/main/resources/assets/craftteamracing/models/item/pickup_shield.json and, once if missing, textures/item/shield.png (a 16 x 16 pale, see-through picture with a brighter patch, yours to
 repaint; the game tints it green or blue and scales it). The ball is built as the Bomb's is: five octagonal prisms along x narrowing to the poles, each of four slabs (0, 90 and +-45
 degrees), so it reads round from every side. The model's middle (8, 8, 8) is the ball's middle and it is 12 px across; the renderer scales it (client/ShieldBubble). The original's
 bubble is three layered models (a coloured one added to the screen, a dark one taken from it and a highlight that sweeps over it) in the local resource pack when that is built.
@@ -19,7 +19,7 @@ from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bbmodel  # noqa: E402
 
-ASSETS = os.path.join("src", "main", "resources", "assets", "ctrcraft")
+ASSETS = os.path.join("src", "main", "resources", "assets", "craftteamracing")
 TEX = os.path.join(ASSETS, "textures", "item", "shield.png")
 OUT = os.path.join(ASSETS, "models", "item", "pickup_shield.json")
 BB = os.path.join("blockbench", "pickups", "shield.bbmodel")
@@ -76,7 +76,7 @@ def main():
     model = bbmodel.read(BB)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8", newline="\n") as f:
-        json.dump({"textures": {"shield": "ctrcraft:item/shield", "particle": "ctrcraft:item/shield"}, "elements": bbmodel.elements(model), "display": model["display"] or display()}, f, indent=2)
+        json.dump({"textures": {"shield": "craftteamracing:item/shield", "particle": "craftteamracing:item/shield"}, "elements": bbmodel.elements(model), "display": model["display"] or display()}, f, indent=2)
     print("shield written")
 
 

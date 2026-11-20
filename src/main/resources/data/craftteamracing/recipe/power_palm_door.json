@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "item": "craftteamracing:power_palm_planks"
+    }
+  },
+  "pattern": [
+    "PP",
+    "PP",
+    "PP"
+  ],
+  "result": {
+    "id": "craftteamracing:power_palm_door",
+    "count": 3
+  }
+}

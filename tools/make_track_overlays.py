@@ -3,29 +3,53 @@ The flat sprites drawn on the ground for a race track: the start grid's kart spo
 
   python tools/make_track_overlays.py
 
-Writes textures/misc/grid_slot.png (one kart's spot: an outline with an arrow pointing the way the kart faces, UP in the picture is
-forward) and textures/misc/gather_zone.png (the square gathering area: a dashed border, corner marks and a chevron pattern pointing at the
-start line, UP is toward the line). They are cutouts (pixels are fully drawn or not at all). Placeholder art: a file that exists is yours and is
-not overwritten, so repaint them. Run from the project folder.
+Writes textures/block/start_grid_slot.png (one kart's spot: an outline with an arrow pointing the way the kart faces, UP in the picture is forward) and
+textures/block/start_grid_zone.png (the square gathering area: a dashed border, corner brackets and a chevron pattern pointing at the start line, UP is toward the line). They are in the
+block atlas and are cutouts (pixels are fully drawn or not at all). Every line is drawn pixel by pixel: whole corners, arrows and chevrons at exactly 45 degrees, and strokes of
+a width that is a power of two (4 pixels, run of 16). Placeholder art: a file that exists is yours and is not overwritten, so repaint them. Run from the project folder.
 """
 import os
 
-from PIL import Image, ImageDraw
+from PIL import Image
 
-ASSETS = os.path.join("src", "main", "resources", "assets", "ctrcraft", "textures", "misc")
+ASSETS = os.path.join("src", "main", "resources", "assets", "craftteamracing", "textures", "block")
+
+WHITE = (245, 245, 245, 255)
+GOLD = (255, 210, 31, 255)
+GOLD_EDGE = (40, 30, 10, 255)
+GREEN = (70, 235, 120, 255)
+GREEN_EDGE = (20, 90, 50, 255)
+
+
+def rect(im, x0, y0, x1, y1, colour):
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            im.putpixel((x, y), colour)
 
 
 def grid_slot():
     # 16 px per block: a spot is 2 blocks wide and 2.5 long
     w, h = 32, 40
     im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    d = ImageDraw.Draw(im)
-    white = (245, 245, 245, 255)
-    gold = (255, 210, 31, 255)
-    d.rectangle([0, 0, w - 1, h - 1], outline=white)
-    d.rectangle([1, 1, w - 2, h - 2], outline=white)
-    # arrow: forward is up
-    d.polygon([(16, 7), (24, 18), (19, 18), (19, 30), (13, 30), (13, 18), (8, 18)], fill=gold, outline=(40, 30, 10, 255))
+    rect(im, 0, 0, w - 1, 1, WHITE)                 # the outline, two pixels, corners whole
+    rect(im, 0, h - 2, w - 1, h - 1, WHITE)
+    rect(im, 0, 0, 1, h - 1, WHITE)
+    rect(im, w - 2, 0, w - 1, h - 1, WHITE)
+    # the arrow, forward is up: a head whose sides run at exactly 45 degrees (one pixel in per row) on a shaft six pixels wide
+    body = set()
+    for r in range(9):
+        for x in range(15 - r, 17 + r):
+            body.add((x, 7 + r))
+    for y in range(16, 31):
+        for x in range(13, 19):
+            body.add((x, y))
+    for (x, y) in body:
+        im.putpixel((x, y), GOLD)
+    for (x, y) in body:                              # a one pixel edge round it
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                if (x + dx, y + dy) not in body and 0 <= x + dx < w and 0 <= y + dy < h:
+                    im.putpixel((x + dx, y + dy), GOLD_EDGE)
     return im
 
 
@@ -33,33 +57,35 @@ def gather_zone():
     # 8 px per block: 16 x 16 blocks
     n = 128
     im = Image.new("RGBA", (n, n), (0, 0, 0, 0))
-    d = ImageDraw.Draw(im)
-    green = (70, 235, 120, 255)
-    dark = (20, 90, 50, 255)
-    # dashed border, 3 px wide, dashes of 6 px
-    for i in range(0, n, 12):
-        for t in range(3):
-            for (x, y) in ((i, t), (i + 1, t), (i + 2, t), (i + 3, t), (i + 4, t), (i + 5, t)):
-                for (px, py) in ((x, y), (y, x), (x, n - 1 - y), (n - 1 - y, x)):
-                    if 0 <= px < n and 0 <= py < n:
-                        im.putpixel((px, py), green)
-    # solid corner brackets
-    for (cx, cy, sx, sy) in ((0, 0, 1, 1), (n - 1, 0, -1, 1), (0, n - 1, 1, -1), (n - 1, n - 1, -1, -1)):
-        for k in range(18):
-            for t in range(5):
-                im.putpixel((cx + sx * k, cy + sy * t), green)
-                im.putpixel((cx + sx * t, cy + sy * k), green)
-    # chevrons pointing at the line (up), a few of them down the middle
-    for row in range(3):
-        y0 = 30 + row * 28
-        d.line([(n // 2 - 14, y0 + 12), (n // 2, y0), (n // 2 + 14, y0 + 12)], fill=green, width=3)
-        d.line([(n // 2 - 14, y0 + 14), (n // 2, y0 + 2), (n // 2 + 14, y0 + 14)], fill=dark, width=1)
+    length, thick = 24, 6                            # the corner brackets: two bars, the corner pixels whole
+    for fx in (0, 1):
+        for fy in (0, 1):
+            rect(im, 0 if fx == 0 else n - length, 0 if fy == 0 else n - thick, (length - 1) if fx == 0 else n - 1, (thick - 1) if fy == 0 else n - 1, GREEN)
+            rect(im, 0 if fx == 0 else n - thick, 0 if fy == 0 else n - length, (thick - 1) if fx == 0 else n - 1, (length - 1) if fy == 0 else n - 1, GREEN)
+    # the dashed border between the brackets (80 pixels): four dashes of 10 and five gaps of 8, four pixels thick, so the gap at a bracket is the gap between dashes
+    for x in range(length + 8, n - length - 8, 18):
+        rect(im, x, 0, x + 9, 3, GREEN)
+        rect(im, x, n - 4, x + 9, n - 1, GREEN)
+        rect(im, 0, x, 3, x + 9, GREEN)
+        rect(im, n - 4, x, n - 1, x + 9, GREEN)
+    # chevrons pointing at the line (up): arms at exactly 45 degrees (a run of 16 over a rise of 16, one pixel a row), four pixels across, with a one pixel shade on the outer side
+    # a point at the top (the outer edges run up and meet three rows above the arms' first row) and each arm ends in a diagonal cut across it
+    for y0 in (32, 60, 88):
+        for i in range(-3, 16):
+            y = y0 + i
+            for u in range(max(0, i), i + 4):                 # u: how far a pixel is from the middle line (0 is the pair of pixels next to it)
+                if i + u <= 31:
+                    im.putpixel((63 - u, y), GREEN)
+                    im.putpixel((64 + u, y), GREEN)
+            if i >= -2 and i + i + 4 <= 31 - 0:
+                im.putpixel((63 - (i + 4), y), GREEN_EDGE)
+                im.putpixel((64 + (i + 4), y), GREEN_EDGE)
     return im
 
 
 def main():
     os.makedirs(ASSETS, exist_ok=True)
-    for name, make in (("grid_slot", grid_slot), ("gather_zone", gather_zone)):
+    for name, make in (("start_grid_slot", grid_slot), ("start_grid_zone", gather_zone)):
         path = os.path.join(ASSETS, name + ".png")
         if not os.path.exists(path):
             make().save(path)

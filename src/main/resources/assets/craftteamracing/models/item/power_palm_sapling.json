@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "craftteamracing:block/power_palm_sapling"
+  }
+}

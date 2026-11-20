@@ -1,5 +1,5 @@
 """
-A tiny Ogg Vorbis encoder over the libogg / libvorbis / libvorbisenc DLLs that ship with Krita (no pip packages, no ffmpeg:
+A tiny Ogg Vorbis encoder over the libogg / libvorbis / libvorbisenc DLLs that ship with Krita (when they are not there it uses the soundfile package; no ffmpeg:
 Krita's ffmpeg only encodes stereo, and Minecraft needs mono sounds for them to have a position). Samples are 1-D (mono, for sound effects) or an array of
 shape (n, 2) (stereo, for music, which Minecraft plays without a position).
 
@@ -35,8 +35,23 @@ def _load():
     return ogg, vorbis, enc
 
 
+def _write_soundfile(path, samples, rate, quality):
+    """Without Krita's DLLs: libsndfile through the soundfile package (pip install soundfile), which the asset extractor installs. Written in small blocks: one big write
+    overflows the stack of libsndfile's Vorbis encoder on Windows."""
+    import soundfile
+    data = np.asarray(samples, dtype=np.float32)
+    channels = 1 if data.ndim == 1 else data.shape[1]
+    with soundfile.SoundFile(path, "w", samplerate=int(rate), channels=channels, format="OGG", subtype="VORBIS") as f:
+        for start in range(0, len(data), 4096):
+            f.write(data[start:start + 4096])
+
+
 def write_ogg(path, samples, rate=44100, quality=0.4):
-    ogg, vorbis, enc = _load()
+    try:
+        ogg, vorbis, enc = _load()
+    except OSError:
+        _write_soundfile(path, samples, rate, quality)
+        return
     data = np.asarray(samples, dtype=np.float32)
     channels = 1 if data.ndim == 1 else data.shape[1]
     if channels not in (1, 2):

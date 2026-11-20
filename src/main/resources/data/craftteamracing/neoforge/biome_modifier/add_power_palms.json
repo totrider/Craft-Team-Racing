@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#minecraft:is_beach",
+  "features": "craftteamracing:power_palm_beach",
+  "step": "vegetal_decoration"
+}

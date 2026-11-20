@@ -7,7 +7,7 @@ import os
 
 from PIL import Image
 
-OUT = os.path.join("src", "main", "resources", "assets", "ctrcraft", "textures", "item", "track_music_sheet.png")
+OUT = os.path.join("src", "main", "resources", "assets", "craftteamracing", "textures", "item", "track_music_sheet.png")
 
 
 def main():

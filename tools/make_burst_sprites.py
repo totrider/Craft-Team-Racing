@@ -14,7 +14,7 @@ import random
 
 from PIL import Image, ImageDraw
 
-ROOT = os.path.join("src", "main", "resources", "assets", "ctrcraft", "textures")
+ROOT = os.path.join("src", "main", "resources", "assets", "craftteamracing", "textures")
 W, H = 96, 64
 SS = 4
 

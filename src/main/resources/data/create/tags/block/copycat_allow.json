@@ -1,11 +1,11 @@
 {
   "replace": false,
   "values": [
-    "ctrcraft:boost_block",
-    "ctrcraft:boost_slab",
-    "ctrcraft:boost_stairs",
-    "ctrcraft:super_boost_block",
-    "ctrcraft:super_boost_slab",
-    "ctrcraft:super_boost_stairs"
+    "craftteamracing:boost_block",
+    "craftteamracing:boost_slab",
+    "craftteamracing:boost_stairs",
+    "craftteamracing:super_boost_block",
+    "craftteamracing:super_boost_slab",
+    "craftteamracing:super_boost_stairs"
   ]
 }

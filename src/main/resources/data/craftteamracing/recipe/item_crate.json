@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "O": {
+      "item": "minecraft:oak_planks"
+    },
+    "S": {
+      "item": "minecraft:spruce_planks"
+    },
+    "N": {
+      "item": "craftteamracing:power_nugget"
+    }
+  },
+  "pattern": [
+    "OSO",
+    "SNS",
+    "OSO"
+  ],
+  "result": {
+    "id": "craftteamracing:item_crate",
+    "count": 2
+  }
+}

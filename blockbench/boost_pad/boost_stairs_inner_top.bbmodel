@@ -310,7 +310,7 @@
  ],
  "textures": [
   {
-   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\ctrcraft\\textures\\block\\boost_top.png",
+   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\craftteamracing\\textures\\block\\boost_top.png",
    "name": "top.png",
    "folder": "",
    "namespace": "",
@@ -326,11 +326,11 @@
    "mode": "bitmap",
    "saved": true,
    "uuid": "712e3818-622e-4e8f-8bc9-afaeff716f10",
-   "relative_path": "../../src/main/resources/assets/ctrcraft/textures/block/boost_top.png",
+   "relative_path": "../../src/main/resources/assets/craftteamracing/textures/block/boost_top.png",
    "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAeklEQVR4nGP8f1bjPwMFgAVEyAf9I0vzw3VMEAMEBEWwKrg49x2Y1k8WwmHEOwYmXKbDNKOz0QETIZthtuMyhIkYZ+MzhAmfZhAfmxgyYARFI7ZAQleISw0TNn+NhgEDfcMAnBc+vH8DF5APgrEQYrjFmSBhgNVtRAIATO5iwWp2xJkAAAAASUVORK5CYII="
   },
   {
-   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\ctrcraft\\textures\\block\\boost_side.png",
+   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\craftteamracing\\textures\\block\\boost_side.png",
    "name": "side.png",
    "folder": "",
    "namespace": "",
@@ -346,7 +346,7 @@
    "mode": "bitmap",
    "saved": true,
    "uuid": "65b172ce-34a1-4229-847f-eec0d0207ced",
-   "relative_path": "../../src/main/resources/assets/ctrcraft/textures/block/boost_side.png",
+   "relative_path": "../../src/main/resources/assets/craftteamracing/textures/block/boost_side.png",
    "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAQElEQVR4nGP8f1bjPwMFgImBQsAoJ69GkQtYBARFGAbUC0zDzAAjIxOCGtDVMOoZWA1sQmIaNYCB5cP7NxSZAACSBgo+zc1lZwAAAABJRU5ErkJggg=="
   }
  ],

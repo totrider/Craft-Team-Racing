@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:block",
+  "random_sequence": "craftteamracing:blocks/power_palm_door",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "craftteamracing:power_palm_door",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "craftteamracing:power_palm_door",
+              "properties": {
+                "half": "lower"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

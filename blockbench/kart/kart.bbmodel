@@ -1273,7 +1273,7 @@
  ],
  "textures": [
   {
-   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\ctrcraft\\textures\\item\\kart.png",
+   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\craftteamracing\\textures\\item\\kart.png",
    "name": "kart.png",
    "folder": "",
    "namespace": "",
@@ -1289,7 +1289,7 @@
    "mode": "bitmap",
    "saved": true,
    "uuid": "709a7ed3-e763-47b3-8416-88dacf0cdd09",
-   "relative_path": "../../src/main/resources/assets/ctrcraft/textures/item/kart.png",
+   "relative_path": "../../src/main/resources/assets/craftteamracing/textures/item/kart.png",
    "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAUElEQVR4nGO8ZmLynwEJJDBxIXMZnj17hMK/skIGhc/EQCFgGnADWK5UtaAI7HKyQOH71L1B4fPbKFPXBUwDbgDjf4b//wfUBUyjBjAMvAEAHNkPN5O/CMcAAAAASUVORK5CYII="
   }
  ],

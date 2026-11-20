@@ -1,0 +1,171 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout_mipped",
+  "textures": {
+    "all": "craftteamracing:block/power_palm_leaves_fluffy",
+    "particle": "craftteamracing:block/power_palm_leaves"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ],
+          "texture": "#all",
+          "cullface": "north"
+        },
+        "east": {
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ],
+          "texture": "#all",
+          "cullface": "east"
+        },
+        "south": {
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ],
+          "texture": "#all",
+          "cullface": "south"
+        },
+        "west": {
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ],
+          "texture": "#all",
+          "cullface": "west"
+        },
+        "up": {
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ],
+          "texture": "#all",
+          "cullface": "up"
+        },
+        "down": {
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ],
+          "texture": "#all",
+          "cullface": "down"
+        }
+      },
+      "name": "base_0"
+    },
+    {
+      "from": [
+        -8,
+        -6,
+        12
+      ],
+      "to": [
+        24,
+        22,
+        12
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#all"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#all"
+        }
+      },
+      "name": "v2a_0",
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          12
+        ],
+        "axis": "y",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "from": [
+        -8,
+        -6,
+        8
+      ],
+      "to": [
+        24,
+        22,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#all"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#all"
+        }
+      },
+      "name": "v2b_0",
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "y",
+        "angle": -22.5,
+        "rescale": false
+      }
+    }
+  ]
+}

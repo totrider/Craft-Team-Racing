@@ -3,7 +3,7 @@ The kart's texture, and the uv mapping of blockbench/kart/kart_ctr.bbmodel onto 
 
   python tools/make_kart_texture.py
 
-Writes src/main/resources/assets/ctrcraft/textures/item/kart_ctr.png (128 x 128, only if missing: it is a placeholder, yours to repaint) and, ONCE, maps the faces of the cubes in
+Writes src/main/resources/assets/craftteamracing/textures/item/kart_ctr.png (128 x 128, only if missing: it is a placeholder, yours to repaint) and, ONCE, maps the faces of the cubes in
 kart_ctr.bbmodel onto it by their names (it does nothing to a model whose texture is already kart_ctr.png: after that the uvs are yours). The picture is 16 x 16 uv units, 8 texels to a
 unit; each part has a tile:
 
@@ -24,7 +24,7 @@ import numpy as np
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TEX = os.path.join(ROOT, "src", "main", "resources", "assets", "ctrcraft", "textures", "item", "kart_ctr.png")
+TEX = os.path.join(ROOT, "src", "main", "resources", "assets", "craftteamracing", "textures", "item", "kart_ctr.png")
 BB = os.path.join(ROOT, "blockbench", "kart", "kart_ctr.bbmodel")
 N = 128
 U = 8                       # texels to a uv unit
@@ -178,14 +178,15 @@ def paint():
     return Image.fromarray(np.clip(im, 0, 255).astype(np.uint8), "RGBA")
 
 
-WHEEL_TEX = os.path.join(ROOT, "src", "main", "resources", "assets", "ctrcraft", "textures", "item", "kart_ctr_wheel.png")
+WHEEL_TEX = os.path.join(ROOT, "src", "main", "resources", "assets", "craftteamracing", "textures", "item", "kart_ctr_wheel.png")
 WHEEL_FRONT = (0, 0, 6, 4)          # the face towards the driver (uv units of the wheel picture, 8 texels to a unit): with the buttons and the maker's stripe
 WHEEL_BACK = (0, 4, 6, 8)           # the face towards the front of the kart: the same wheel, plain
 
 
 def wheel_face(buttons):
-    """48 x 32: an oblong racing wheel (grips at the sides with horns at the top, a carbon plate narrow at the top, a flat bottom bar); the openings are see-through. With {buttons}
-    the maker's stripe and two buttons, as the driver sees it; without, the plain back."""
+    """48 x 32: an oblong racing wheel (grips at the sides with horns at the top, a carbon plate narrow at the top, a flat bottom bar); the openings are see-through. With {buttons} the
+    shift lights, the maker's stripe, the buttons and the hub, as the driver sees it; without, the plain back. Detail: perforated, stitched grips with finger grooves and a lit edge; a
+    carbon twill plate with a sheen, a bevel and bolts."""
     W, H = 48, 32
     ys, xs = np.mgrid[0:H, 0:W]
     x = (xs + 0.5) / W
@@ -208,24 +209,75 @@ def wheel_face(buttons):
                 mask[yy_, xx_] = inside
         return mask
 
-    suede = (26, 26, 28)
+    def erode(mask, k):
+        out = mask.copy()
+        for _ in range(k):
+            m = out.copy()
+            m[1:, :] &= out[:-1, :]
+            m[:-1, :] &= out[1:, :]
+            m[:, 1:] &= out[:, :-1]
+            m[:, :-1] &= out[:, 1:]
+            out = m
+        return out
+
     grip_l = poly([(0.02, 0.18), (0.10, 0.06), (0.20, 0.10), (0.20, 0.30), (0.26, 0.70), (0.30, 0.94), (0.08, 0.94), (0.02, 0.60)])
     grip_r = poly([(0.98, 0.18), (0.90, 0.06), (0.80, 0.10), (0.80, 0.30), (0.74, 0.70), (0.70, 0.94), (0.92, 0.94), (0.98, 0.60)])
     bottom = poly([(0.20, 0.80), (0.80, 0.80), (0.82, 0.96), (0.18, 0.96)])
     plate = poly([(0.36, 0.14), (0.64, 0.14), (0.78, 0.30), (0.80, 0.80), (0.20, 0.80), (0.22, 0.30)])
     wheel = np.zeros((H, W, 4), dtype=np.int32)
-    wheel[grip_l | grip_r | bottom, :3] = suede
-    wheel[grip_l | grip_r | bottom, 3] = 255
+
+    # the grips and the bottom bar: dark leather with perforations, finger grooves, a stitched seam inside the edge and a lit edge on the upper left
+    grips = grip_l | grip_r | bottom
+    inner1 = erode(grips, 1)
+    inner2 = erode(grips, 2)
+    base = np.where(((xs % 3 == 1) & (ys % 3 == 1)), 44, 27)                       # perforations
+    base = base + np.where((ys % 6 == 0) & grips, -7, 0) + np.where((ys % 6 == 1) & grips, 4, 0)       # finger grooves
+    base = base + np.round(12 * np.clip(1.3 - (x + y), 0, 1)).astype(int)         # lighter towards the upper left
+    for c in range(3):
+        wheel[grips, c] = base[grips] + (1 if c == 2 else 0)
+    edge = grips & ~inner1
+    lit = edge & ((xs + ys) < 26)
+    wheel[lit, :3] = (78, 80, 88)
+    wheel[edge & ~lit, :3] = (14, 14, 16)
+    seam = inner1 & ~inner2
+    dashes = seam & (((xs + ys) // 2) % 2 == 0)
+    wheel[dashes, :3] = (88, 84, 76)                                                # the stitching
+    wheel[grips, 3] = 255
+
+    # the carbon plate: a twill weave with a sheen, a bevelled edge and bolts
     weave = ((xs // 2 + ys // 2) % 2 == 0)
-    wheel[plate & weave, :3] = (84, 88, 96)
-    wheel[plate & ~weave, :3] = (56, 60, 68)
+    twill = ((xs + ys) % 4 == 0)
+    v = np.where(weave, 74, 50) + np.where(twill, 8, 0) + np.round(30 * np.clip(1.15 - (x * 0.8 + y * 1.2), 0, 1)).astype(int)
+    pin = erode(plate, 1)
+    for c in range(3):
+        wheel[plate, c] = v[plate] + (4 if c == 2 else 0)
+    pedge = plate & ~pin
+    wheel[pedge & ((xs + ys) < 28), :3] = (120, 124, 134)
+    wheel[pedge & ((xs + ys) >= 28), :3] = (24, 26, 30)
     wheel[plate, 3] = 255
+    for bx, by in ((0.26, 0.74), (0.74, 0.74), (0.40, 0.20), (0.60, 0.20)):         # four bolts
+        cx, cy = int(bx * W), int(by * H)
+        if plate[cy, cx]:
+            wheel[cy:cy + 2, cx:cx + 2, :3] = (150, 154, 164)
+            wheel[cy + 1, cx + 1, :3] = (70, 72, 80)
+            wheel[cy, cx, :3] = (210, 214, 224)
+
     if buttons:
-        wheel[(abs(y - 0.22) < 0.03) & (abs(x - 0.5) < 0.12) & plate, :3] = (228, 228, 232)
-        for bx, col in ((0.32, (200, 40, 40)), (0.68, (230, 190, 40))):
-            b = np.hypot((xs + 0.5) / W - bx, ((ys + 0.5) / H - 0.70) * 0.66) < 0.035
-            wheel[b, :3] = col
-            wheel[b, 3] = 255
+        # shift lights along the narrow top of the plate: three green, two yellow, two red, with dark gaps
+        for i, col in enumerate(((60, 220, 90), (60, 220, 90), (60, 220, 90), (240, 210, 50), (240, 210, 50), (230, 60, 50), (230, 60, 50))):
+            lx = 17 + i * 2
+            wheel[6:8, lx:lx + 1, :3] = col
+        wheel[(abs(y - 0.30) < 0.018) & (abs(x - 0.5) < 0.13) & plate, :3] = (226, 226, 232)      # the maker's stripe
+        for bx, col in ((0.34, (206, 44, 44)), (0.66, (236, 196, 48))):                          # two buttons, ringed, with a glint
+            r = np.hypot((xs + 0.5) / W - bx, ((ys + 0.5) / H - 0.66) * 0.66)
+            wheel[r < 0.048, :3] = (16, 16, 18)
+            wheel[r < 0.037, :3] = col
+            glint = (r < 0.037) & (xs + 0.5 < bx * W - 0.5) & (ys + 0.5 < 0.66 * H - 0.5)
+            wheel[glint, :3] = (255, 250, 235)
+        hub = np.hypot((xs + 0.5) / W - 0.5, ((ys + 0.5) / H - 0.50) * 0.66)             # the hub: a ringed disc with a small red mark
+        wheel[hub < 0.05, :3] = (20, 22, 26)
+        wheel[hub < 0.036, :3] = (96, 100, 110)
+        wheel[hub < 0.014, :3] = (206, 44, 44)
     return wheel
 
 
@@ -296,7 +348,7 @@ def map_bbmodel(path):
         changed.append(name)
     buf = io.BytesIO()
     Image.open(TEX).save(buf, "PNG")
-    tex.update({"name": "kart_ctr.png", "relative_path": "../../src/main/resources/assets/ctrcraft/textures/item/kart_ctr.png", "width": N, "height": N, "uv_width": 16, "uv_height": 16,
+    tex.update({"name": "kart_ctr.png", "relative_path": "../../src/main/resources/assets/craftteamracing/textures/item/kart_ctr.png", "width": N, "height": N, "uv_width": 16, "uv_height": 16,
                 "source": "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")})
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         json.dump(d, f, separators=(",", ":"), ensure_ascii=False)
@@ -304,7 +356,25 @@ def map_bbmodel(path):
     return True
 
 
+def refresh_wheel_copy():
+    """The model carries its own copy of the wheel's picture: refresh it (nothing else in the bbmodel is touched)."""
+    with open(BB, encoding="utf-8") as f:
+        d = json.load(f)
+    with open(WHEEL_TEX, "rb") as f:
+        src = "data:image/png;base64," + base64.b64encode(f.read()).decode("ascii")
+    for t in d["textures"]:
+        if t.get("name") == "kart_ctr_wheel.png":
+            t["source"] = src
+    with open(BB, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(d, f, indent=1)
+
+
 def main():
+    if "--repaint-wheel" in sys.argv:
+        paint_wheel().save(WHEEL_TEX)
+        refresh_wheel_copy()
+        print("kart_ctr_wheel.png repainted")
+        return
     if not os.path.exists(WHEEL_TEX):
         paint_wheel().save(WHEEL_TEX)
         print("kart_ctr_wheel.png written")

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "craftteamracing:power_juice"
+    },
+    {
+      "item": "minecraft:raw_iron"
+    }
+  ],
+  "result": {
+    "id": "craftteamracing:raw_power_ore",
+    "count": 2
+  }
+}

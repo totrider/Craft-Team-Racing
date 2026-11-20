@@ -7,7 +7,7 @@ import os
 
 from PIL import Image
 
-OUT = os.path.join("src", "main", "resources", "assets", "ctrcraft", "textures", "item")
+OUT = os.path.join("src", "main", "resources", "assets", "craftteamracing", "textures", "item")
 
 
 def tires():

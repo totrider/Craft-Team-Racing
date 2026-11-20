@@ -1,0 +1,19 @@
+# shield_sheen_0: exported by tools/blender_export_models.py from slime_shield.blend. Do not edit; change the .blend.
+mtllib shield_sheen_0.mtl
+o shield_sheen_0
+usemtl atlas
+vn 0 1 0
+v -0.12000 1.49000 0.70000
+v 0.02000 1.49000 0.70000
+v 0.28000 1.49000 0.30000
+v -0.12000 1.49000 0.70000
+v 0.28000 1.49000 0.30000
+v 0.14000 1.49000 0.30000
+vt 0.00000 0.00000
+vt 1.00000 0.00000
+vt 1.00000 1.00000
+vt 0.00000 0.00000
+vt 1.00000 1.00000
+vt 0.00000 1.00000
+f 1/1/1 2/2/1 3/3/1
+f 4/4/1 5/5/1 6/6/1

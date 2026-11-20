@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "craftteamracing:block/power_palm_wood"
+    },
+    "axis=z": {
+      "model": "craftteamracing:block/power_palm_wood",
+      "x": 90
+    },
+    "axis=x": {
+      "model": "craftteamracing:block/power_palm_wood",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

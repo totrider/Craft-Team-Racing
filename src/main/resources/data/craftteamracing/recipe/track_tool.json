@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "item": "craftteamracing:power_ingot"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    "  P",
+    " S ",
+    "S  "
+  ],
+  "result": {
+    "id": "craftteamracing:track_tool",
+    "count": 1
+  }
+}

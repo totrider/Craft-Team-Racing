@@ -1,6 +1,6 @@
 # Terrain model (milestone 2)
 
-`com.ctrcraft.terrain` turns blocky worlds into the smooth ground CTR's physics expects. No Minecraft imports; the world comes in
+`com.craftteamracing.terrain` turns blocky worlds into the smooth ground CTR's physics expects. No Minecraft imports; the world comes in
 through `BlockSource` (collision boxes + a surface code per block), the physics sees it as a `Collider` (`TerrainCollider`).
 Tests: `TerrainFieldTest` (geometry, and the real `KartSim` driving over steps, a staircase, a curb, into a wall).
 
@@ -32,11 +32,11 @@ wall box. The window follows the kart's height (plus its climb per tick), so ste
 
 ## Surfaces (data-driven)
 A block is asphalt (full speed) unless it is in a tag; a data pack can add to or replace any of them:
-`ctrcraft:surface/{dirt, slow_dirt, water, ice, icy_road, snow, mud, sideslip}` and `ctrcraft:turbo_pad` (data/ctrcraft/tags/block/).
+`craftteamracing:surface/{dirt, slow_dirt, water, ice, icy_road, snow, mud, sideslip}` and `craftteamracing:turbo_pad` (data/craftteamracing/tags/block/).
 Defaults: dirt, grass, sand, gravel, farmland... = dirt (CTR's off-road: 55% top speed, slower accel); ice = ice; snow; mud; soul sand = slow dirt.
 
 ## Boost blocks (`tools/make_boost_pad.py`, models in `blockbench/boost_pad/`)
-Four blocks, all in `ctrcraft:turbo_pad`, each with a direction shown as a chevron arrow on top (CTR's pad boosts whichever way
+Four blocks, all in `craftteamracing:turbo_pad`, each with a direction shown as a chevron arrow on top (CTR's pad boosts whichever way
 you drive over it, so the direction is a marker, not a rule):
 | Block | Direction | Notes |
 |---|---|---|
@@ -46,7 +46,7 @@ you drive over it, so the direction is a marker, not a rule):
 | Boost Stairs | up / right / down / left relative to the stair | up (default) leads up the stairs; the arrow is on the treads |
 A click with an **empty hand** turns the arrow (clockwise; stairs cycle up, right, down, left).
 
-### Super Boost family (an extension, `ctrcraft:super_turbo_pad`)
+### Super Boost family (an extension, `craftteamracing:super_turbo_pad`)
 CTR has two pad types in its collision data: the turbo pad (`COLL_STEP_TRIGGER_TURBO_PAD`: 0x3C0 reserves, fire level 0x100) and the super turbo pad
 (`COLL_STEP_TRIGGER_SUPER_TURBO_PAD`: 0x78 reserves, fire level 0x800, a speed cap eight times as far above the single turbo's; VehPhysForce.c:1003-1030) which the
 game only lays down everywhere with a cheat, and draws with the same picture. Here the normal family is the green one (the original's colour) and the **Super Boost Pad,
@@ -63,7 +63,7 @@ families' textures on every run (placeholder art: change `draw_frame` / `FAMILIE
 With [Fusion](https://github.com/SuperMartijn642/Fusion) installed, boost blocks of the same state placed next to each other join up:
 the yellow border is only drawn round the outside of the group (inner corners get a notch), each block keeps its arrow. Without Fusion the
 plain texture is used, nothing else changes.
-- **How:** `boost_top.png.mcmeta` in `src/main/resources/fusion-overrides/assets/ctrcraft/textures/block/` makes the texture a Fusion
+- **How:** `boost_top.png.mcmeta` in `src/main/resources/fusion-overrides/assets/craftteamracing/textures/block/` makes the texture a Fusion
   `connecting` texture, layout `pieced` (5 tiles in a row, 80x16), connecting when the neighbour `is_same_state` (same block, direction,
   type: a change of direction shows as a border). The mod's `pack.mcmeta` (`fusion.overrides_folder`) tells Fusion to use that folder
   only when it is installed (read from the Fusion source: it reads the pack.mcmeta of every mod).

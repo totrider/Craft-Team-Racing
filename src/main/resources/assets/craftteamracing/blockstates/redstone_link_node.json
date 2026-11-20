@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "craftteamracing:block/redstone_link_node"
+    },
+    "powered=true": {
+      "model": "craftteamracing:block/redstone_link_node_on"
+    }
+  }
+}

@@ -1947,7 +1947,7 @@
  ],
  "textures": [
   {
-   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\ctrcraft\\textures\\item\\creeper_face.png",
+   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\craftteamracing\\textures\\item\\creeper_face.png",
    "name": "face.png",
    "folder": "",
    "namespace": "",
@@ -1963,11 +1963,11 @@
    "mode": "bitmap",
    "saved": true,
    "uuid": "6242b009-0a3a-460a-94ad-04aaa6399a31",
-   "relative_path": "../../src/main/resources/assets/ctrcraft/textures/item/creeper_face.png",
-   "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABlklEQVR4nF2TwUpCQRSGj5eLCYmYSFREhJC4EhfRwmW0iB6gVU/Qokdo4SO0kJ6hVQ/QulWLcCUGEhIZIRpxA7sb4zvyX2x+GOaeM3P++89/ZnLtTmthZlZrbtnn+8w2dzYILU1Tq1RKNp1+e/zWn/oegfWvyY9FSg57Hz5Dom+Qz+edqFhds2Kx4IUMkEx+LSJgcbdR8QQDUv2dot7jqxesqoEYRMigSIBIm30tmWc5CkGzve8qycckUABjvzuyvo1809ntkSUTCmYeP3VefGa9cbmXkUbl6robx9lXQQwx6mSsgAKpiZFZq5fMgk0qKldT9yEE5CB3cX+6CFsGHq6e/xWc3LR8Zp93IJm7D5FaRTEz0lAVgjU5T1dQxVFiWCSHo+jcIfBEed0dfhoR1OrbPpDlTneXnTi8Psik0wWc14WS4kjuqziE3NYxUDEcjDNVEW2kGFYGsYAq9Tt0X2S587vjRfhQfGOxkBFr1pVevZkxTCrWI1k6vXxQMhXHgV/jwdjvCd+uQG1DsvyATG2TCnKh2j/ovvKX07oRQQAAAABJRU5ErkJggg=="
+   "relative_path": "../../src/main/resources/assets/craftteamracing/textures/item/creeper_face.png",
+   "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB1ElEQVR4nI1TMW/TQBT+bN/ZcYNBDBFSqqpDJCgSbEC3qguR2Jhg4xcwVv0f7QQSAwM/gK0bQkgdEIgyMXWgjQIxRqQlMY59dq5672IXR0H0W57fvfd99+67s7X5cl0nUQqCbAps3d9G/DvG7psdzsWSg/xPgRIqzjm277SgxjlsSvyWVzWHvbASK5tLUL2qjXNkIwURvvvJi0dZHzrVOCr6NdLajU4tf3/4GVZgYfXjMmzXhqDFIi2gMw3Ls2ArC1OlUWRTJmSJqsjNqz6T9UgDwWyqIi3geA7knscLEU45Lj9s8Q6DSYRpNkX/dWQIcDkO2j9mOcCN86A1Iv6rrk0JYu16B2qSowdjXongss8xPPyFRdh4fM8IxMNkYUOemBuwpfFkHrSpbAgI15f8sfLoGtRIYaXVZrPe7nyoEahOoGPRkY6H37hflGpUIDNJcBGomeqlCJkvAwnR6LqIvycgC0h5//nBQoHBnvHi9tMO0mGKSxvmHgW9qHnXL4LyeYuT3qga6yLofQohmw5udo0n7EEJOtf/4NCkSvN/wAIPupvwrzTwbP9VrfHuk1tsaDSOIHyBLy++1upuYMwWRGblmcN/g67Xkx6Kyflk9C5UfD7pGRCswYnio4wcAAAAAElFTkSuQmCC"
   },
   {
-   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\ctrcraft\\textures\\item\\creeper_skin.png",
+   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\craftteamracing\\textures\\item\\creeper_skin.png",
    "name": "skin.png",
    "folder": "",
    "namespace": "",
@@ -1983,11 +1983,11 @@
    "mode": "bitmap",
    "saved": true,
    "uuid": "0bf115c1-09e7-425d-9379-99c5bf2d445e",
-   "relative_path": "../../src/main/resources/assets/ctrcraft/textures/item/creeper_skin.png",
-   "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABj0lEQVR4nF2TwUrDQBCGN0tICwapIYgVD9JD8JQH8OjJJ/DkE3ryKfoAOYmH4qFokRKLbCHmUvkm/ePiQMju7Mz//zszmzw+3x9WzcYt6gv3+f7lwvbH5eVk/J9fnjmMGPaz8sTJdtu9833fu/r22hwEs1YQIJzn+dQI8GdZ5tYvrSuKU9snD093B5AIxq5uCkNeVHPbt+33yEYCySgRYRoncwAy3+r1w/wwowLDn9WZKQIYfwrKrOztMIRuTATMvnzqQiB9P5wf64US1KagkNws38biiNXUhW7wVXMDJ0kFxbyYcaiY8Z0t+ChZxVWhUZHioH0wSAVJMBGAGqnA8K1dO+5TkNVrkmS0S4qQHls8Jx6pMMLCmo9rUQMSUYU6EjQnrCHDnzAHsOme6rOKpnvHrZUC68LOhmYoJEAYSXFXCKb/NlzV33BB5jVxGhZQYftvFBoDGCINmTdZobMkgqRCxdJccH9iWcez4tVrQEC1FxkNj3zEAGLFbTbjoHkxxa+SAD0kMcpvBS8nlozzF83tNGURT5q4AAAAAElFTkSuQmCC"
+   "relative_path": "../../src/main/resources/assets/craftteamracing/textures/item/creeper_skin.png",
+   "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACHElEQVR4nH1TTU8TURQ9M50pLVMZG6k4MbQBPwobEY2giUFN1BXxX7gg/gCXLNm58AewYIEahY0LSViyIqQxURLDRjKYOERnYls6bWmLY84dX2ma6EnevHfve/fcz9HyTy5EJ63feLh4B0TqbBIDtolZ75HIr76vyF4L6mj8PMb1+Sty/7XkiV7nJ5HUxZCrWW6h4oawhiz8D2bGQOuoDe3x6t0oecZE+duRXCzMPkOtUsPa4RtYThqjxRyOK23sf/REHkoNyju7EDvQqSQb0Q47YjwyOhLLtY5E8y/wzgi9BhhBbjIrBn7ehQ9XdCQO/CrgQ2TC2w/k7O4dntbAzBggUT9I2AvljLkTnfoJjLFpRwpXev0Z7Mb4siM5j990JERGQIN6uSlG92ZuI22nsLW7LQ501TqJxEp0cyaJiq4fgftLouGdccObE2X+RQH1cgO+9UP6TCJWOihVJeyJ+3khPWi7wN8Ok0TP2BlwKTAd5Z27ikDpSE6we4Sx7WzKgZNn2RZ2dl52K87qK3x4viX7taeTXR3f6YqdkxdWQ2Fm0dQi1K5q0itr8+8fRDxwEo3BBHaH9xCFES4fjMmD3ERWDG5dncK5Qhbrbzdk4KiXIioPVJKAxpqlwbROq69SYvXjbsVRcBnKczo3IJdz52ekv582voi8sLgk+7vqqugvTV+UtheHi2hUmnENOFFq8VFvjuqv7NczGg7UH3x4GBn5B7RsAAAAAElFTkSuQmCC"
   },
   {
-   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\ctrcraft\\textures\\item\\tnt_metal.png",
+   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\craftteamracing\\textures\\item\\tnt_metal.png",
    "name": "metal.png",
    "folder": "",
    "namespace": "",
@@ -2003,7 +2003,7 @@
    "mode": "bitmap",
    "saved": true,
    "uuid": "0cc6fafd-6d08-479f-b336-dc29c42cc14e",
-   "relative_path": "../../src/main/resources/assets/ctrcraft/textures/item/tnt_metal.png",
+   "relative_path": "../../src/main/resources/assets/craftteamracing/textures/item/tnt_metal.png",
    "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABz0lEQVR4nE2TSWrDUAyG5ZeXeSa3KKU0i2y6CfQuXWdTyC1ygyy67h2y6SIESi9iTObBjofyCWQiMLb0pP//nyQHTy/vxXj8LI1GQ1arH5nNPiQIAvUvl4v0+3193+93jbfbbcHO57NUq1Vxk8mrzOefkmWJTKdvmuC9l3q9LrVaTbIs08JmsyndbreMcQ6Jw1ksForqnCvZttutFEWhMYowfFOC3W43cZvNn+R5IHGcynr9qyw8MMKQJInKjeNYwQAhBoiqW359F3mey+l0Ku+O8c1VKOAMQwnSj8ejxsn1NAJZw+FQg7D1ej1Fhwnw0Wgkh8NBATEKK5WKNtFzD5zdbqdvpBNL01QffBhhBwxgA4fMcbdyJM4pE0AkwQgIgNfrtewB5xhKPQk0DXQMIIrxW61WOUaKIQKUK3BtlHkWxdCNFRbQVaJzuhtcASWco6DT6ei3BwUjQOHjjFEHAGwo4uGcqQAahqF40JBKEv2gaDAYiNmjZBQaKEadB5Htsx0gEZ9DZFPAhGx8AAJEjo6RBhLA6IUVEaOAN4pspPv9Xn8wfO0dOw8rDWPLrFEURlGkwDYhfPqEInqn/4KNyJJQALJtIQ2z8ZGHKquh4B+oVW6velNgIQAAAABJRU5ErkJggg=="
   }
  ],

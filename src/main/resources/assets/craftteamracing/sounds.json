@@ -1,0 +1,310 @@
+{
+  "engine_loop": {
+    "sounds": [
+      "craftteamracing:engine_loop"
+    ]
+  },
+  "skid_loop": {
+    "sounds": [
+      "craftteamracing:skid_loop"
+    ]
+  },
+  "turbo_loop": {
+    "sounds": [
+      "craftteamracing:turbo_loop"
+    ]
+  },
+  "hop": {
+    "sounds": [
+      "craftteamracing:hop"
+    ]
+  },
+  "land": {
+    "sounds": [
+      "craftteamracing:land"
+    ]
+  },
+  "drift_start": {
+    "sounds": [
+      "craftteamracing:drift_start"
+    ]
+  },
+  "boost": {
+    "sounds": [
+      "craftteamracing:boost"
+    ]
+  },
+  "boost_fail": {
+    "sounds": [
+      "craftteamracing:boost_fail"
+    ]
+  },
+  "meter_red": {
+    "sounds": [
+      "craftteamracing:meter_red"
+    ]
+  },
+  "meter_full": {
+    "sounds": [
+      "craftteamracing:meter_full"
+    ]
+  },
+  "hang_time": {
+    "sounds": [
+      "craftteamracing:hang_time"
+    ]
+  },
+  "wall_hit": {
+    "sounds": [
+      "craftteamracing:wall_hit"
+    ]
+  },
+  "slam": {
+    "sounds": [
+      "craftteamracing:slam"
+    ]
+  },
+  "spin_out": {
+    "sounds": [
+      "craftteamracing:spin_out"
+    ]
+  },
+  "light_count": {
+    "sounds": [
+      "craftteamracing:light_count"
+    ]
+  },
+  "light_green": {
+    "sounds": [
+      "craftteamracing:light_green"
+    ]
+  },
+  "fruit_pickup": {
+    "sounds": [
+      "craftteamracing:fruit_pickup"
+    ]
+  },
+  "glass_shatter": {
+    "sounds": [
+      "craftteamracing:glass_shatter"
+    ]
+  },
+  "mine_drop": {
+    "sounds": [
+      "craftteamracing:mine_drop"
+    ]
+  },
+  "tnt_hit": {
+    "sounds": [
+      "craftteamracing:tnt_hit"
+    ]
+  },
+  "tnt_land": {
+    "sounds": [
+      "craftteamracing:tnt_land"
+    ]
+  },
+  "tnt_tick": {
+    "sounds": [
+      "craftteamracing:tnt_tick"
+    ]
+  },
+  "tnt_explode": {
+    "sounds": [
+      "craftteamracing:tnt_explode"
+    ]
+  },
+  "crate_break": {
+    "sounds": [
+      "craftteamracing:crate_break"
+    ]
+  },
+  "bomb_launch": {
+    "sounds": [
+      "craftteamracing:bomb_launch"
+    ]
+  },
+  "bomb_roll": {
+    "sounds": [
+      "craftteamracing:bomb_roll"
+    ]
+  },
+  "bomb_explode": {
+    "sounds": [
+      "craftteamracing:bomb_explode"
+    ]
+  },
+  "shield_on": {
+    "sounds": [
+      "craftteamracing:shield_on"
+    ]
+  },
+  "shield_pop": {
+    "sounds": [
+      "craftteamracing:shield_pop"
+    ]
+  },
+  "shield_roll": {
+    "sounds": [
+      "craftteamracing:shield_roll"
+    ]
+  },
+  "missile_launch": {
+    "sounds": [
+      "craftteamracing:missile_launch"
+    ]
+  },
+  "missile_fly": {
+    "sounds": [
+      "craftteamracing:missile_fly"
+    ]
+  },
+  "missile_explode": {
+    "sounds": [
+      "craftteamracing:missile_explode"
+    ]
+  },
+  "tracker_beep": {
+    "sounds": [
+      "craftteamracing:tracker_beep"
+    ]
+  },
+  "item_roll": {
+    "sounds": [
+      "craftteamracing:item_roll"
+    ]
+  },
+  "item_get": {
+    "sounds": [
+      "craftteamracing:item_get"
+    ]
+  },
+  "item_get_charged": {
+    "sounds": [
+      "craftteamracing:item_get_charged"
+    ]
+  },
+  "clock": {
+    "sounds": [
+      "craftteamracing:clock"
+    ]
+  },
+  "wobble_thump": {
+    "sounds": [
+      "craftteamracing:wobble_thump"
+    ]
+  },
+  "squish": {
+    "sounds": [
+      "craftteamracing:squish"
+    ]
+  },
+  "squish_restore": {
+    "sounds": [
+      "craftteamracing:squish_restore"
+    ]
+  },
+  "burn": {
+    "sounds": [
+      "craftteamracing:burn"
+    ]
+  },
+  "crash_soft": {
+    "sounds": [
+      "craftteamracing:crash_soft"
+    ]
+  },
+  "crash_mid": {
+    "sounds": [
+      "craftteamracing:crash_mid"
+    ]
+  },
+  "crash_hard": {
+    "sounds": [
+      "craftteamracing:crash_hard"
+    ]
+  },
+  "fruit_arrive": {
+    "sounds": [
+      "craftteamracing:fruit_arrive"
+    ]
+  },
+  "mask_aku": {
+    "sounds": [
+      "craftteamracing:mask_aku"
+    ]
+  },
+  "mask_uka": {
+    "sounds": [
+      "craftteamracing:mask_uka"
+    ]
+  },
+  "warp_launch": {
+    "sounds": [
+      "craftteamracing:warp_launch"
+    ]
+  },
+  "warp_fly": {
+    "sounds": [
+      "craftteamracing:warp_fly"
+    ]
+  },
+  "warp_end": {
+    "sounds": [
+      "craftteamracing:warp_end"
+    ]
+  },
+  "lap": {
+    "sounds": [
+      "craftteamracing:lap"
+    ]
+  },
+  "music.race_intro": {
+    "sounds": []
+  },
+  "music.race": {
+    "sounds": []
+  },
+  "music.final_lap": {
+    "sounds": []
+  },
+  "music.race_end.first": {
+    "sounds": []
+  },
+  "music.race_end.other": {
+    "sounds": []
+  },
+  "music.aku_aku": {
+    "sounds": []
+  },
+  "music.uka_uka": {
+    "sounds": []
+  },
+  "silent": {
+    "sounds": []
+  },
+  "music.standin.race_intro": {
+    "sounds": [
+      {
+        "name": "craftteamracing:music/standin_race_intro",
+        "stream": true
+      }
+    ]
+  },
+  "music.standin.race_win": {
+    "sounds": [
+      {
+        "name": "craftteamracing:music/standin_race_win",
+        "stream": true
+      }
+    ]
+  },
+  "music.standin.race_lose": {
+    "sounds": [
+      {
+        "name": "craftteamracing:music/standin_race_lose",
+        "stream": true
+      }
+    ]
+  }
+}

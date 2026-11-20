@@ -2,11 +2,11 @@
 Extract CTR's original textures for the mod's crates, power-up icons, Wumpa fruit and start lamps from YOUR OWN copy of the game into LOCAL resource packs.
 
   python tools/extract_ctr_textures.py                      (finds the disc image in the project folder)
-  python tools/extract_ctr_textures.py --disc "D:/CTR.bin" --install "F:/ATLauncher/instances/CTRCraft/resourcepacks"
+  python tools/extract_ctr_textures.py --disc "D:/CTR.bin" --install "<instance>/resourcepacks"
 
 It always writes both packs (into local-assets/ctr-textures/, git-ignored), as which one suits is decided in the game:
-  CTRCraft-OriginalTextures             the art scaled DOWN to Minecraft sizes: 32 x 32 crate faces (a crate is one block wide), half-size icons (16 x 24).
-  CTRCraft-OriginalTextures-OriginalScale   the art at its original size: 64 x 64 crate faces, 32 x 48 icons, 48 x 32 lamps. Closest to the game;
+  CTR-OriginalTextures             the art scaled DOWN to Minecraft sizes: 32 x 32 crate faces (a crate is one block wide), half-size icons (16 x 24).
+  CTR-OriginalTextures-OriginalScale   the art at its original size: 64 x 64 crate faces, 32 x 48 icons, 48 x 32 lamps. Closest to the game;
                                         it looks out of place next to vanilla textures.
 Enable either one (not both) in Options > Resource Packs, above the mod, like the sound pack. Nothing from the disc is sent anywhere, nothing is
 committed or put in the mod jar, and the packs must not be shared (the art is Sony / Naughty Dog's).
@@ -53,10 +53,12 @@ LAMPS = {"red_on": "lightredon", "red_off": "lightredoff", "green_on": "lightgre
 WUMPA_ICON = "wumpaposter"
 # The mod's own words are "Power Fruit" and "charged"; the local pack translates them back into the original game's ("Wumpa", "juiced") with a lang file (a pack's lang keys override the jar's).
 TRANSLATION = {"lang/en_us.json": {
-    "block.ctrcraft.fruit_spot": "Wumpa Fruit Spot",
-    "block.ctrcraft.fruit_crate_spot": "Wumpa Fruit Crate Spot",
-    "ctrcraft.term.power_fruit": "Wumpa",
-    "ctrcraft.term.charged": "juiced",
+    "block.craftteamracing.fruit_spot": "Wumpa Fruit Spot",
+    "block.craftteamracing.fruit_crate_spot": "Wumpa Fruit Crate Spot",
+    "craftteamracing.term.power_fruit": "Wumpa",
+    "craftteamracing.term.charged": "juiced",
+    "screen.craftteamracing.kart.mask_light": "light (Aku Aku)",
+    "screen.craftteamracing.kart.mask_dark": "dark (Uka Uka)",
 }}
 
 
@@ -308,7 +310,7 @@ def sprite_files(model, size):
     """The Wumpa fruit as a sprite: the model's spin rendered as an animated texture (a vertical strip of {size} px frames, one tick each) on a flat one-block quad. The
     pickup renderer draws a flat single-quad model as a billboard that always faces the camera."""
     strip, count = sprite.render_strip(model, size)
-    quad = {"textures": {"sprite": "ctrcraft:item/power_fruit_sprite", "particle": "ctrcraft:item/power_fruit_sprite"},
+    quad = {"textures": {"sprite": "craftteamracing:item/power_fruit_sprite", "particle": "craftteamracing:item/power_fruit_sprite"},
             "elements": [{"from": [0, 0, 8], "to": [16, 16, 8], "faces": {"south": {"uv": [0, 0, 16, 16], "texture": "#sprite"}}}],
             "display": stand_in.display()}
     return {"textures/item/power_fruit_sprite.png": strip,
@@ -320,7 +322,7 @@ def cube(quadrant_uv):
     """The original's crate: the mod's own crate shape, a plain cube of one block whose every face is the whole face picture (the original's faces are flat: a
     frame of four mitred strips with the rivets in the corners, round the panel). The sheet layout is the stand-in's, so the pack changes only the sheet."""
     groups = stand_in.crate(quadrant_uv)
-    return {"textures": {"pickups": "ctrcraft:item/pickups", "particle": "ctrcraft:item/pickups"},
+    return {"textures": {"pickups": "craftteamracing:item/pickups", "particle": "craftteamracing:item/pickups"},
             "elements": [el for _, els in groups for el in els],
             "display": stand_in.display()}
 
@@ -337,10 +339,10 @@ def crate_cube_files(crates, scale):
         for part, img in faces.items():
             pic = img if scale == 1 else scaled(img, (img.width // scale, img.height // scale))
             files["textures/item/%s_crate_%s.png" % (key, part)] = pic
-            tex[part] = "ctrcraft:item/%s_crate_%s" % (key, part)
+            tex[part] = "craftteamracing:item/%s_crate_%s" % (key, part)
         side = {"uv": [0, 0, 16, 16], "texture": "#side"}
         e = 0.0
-        files["models/item/pickup_%s.json" % {"question": "powerup_crate", "question_blank": "powerup_crate_blank", "fruit": "fruit_crate"}.get(key, key)] = {
+        files["models/item/pickup_%s.json" % {"question": "powerup_crate", "question_blank": "powerup_crate_blank", "fruit": "fruit_crate", "trigger": "trigger_crate"}.get(key, key)] = {
             "textures": {"side": tex["side"], "top": tex["top"], "bottom": tex["bottom"], "particle": tex["side"]},
             "elements": [{"from": [-e, -e, -e], "to": [16 + e, 16 + e, 16 + e], "faces": {
                 "north": side, "south": side, "east": side, "west": side,
@@ -353,7 +355,7 @@ def write_pack(root, name, description, files):
     if os.path.isdir(pack):
         shutil.rmtree(pack)
     for rel, payload in files.items():
-        path = os.path.join(pack, "assets", "ctrcraft", rel)
+        path = os.path.join(pack, "assets", "craftteamracing", rel)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         if isinstance(payload, Image.Image):
             payload.save(path)
@@ -455,6 +457,8 @@ def main():
         crates[key] = {"side": rm.render_view(pm, 0, 0, 96, fit_bbox=True), "top": rm.render_view(pm, 0, 90, 96, fit_bbox=True),
                        "bottom": rm.render_view(pm, 0, -90, 96, fit_bbox=True)}
     QUESTION_MODE = None
+    # the trigger crate ("!" crate): the blank crate with a "!" drawn in the "?"'s look, on every face
+    crates["trigger"] = {part: crate_blank.exclaim(crates["question"][part], crates["question_blank"][part]) for part in ("side", "top", "bottom")}
     # a look at the result: the blank faces (side, top, bottom) above, the standard faces below
     prev = Image.new("RGBA", (3 * 96 * 2, 2 * 96 * 2), (40, 40, 40, 255))
     for i, part in enumerate(("side", "top", "bottom")):
@@ -473,18 +477,18 @@ def main():
     # to the block, as the crates are (one block); the beaker comes out 0.91 blocks tall
     beaker_files = {}
     for key in ("green", "red"):
-        beaker_files.update(ctr_mesh_pack.mesh_pack_files(vram, pack["beaker" + key], "beaker_" + key, 1.0 / 108.8))
+        beaker_files.update(ctr_mesh_pack.mesh_pack_files(vram, pack["beaker" + key], "beaker_" + key, 1.0 / 108.8, smooth_normals=True))
     # the Wumpa fruit placed in the world as a 3D model, too (Crash Cove's level file; untextured, Gouraud shaded: baked into the atlas): the leaves are double sided. It replaces the
     # animated sprite in the pickup model; the sprite strip stays for the HUD
-    wumpa_files = ctr_mesh_pack.mesh_pack_files(vram, models["fruit"], "power_fruit", 1.0 / 108.8, up=2, animated=False, honour_cull=True)
+    wumpa_files = ctr_mesh_pack.mesh_pack_files(vram, models["fruit"], "power_fruit", 1.0 / 108.8, up=2, animated=False, honour_cull=True, smooth_normals=True)
     # the Tracking Missile (DYNAMIC_ROCKET, the pack's `rocket`): a thin body (a pointed nose, white with a red band and green fins) and the flame fans behind it, which wobble over ten
     # frames; the steady triangles are the model (animated=True leaves the moving sparks out), turned so its nose points to -z, its middle at the block's middle, crate scale
-    # the effects' looks (assets/ctrcraft/fx, read by the mod's client/Fx): the jar's defaults are vanilla particles; this pack shows none of them, only the mod's own particles or nothing
+    # the effects' looks (assets/craftteamracing/fx, read by the mod's client/Fx): the jar's defaults are vanilla particles; this pack shows none of them, only the mod's own particles or nothing
     def _fx(*emitters):
         return {"emitters": list(emitters)}
 
     def _dust(count, spread, y):
-        return {"particle": "ctrcraft:dust_puff", "count": count, "pos": [0, y, 0], "pos_spread": [spread, 0.0, spread], "velocity": [0, 0, 0], "velocity_spread": [0.02, 0.02, 0.02]}
+        return {"particle": "craftteamracing:dust_puff", "count": count, "pos": [0, y, 0], "pos_spread": [spread, 0.0, spread], "velocity": [0, 0, 0], "velocity_spread": [0.02, 0.02, 0.02]}
 
     fx_files = {
         "fx/bomb_fuse.json": _fx(),                                                  # the spark at the fuse's tip is the effect
@@ -616,8 +620,8 @@ def main():
             files["textures/gui/power/%s.png" % pid] = scaled(img, (max(1, img.width // 2), max(1, img.height // 2)))
         for k, img in lamps.items():
             files["textures/gui/lights/%s.png" % k] = scaled(img, (24, 16))
-        packs.append(write_pack(args.out, "CTRCraft-OriginalTextures",
-                                "Craft Team Racing: original textures at Minecraft size, from your own disc (local use only, do not share)", files))
+        packs.append(write_pack(args.out, "CTR-OriginalTextures",
+                                "CTR: Original Textures (Minecraft size, from your own disc (local use only, do not share)", files))
     if True:
         files = {"textures/item/pickups.png": sheet(question_96, planks_96, None, fruit, 96),
                  "models/item/pickup_powerup_crate.json": cube([8, 0, 16, 8]),
@@ -644,8 +648,8 @@ def main():
         files["textures/particle/smoke_ring.png"] = ring
         files.update({"textures/gui/power/%s.png" % pid: img for pid, img in icons.items()})
         files.update({"textures/gui/lights/%s.png" % k: img for k, img in lamps.items()})
-        packs.append(write_pack(args.out, "CTRCraft-OriginalTextures-OriginalScale",
-                                "Craft Team Racing: original textures at their original size, from your own disc (local use only, do not share)", files))
+        packs.append(write_pack(args.out, "CTR-OriginalTextures-OriginalScale",
+                                "CTR: Original Textures (original size, from your own disc (local use only, do not share)", files))
     for p in packs:
         print("Pack written to", p)
         for target in args.install or []:

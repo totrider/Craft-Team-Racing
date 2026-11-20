@@ -1,0 +1,12 @@
+{
+  "id": "ctr_usa",
+  "title": "Crash Team Racing (USA)",
+  "platform": "ps1",
+  "serials": ["SCUS-94426"],
+  "code": "ctr",
+  "steps": [
+    { "name": "sounds", "script": "extract_ctr_sounds.py", "makes": "CTR-OriginalSounds: the kart, item and race sounds" },
+    { "name": "music", "script": "extract_ctr_music.py", "makes": "CTR-OriginalMusic: the race jingles and the level music (rendered from the game's own sequences; takes a few minutes)", "needs_raw": true },
+    { "name": "textures", "script": "extract_ctr_textures.py", "makes": "CTR-OriginalTextures (Minecraft size) and CTR-OriginalTextures-OriginalScale: crates, power-up icons, fruit, lamps and the 3D weapons" }
+  ]
+}

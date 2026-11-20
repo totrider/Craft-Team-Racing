@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "item": "craftteamracing:power_nugget"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    "NNN",
+    "III"
+  ],
+  "result": {
+    "id": "craftteamracing:boost_pad",
+    "count": 4
+  }
+}

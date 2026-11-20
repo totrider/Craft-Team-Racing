@@ -4,7 +4,7 @@ The kart: model, item model, texture (placeholder) and name.
   python tools/make_kart.py
 
 The model is Blockbench's: blockbench/kart/kart.bbmodel is the source (written once from the shape below if it is
-missing, then it is yours; this script only reads it). Writes src/main/resources/assets/ctrcraft/models/item/kart.json
+missing, then it is yours; this script only reads it). Writes src/main/resources/assets/craftteamracing/models/item/kart.json
 (the spawn item AND the entity renderer use it: the renderer fetches the baked item model), and draws the placeholder
 texture textures/item/kart.png once if missing (yours to repaint). Run from the project folder.
 
@@ -21,8 +21,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bbmodel  # noqa: E402
 
 RES = os.path.join("src", "main", "resources")
-ASSETS = os.path.join(RES, "assets", "ctrcraft")
-NS = "ctrcraft"
+ASSETS = os.path.join(RES, "assets", "craftteamracing")
+NS = "craftteamracing"
 TEX = os.path.join(ASSETS, "textures", "item", "kart.png")
 BB = os.path.join("blockbench", "kart", "kart.bbmodel")
 
@@ -105,9 +105,9 @@ def main():
     lang[f"item.{NS}.kart"] = "Kart"
     lang[f"entity.{NS}.kart"] = "Kart"
     lang[f"itemGroup.{NS}"] = "Craft Team Racing"
-    lang["key.categories.ctrcraft"] = "Craft Team Racing"
-    lang["key.ctrcraft.hop2"] = "Hop / Boost (second shoulder)"
-    lang["key.ctrcraft.brake"] = "Brake"
+    lang["key.categories.craftteamracing"] = "Craft Team Racing"
+    lang["key.craftteamracing.hop2"] = "Hop / Boost (second shoulder)"
+    lang["key.craftteamracing.brake"] = "Brake"
     dump(lp, lang)
     print("kart written")
 

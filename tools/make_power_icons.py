@@ -1,10 +1,11 @@
 """
-The HUD pictures: the power-up icons, the Power Fruit and the four start lamps. Stand-in pixel art in the original game's size, proportions and style (drawn
+The HUD pictures: the older 32 x 48 power-up icons and the four start lamps. The icons that follow the sprite rule (16 x 16, outlined; the Slime Shield, Warp Orb, Totem and Power Fruit) are
+made by tools/make_power_sprites.py; the clock and the good totem are Minecraft's own sprites. Stand-in pixel art in the original game's size, proportions and style (drawn
 from memory as look-alikes, not the original game's art).
 
   python tools/make_power_icons.py
 
-Writes textures/gui/power/<id>.png (32 x 48, portrait, as the original's; one per power-up in com.ctrcraft.items.HeldItem), textures/gui/power_fruit.png (48 x 32)
+Writes textures/gui/power/<id>.png (32 x 48, portrait, as the original's; one per power-up in com.craftteamracing.items.HeldItem), textures/gui/power_fruit.png (48 x 32)
 and textures/gui/lights/{red,green}_{on,off}.png (48 x 32). Placeholder art: a file that exists is yours and is not overwritten, so repaint them (delete one to
 have it drawn again). Run from the project folder.
 """
@@ -13,7 +14,7 @@ import os
 
 from PIL import Image, ImageDraw
 
-GUI = os.path.join("src", "main", "resources", "assets", "ctrcraft", "textures", "gui")
+GUI = os.path.join("src", "main", "resources", "assets", "craftteamracing", "textures", "gui")
 
 OUT = (22, 18, 30, 255)
 WHITE = (245, 245, 245, 255)
@@ -96,19 +97,6 @@ def gloss(d, box, colour=WHITE):
     d.ellipse([x0, y0, x0 + max(2, (x1 - x0) // 3), y0 + max(2, (y1 - y0) // 3)], fill=colour)
 
 
-def turbo():
-    """A nitro canister: red body, blue cap with a gauge."""
-    im, d = canvas()
-    d.rounded_rectangle([8, 18, 24, 44], radius=4, fill=RED, outline=OUT)
-    d.rectangle([8, 28, 24, 31], fill=DRED)
-    d.rectangle([10, 22, 12, 40], fill=(245, 120, 110, 255))
-    d.rounded_rectangle([9, 8, 23, 20], radius=3, fill=BLUE, outline=OUT)
-    d.ellipse([12, 9, 20, 17], fill=YELLOW, outline=OUT)
-    d.line([(16, 13), (19, 11)], fill=OUT)
-    d.rectangle([14, 3, 18, 8], fill=GREY, outline=OUT)
-    return im
-
-
 def bomb_at(im, cx, cy, r):
     d = SD(im)
     d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=DBLUE, outline=OUT)
@@ -122,12 +110,6 @@ def bomb_at(im, cx, cy, r):
     sx, sy = cx + r, cy - r - r // 2
     d.polygon([(sx, sy - 4), (sx + 2, sy - 1), (sx + 5, sy), (sx + 2, sy + 1), (sx, sy + 4), (sx - 2, sy + 1), (sx - 5, sy), (sx - 2, sy - 1)], fill=YELLOW)
     d.ellipse([sx - 1, sy - 1, sx + 1, sy + 1], fill=RED)
-
-
-def bomb():
-    im, _ = canvas()
-    bomb_at(im, 15, 30, 13)
-    return im
 
 
 def rocket_at(im, cx, cy, s):
@@ -145,40 +127,6 @@ def rocket_at(im, cx, cy, s):
     d.rectangle([p(-6, -3), p(6, 0)], fill=RED)
 
 
-def missile():
-    im, _ = canvas()
-    rocket_at(im, 16, 24, 1.0)
-    return im
-
-
-def tnt():
-    """A TNT crate seen corner-on: dark red left face, red right face, light top."""
-    im, d = canvas()
-    d.polygon([(16, 6), (30, 13), (16, 20), (2, 13)], fill=(235, 110, 90, 255), outline=OUT)
-    d.polygon([(2, 13), (16, 20), (16, 44), (2, 36)], fill=DRED, outline=OUT)
-    d.polygon([(16, 20), (30, 13), (30, 36), (16, 44)], fill=RED, outline=OUT)
-    for pts in ([(4, 22), (14, 27), (14, 33), (4, 28)], [(18, 27), (28, 22), (28, 28), (18, 33)]):
-        d.polygon(pts, fill=YELLOW, outline=OUT)
-    d.line([(6, 24), (12, 28)], fill=BLACK, width=2)
-    d.line([(20, 28), (26, 24)], fill=BLACK, width=2)
-    d.line([(16, 6), (19, 2)], fill=BROWN, width=2)
-    d.ellipse([18, 0, 22, 4], fill=YELLOW)
-    return im
-
-
-def potion():
-    """A bubbling beaker of green potion."""
-    im, d = canvas()
-    d.polygon([(12, 6), (20, 6), (20, 18), (28, 40), (4, 40), (12, 18)], fill=(215, 235, 245, 255), outline=OUT)
-    d.polygon([(10, 26), (22, 26), (28, 40), (4, 40)], fill=GREEN)
-    d.polygon([(10, 26), (22, 26), (24, 30), (8, 30)], fill=LGREEN)
-    d.rectangle([11, 3, 21, 7], fill=BROWN, outline=OUT)
-    d.line([(9, 38), (24, 38)], fill=DGREEN)
-    for bx, by, br in ((13, 34, 2), (19, 30, 1), (17, 14, 2), (14, 9, 1)):
-        d.ellipse([bx - br, by - br, bx + br, by + br], fill=LGREEN, outline=DGREEN)
-    return im
-
-
 def spring():
     im, d = canvas()
     for i in range(6):
@@ -187,88 +135,6 @@ def spring():
         d.line([(24, y + 3), (8, y + 6)], fill=DGREY, width=2)
     d.rounded_rectangle([5, 5, 27, 9], radius=1, fill=RED, outline=OUT)
     d.rounded_rectangle([5, 42, 27, 46], radius=1, fill=RED, outline=OUT)
-    return im
-
-
-def shield():
-    """A glossy green bubble."""
-    im, d = canvas()
-    d.ellipse([3, 4, 29, 46], fill=(40, 150, 70, 255), outline=OUT)
-    d.ellipse([6, 8, 26, 42], fill=(60, 190, 90, 255))
-    d.ellipse([9, 11, 16, 24], fill=(190, 255, 200, 255))
-    d.ellipse([20, 32, 25, 40], fill=(120, 230, 140, 255))
-    return im
-
-
-def mask():
-    """A wooden tiki mask with a crown of leaves."""
-    im, d = canvas()
-    for pts, col in (([(5, 14), (2, 4), (11, 11)], BLUE), ([(10, 12), (12, 1), (17, 11)], GREEN), ([(16, 11), (22, 2), (24, 13)], YELLOW), ([(23, 13), (30, 6), (28, 18)], RED)):
-        d.polygon(pts, fill=col, outline=OUT)
-    d.rounded_rectangle([5, 10, 27, 46], radius=8, fill=BROWN, outline=OUT)
-    d.rectangle([8, 20, 24, 23], fill=DBROWN)
-    d.ellipse([8, 24, 14, 32], fill=WHITE, outline=OUT)
-    d.ellipse([18, 24, 24, 32], fill=WHITE, outline=OUT)
-    d.rectangle([10, 27, 12, 30], fill=BLACK)
-    d.rectangle([20, 27, 22, 30], fill=BLACK)
-    d.rectangle([10, 36, 22, 42], fill=DBROWN, outline=OUT)
-    for x in (12, 15, 18):
-        d.line([(x, 36), (x, 42)], fill=WHITE)
-    return im
-
-
-def mask_dark():
-    """The dark mask: a purple-black tiki with red eyes and a crown of dark feathers."""
-    im, d = canvas()
-    for pts, col in (([(5, 14), (2, 4), (11, 11)], DBLUE), ([(10, 12), (12, 1), (17, 11)], DRED), ([(16, 11), (22, 2), (24, 13)], DBLUE), ([(23, 13), (30, 6), (28, 18)], DRED)):
-        d.polygon(pts, fill=col, outline=OUT)
-    d.rounded_rectangle([5, 10, 27, 46], radius=8, fill=(95, 55, 130, 255), outline=OUT)
-    d.rectangle([8, 20, 24, 23], fill=BLACK)
-    d.ellipse([8, 24, 14, 32], fill=RED, outline=OUT)
-    d.ellipse([18, 24, 24, 32], fill=RED, outline=OUT)
-    d.rectangle([10, 36, 22, 42], fill=BLACK, outline=OUT)
-    for x in (12, 15, 18):
-        d.line([(x, 36), (x, 42)], fill=WHITE)
-    return im
-
-
-def clock():
-    """A gold stopwatch."""
-    im, d = canvas()
-    d.rectangle([13, 4, 19, 10], fill=GOLD, outline=OUT)
-    d.ellipse([3, 9, 29, 43], fill=GOLD, outline=OUT, width=2)
-    d.ellipse([7, 13, 25, 39], fill=WHITE, outline=DGOLD)
-    d.line([(16, 26), (16, 17)], fill=BLACK, width=2)
-    d.line([(16, 26), (21, 30)], fill=RED, width=2)
-    for a in range(0, 360, 90):
-        x, y = 16 + 8 * math.sin(math.radians(a)), 26 - 11 * math.cos(math.radians(a))
-        d.point((x, y), fill=BLACK)
-    d.line([(24, 11), (28, 7)], fill=GOLD, width=2)
-    return im
-
-
-def warpball():
-    """A dark blue orb crackling with lightning."""
-    im, d = canvas()
-    d.ellipse([4, 10, 28, 40], fill=DBLUE, outline=OUT)
-    d.ellipse([8, 15, 24, 35], fill=(70, 90, 200, 255))
-    d.ellipse([13, 20, 19, 30], fill=LBLUE)
-    for pts in (([(2, 6), (8, 14), (4, 18), (10, 24)]), ([(30, 8), (24, 16), (28, 22), (22, 30)]), ([(8, 46), (12, 38), (8, 34)]), ([(26, 44), (22, 38), (27, 34)])):
-        d.line(pts, fill=(200, 235, 255, 255), width=1)
-    return im
-
-
-def bomb_3x():
-    im, _ = canvas()
-    for cx, cy in ((9, 36), (23, 36), (16, 22)):
-        bomb_at(im, cx, cy, 8)
-    return im
-
-
-def missile_3x():
-    im, _ = canvas()
-    for cx, cy in ((8, 32), (24, 32), (16, 18)):
-        rocket_at(im, cx, cy, 0.55)
     return im
 
 
@@ -292,67 +158,6 @@ def super_engine():
     d.ellipse([12, 18, 20, 26], fill=DGREY, outline=OUT)
     d.polygon([(8, 47), (12, 36), (16, 47)], fill=ORANGE)
     d.polygon([(16, 47), (20, 36), (24, 47)], fill=ORANGE)
-    return im
-
-
-def power_fruit():
-    """The Power Fruit sprite, 32 x 32: red on top, through orange and yellow to green below, a leaf on top."""
-    im, d = canvas(32, 32)
-    mask = Image.new("L", (32, 32), 0)
-    ImageDraw.Draw(mask).ellipse([3, 5, 29, 31], fill=255)
-    stops = ((0.0, (205, 55, 40)), (0.35, (250, 150, 45)), (0.6, (250, 210, 50)), (1.0, (130, 195, 60)))
-    for y in range(32):
-        t = min(1.0, max(0.0, (y - 5) / 26.0))
-        col = stops[0][1] + (255,)
-        for (t0, c0), (t1, c1) in zip(stops, stops[1:]):
-            if t0 <= t <= t1:
-                u = (t - t0) / (t1 - t0)
-                col = tuple(int(c0[i] + (c1[i] - c0[i]) * u) for i in range(3)) + (255,)
-        for x in range(32):
-            if mask.getpixel((x, y)):
-                im.putpixel((x, y), col)
-    d.ellipse([3, 5, 29, 31], outline=(120, 50, 20, 255))
-    d.ellipse([8, 10, 13, 15], fill=(255, 235, 150, 255))
-    d.polygon([(16, 6), (10, 1), (18, 2)], fill=GREEN, outline=DGREEN)
-    d.polygon([(16, 6), (22, 1), (23, 8)], fill=GREEN, outline=DGREEN)
-    return im
-
-
-def tnt_charged():
-    """The charged TNT: the creeper-themed crate (green, with the face), corner-on like the plain one."""
-    im, d = canvas()
-    d.polygon([(16, 6), (30, 13), (16, 20), (2, 13)], fill=(150, 225, 120, 255), outline=OUT)
-    d.polygon([(2, 13), (16, 20), (16, 44), (2, 36)], fill=DGREEN, outline=OUT)
-    d.polygon([(16, 20), (30, 13), (30, 36), (16, 44)], fill=GREEN, outline=OUT)
-    # the creeper's face on the right side: two eyes and the frown
-    d.polygon([(19, 22), (23, 20), (23, 24), (19, 26)], fill=BLACK)
-    d.polygon([(25, 19), (28, 17), (28, 21), (25, 23)], fill=BLACK)
-    d.polygon([(21, 28), (27, 25), (27, 28), (25, 29), (25, 33), (23, 34), (23, 30), (21, 31)], fill=BLACK)
-    d.line([(16, 6), (19, 2)], fill=BROWN, width=2)
-    d.ellipse([18, 0, 22, 4], fill=LGREEN)
-    return im
-
-
-def potion_charged():
-    """The charged beaker: the same flask with red potion."""
-    im, d = canvas()
-    d.polygon([(12, 6), (20, 6), (20, 18), (28, 40), (4, 40), (12, 18)], fill=(215, 235, 245, 255), outline=OUT)
-    d.polygon([(10, 26), (22, 26), (28, 40), (4, 40)], fill=RED)
-    d.polygon([(10, 26), (22, 26), (24, 30), (8, 30)], fill=(245, 130, 120, 255))
-    d.rectangle([11, 3, 21, 7], fill=BROWN, outline=OUT)
-    d.line([(9, 38), (24, 38)], fill=DRED)
-    for bx, by, br in ((13, 34, 2), (19, 30, 1), (17, 14, 2), (14, 9, 1)):
-        d.ellipse([bx - br, by - br, bx + br, by + br], fill=(255, 170, 160, 255), outline=DRED)
-    return im
-
-
-def shield_charged():
-    """The charged shield: a bigger, glossy red bubble with a glint."""
-    im, d = canvas()
-    d.ellipse([1, 2, 31, 47], fill=(170, 40, 40, 255), outline=OUT)
-    d.ellipse([4, 6, 28, 43], fill=(235, 80, 70, 255))
-    d.ellipse([8, 10, 16, 25], fill=(255, 215, 200, 255))
-    d.ellipse([21, 34, 26, 42], fill=(255, 150, 140, 255))
     return im
 
 
@@ -389,9 +194,9 @@ def unknown():
 
 ICONS = {
     "unknown": unknown,
-    "turbo": turbo, "bomb": bomb, "missile": missile, "tnt": tnt, "potion": potion, "spring": spring, "shield": shield, "mask": mask, "mask_dark": mask_dark,
-    "clock": clock, "warpball": warpball, "bomb_3x": bomb_3x, "missile_3x": missile_3x, "invisibility": invisibility, "super_engine": super_engine,
-    "tnt_charged": tnt_charged, "potion_charged": potion_charged, "shield_charged": shield_charged,
+    "spring": spring,
+    "invisibility": invisibility, "super_engine": super_engine,
+    
 }
 
 
@@ -402,9 +207,6 @@ def main():
         path = os.path.join(GUI, "power", name + ".png")
         if not os.path.exists(path):
             make().save(path)
-    path = os.path.join(GUI, "power_fruit.png")
-    if not os.path.exists(path):
-        power_fruit().save(path)
     for colour in ("red", "green"):
         for lit in (True, False):
             path = os.path.join(GUI, "lights", "%s_%s.png" % (colour, "on" if lit else "off"))

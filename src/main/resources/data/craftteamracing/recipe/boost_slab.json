@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "craftteamracing:boost_block"
+    }
+  },
+  "pattern": [
+    "BBB"
+  ],
+  "result": {
+    "id": "craftteamracing:boost_slab",
+    "count": 6
+  }
+}

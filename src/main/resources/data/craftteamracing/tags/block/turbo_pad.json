@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "craftteamracing:boost_pad",
+    "craftteamracing:boost_block",
+    "craftteamracing:boost_slab",
+    "craftteamracing:boost_stairs"
+  ]
+}

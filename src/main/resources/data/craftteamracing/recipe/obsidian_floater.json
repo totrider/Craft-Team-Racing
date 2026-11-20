@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "O": {
+      "item": "minecraft:obsidian"
+    },
+    "F": {
+      "item": "craftteamracing:floater"
+    }
+  },
+  "pattern": [
+    " O ",
+    "OFO",
+    " O "
+  ],
+  "result": {
+    "id": "craftteamracing:obsidian_floater",
+    "count": 1
+  }
+}

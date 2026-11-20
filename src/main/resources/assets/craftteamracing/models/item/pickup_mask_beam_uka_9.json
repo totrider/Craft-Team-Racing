@@ -1,0 +1,37 @@
+{
+  "loader": "neoforge:obj",
+  "model": "craftteamracing:models/item/mask_beam_uka_9.obj",
+  "flip_v": true,
+  "automatic_culling": false,
+  "shade_quads": false,
+  "textures": {
+    "atlas": "craftteamracing:item/mask_beam_uka",
+    "particle": "craftteamracing:item/mask_beam_uka"
+  },
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    "ground": {
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

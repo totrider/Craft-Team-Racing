@@ -14,7 +14,7 @@ import random
 
 from PIL import Image, ImageDraw, ImageFilter
 
-ASSETS = os.path.join("src", "main", "resources", "assets", "ctrcraft", "textures")
+ASSETS = os.path.join("src", "main", "resources", "assets", "craftteamracing", "textures")
 
 
 def shadow():

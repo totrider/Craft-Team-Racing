@@ -7,7 +7,7 @@ Music volume slider of the sound options, and the world's own background music i
 
 This follows what the original game does (`HOWL_AudioState.c`, `HOWL_Music.c`):
 
-| Sound event (namespace `ctrcraft`) | When | Original |
+| Sound event (namespace `craftteamracing`) | When | Original |
 |---|---|---|
 | `music.race_intro` | the start lamps are counting down | race intro jingle (music 0 to 3, in turn) |
 | `music.race` | from GO until you finish, repeated for as long as the race lasts | the level's music |
@@ -19,27 +19,27 @@ Not done yet: music that depends on the track (the mod's tracks have no names th
 
 ## Adding music to a resource pack
 
-Put the sound files (Ogg Vorbis) under `assets/ctrcraft/sounds/` and list them in `assets/ctrcraft/sounds.json`. Packs add to the mod's (empty) lists. Several sounds in one
-event are picked at random, again at every repeat of the race music, so a pack can offer a playlist:
+Put the sound files (Ogg Vorbis) under `assets/craftteamracing/sounds/` and list them in `assets/craftteamracing/sounds.json`. Packs add to the mod's (empty) lists. Several sounds in one
+event are picked at random, again at every repeat of the race music, so a pack can offer a playlist (a track picked on a **track music sheet** plays its own event, `music.level.<name>`, instead; see the end of this file):
 
 ```json
 {
   "music.race": {
     "sounds": [
-      { "name": "ctrcraft:music/my_song", "stream": true },
-      { "name": "ctrcraft:music/my_other_song", "stream": true, "weight": 2 }
+      { "name": "craftteamracing:music/my_song", "stream": true },
+      { "name": "craftteamracing:music/my_other_song", "stream": true, "weight": 2 }
     ]
   },
   "music.race_end.first": {
-    "sounds": [ { "name": "ctrcraft:music/fanfare", "stream": true } ]
+    "sounds": [ { "name": "craftteamracing:music/fanfare", "stream": true } ]
   }
 }
 ```
 
-The files are `assets/ctrcraft/sounds/music/my_song.ogg` and so on. Notes:
+The files are `assets/craftteamracing/sounds/music/my_song.ogg` and so on. Notes:
 
-* Long tracks should be `"stream": true` (they are not loaded into memory). A streamed sound cannot loop inside the sound engine, so the mod starts the race music again when it
-  ends: there can be a short gap. A short sound without `stream` loops without a gap but is held in memory.
+* A sound that is **not** streamed (`"stream": false`) is held in memory and the sound engine loops it **without a gap**: the level and mask songs of the local pack are written like that. A `"stream": true` sound cannot loop inside the engine, so the mod starts it
+  again when it ends and there can be a short gap; use it for long recordings only.
 * The race music is not positional and is at full volume (before the slider); the pack author sets the loudness of the file.
 * `"replace": true` on an event replaces what packs lower down added.
 * Any player can do this for their own music: a resource pack with just a `pack.mcmeta`, the `sounds.json` above and the files.
@@ -47,7 +47,7 @@ The files are `assets/ctrcraft/sounds/music/my_song.ogg` and so on. Notes:
 ## The original's jingles
 
 `extract-ctr-music.bat` (`tools/extract_ctr_music.py`) decodes the original's jingles from your own raw disc image (2352 bytes a sector: the jingles are CD-XA audio, which a cooked
-`.iso` does not keep) into the local resource pack `CTRCraft-OriginalMusic` and installs it in the test instances. The pack stays on your machine, never in the repository or
+`.iso` does not keep) into the local resource pack `CTR-OriginalMusic` and installs it in the test instances. The pack stays on your machine, never in the repository or
 the jar. It fills `music.race_intro` (the four intro jingles), `music.final_lap` and the two `music.race_end` events. A track is located as the game does
 (`XA/ENG.XNF`, then the sectors of its channel in `XA/MUSIC/S00.XA`; the decoder follows `platform/native_audio.c`).
 
@@ -57,13 +57,13 @@ The original's race music is not recorded: each level has a CSEQ song pack in `S
 `howl_ParseHeader`), a small MIDI-like format played at 60 Hz by the game's own sequencer through the instrument and drum samples of the bank, on the SPU's 24 voices.
 `tools/ctr_cseq.py` (constants in `tools/ctr_spu_tables.py`, copied from `zGlobal_DATA.c` and `native_audio.c`) parses a pack, runs the sequencer offline and mixes the SPU voices;
 `tools/extract_ctr_music.py` renders **song 0 of the pack of each level 0 to 24** (the race tracks and the arenas; `data.levBank_Song` is the identity there) into the local pack
-`CTRCraft-OriginalMusic` as `sounds/music/ctr_level_<level>.ogg`, listed under `music.race` (the event picks one at random per repeat, as above). `extract-ctr-music.bat` does it
+`CTR-OriginalMusic` as `sounds/music/ctr_level_<level>.ogg`, listed under its own event `music.level.<level>` (what the track music sheet picks); `music.race`, the default for a track with no pick, holds **Crash Cove's song only**. `extract-ctr-music.bat` does it
 together with the jingles; `--no-level-music` skips it, `--jobs N` sets the processes (about a minute for all 40 songs). The hub levels (25 to 29), the boss race song and the
 menu/intro/credits songs are not rendered. Everything is local (`local-assets/ctr-music`, git-ignored, never in the jar).
 
 **The loop.** Every sequence ends with the end opcode, which restarts it (`boolLoopAtEnd` is 1 for level music, `Music_Adjust`): there is no separate loop marker. The file is the *second*
 pass: from the frame the sequences first restart to the frame they restart the second time (one full period, 68 to 128 s depending on the level), so it begins with the tails of the
-notes of the previous pass and playing it over and over is the endless loop. The mod restarts a streamed sound when it ends, so the gap between repeats is the one described above.
+notes of the previous pass and playing it over and over is the endless loop. The level and mask songs are written **not streamed**, so the sound engine loops them without a gap (a streamed sound would be restarted by the mod when it ends, with a short gap).
 
 **The mask songs.** Songs 1 and 2 of each pack are the Aku Aku and Uka Uka songs (full volume, `SongPool_Start`). They use the pack's instrument table, which differs between groups of
 levels, so there are nine Aku Aku and six Uka Uka versions (`ctr_aku_aku_<first level using it>.ogg`, `ctr_uka_uka_<...>.ogg`), listed under `music.aku_aku` and `music.uka_uka`.
@@ -134,6 +134,6 @@ The screen has a text field (the title every racer is shown when the race begins
   The mod itself has no music in the jar, so with no pack the default is silent.
 - The server stores only the id and the title and sends them to the racers, so the sounds never have to exist on a server. A player with the pack hears the track, a player without it still sees its title
   (and it shows grey in their screen, kept as it is when they save). The grid is read from the sounds the loaded resource packs add, so other packs can add `music.level.<name>` events with their own
-  `music.ctrcraft.level.<name>` lang entries.
+  `music.craftteamracing.level.<name>` lang entries.
 - The Aku Aku / Uka Uka mask songs fade the level music out while they play and it carries on from where it was (it is not restarted or re-picked).
 

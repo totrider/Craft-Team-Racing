@@ -400,7 +400,7 @@
  ],
  "textures": [
   {
-   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\ctrcraft\\textures\\item\\boost_flame.png",
+   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\craftteamracing\\textures\\item\\boost_flame.png",
    "name": "flame.png",
    "folder": "",
    "namespace": "",
@@ -416,7 +416,7 @@
    "mode": "bitmap",
    "saved": true,
    "uuid": "9f42dc06-c0b1-44b1-962f-f330a3afb63e",
-   "relative_path": "../../src/main/resources/assets/ctrcraft/textures/item/boost_flame.png",
+   "relative_path": "../../src/main/resources/assets/craftteamracing/textures/item/boost_flame.png",
    "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAK0lEQVR4nGP8/3rafwYKAAvDj+/fKDXgO4UG/BhwF3wf9cKPUS8wDHkvAAB9Ai82MHurdwAAAABJRU5ErkJggg=="
   }
  ],

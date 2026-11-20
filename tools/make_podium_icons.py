@@ -7,7 +7,7 @@ import os
 
 from PIL import Image
 
-OUT = os.path.join("src", "main", "resources", "assets", "ctrcraft", "textures", "item")
+OUT = os.path.join("src", "main", "resources", "assets", "craftteamracing", "textures", "item")
 COLOURS = {1: (235, 190, 40), 2: (195, 205, 215), 3: (190, 120, 60)}
 DIGITS = {1: ["010", "110", "010", "010", "111"], 2: ["111", "001", "111", "100", "111"], 3: ["111", "001", "111", "001", "111"]}
 

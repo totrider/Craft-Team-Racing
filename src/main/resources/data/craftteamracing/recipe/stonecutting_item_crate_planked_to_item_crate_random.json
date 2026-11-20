@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "craftteamracing:item_crate_planked"
+  },
+  "result": {
+    "id": "craftteamracing:item_crate_random",
+    "count": 1
+  }
+}

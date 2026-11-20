@@ -1,13 +1,13 @@
 """
 The rulebook's inventory picture (16 x 16, stand-in): a book with a red cover, a chequered flag on it and a white page edge.
 
-  python tools/make_rulebook_icon.py          (writes src/main/resources/assets/ctrcraft/textures/item/rulebook.png)
+  python tools/make_rulebook_icon.py          (writes src/main/resources/assets/craftteamracing/textures/item/rulebook.png)
 """
 import os
 
 from PIL import Image
 
-OUT = os.path.join("src", "main", "resources", "assets", "ctrcraft", "textures", "item", "rulebook.png")
+OUT = os.path.join("src", "main", "resources", "assets", "craftteamracing", "textures", "item", "rulebook.png")
 
 
 def main():

@@ -1,6 +1,6 @@
 # Tracks and races: a node graph you build, then test-drive
 
-Status: **steps 1-3 built (2026-11-12): nodes, tool, linking, test drive with validity; race runtime (gather, grid, lights, start boost, laps, positions, HUD).** Step 4 (polish) is design only.
+Status: **steps 1-3 built (2026-11-12): nodes, tool, linking, test drive with validity; race runtime (gather, grid, lights, start boost, laps, positions, HUD).** Step 4 (polish) has been built piece by piece: respawn, wrong-way and skipped-checkpoint warnings, the track bar, podium nodes with the ceremony, a debug view; see the sections at the end. Time trials and the ready UI are not built. **Where an older section below disagrees with the "Race progress model" section, that one is current.**
 Opt-in by nature (nothing here changes how a kart drives).
 
 ## Step 1 as built (how to use it)
@@ -17,7 +17,7 @@ Opt-in by nature (nothing here changes how a kart drives).
 - **Remove / replace:** while holding the Track Tool or a node item the nodes can be pointed at, so you can break them (their links go with them) and place a node onto
   one to replace it, like a block onto tall grass. Replacing keeps links and ring size, so it turns a node or changes checkpoint <-> start; a checkpoint cannot
   become a second start in its track.
-- Data: `TrackData` (saved per dimension, `data/ctrcraft_tracks.dat` in the world); the logic is `TrackGraph` (pure Java, 11 tests).
+- Data: `TrackData` (saved per dimension, `data/craftteamracing_tracks.dat` in the world); the logic is `TrackGraph` (pure Java, 11 tests).
 
 ## Step 2 as built: the test drive
 - **Menu:** Track Tool, sneak + right-click the **Start node** opens a menu (needs track-editing permission): track summary, **Start / Stop test drive**, **Re-record main lap...**
@@ -58,7 +58,7 @@ Opt-in by nature (nothing here changes how a kart drives).
   Changing the track (breaking a node, unlinking) during a race calls it off.
 - **HUD** (`RaceHud`): the gathering count, the four lamps and the rev bar (red from the acceleration speed up, where a start boost is earned), then the race screen laid out as the original's 512 x 216 HUD (clock and lap times top left, the top four as skin heads below, the place in big digits bottom left, lamps top centre, item and Power Fruit top centre-left); only the lap counter is moved, to the right edge above the driving meters. The start grid and the gathering box stay drawn until the race has really started (GO), not just until the countdown begins.
 - Code: `RaceProgress`, `RaceGrid` (pure, `RaceProgressTest`), `RevEngine` (physics, `RevEngineTest`), `RaceManager`, `RacePayload`/`RaceClient`, `RaceHud`, `KartDriver` (hold, placement, boost).
-- **Not yet:** kart-vs-kart bumping, wrong-way detection, respawn when out of bounds, a ready check, time trials, a player-facing start (all step 4 / roadmap).
+- **Not yet (as of step 3; kart bumping, wrong-way detection and respawn were built later, see below):** a ready check and time trials.
 
 ## Step 3b (2026-11-12): box checkpoints, driving in to start, respawn, wrench
 Changes after the first race test, from the user's feedback. Everything below replaces what the older sections say about rings / radius / starting from the tool.
@@ -74,7 +74,7 @@ Changes after the first race test, from the user's feedback. Everything below re
   track the 10 s countdown starts; leaving it (or stepping out of the kart, logging out, changing dimension) removes the kart and cancels the countdown if too few remain. Whoever
   is in the box at zero is entered. The set is kept apart from races, so karts still inside after a race do not start the next one: leave and drive in again.
   The menu's **Start race** still starts one by hand (anyone in the area, any number, for testing alone).
-- **Wrench** (`ctrcraft:wrench`): right-click a kart with it to switch **"can start races"** on or off (on by default; kept in the kart's NBT). An off kart is never counted as
+- **Wrench** (`craftteamracing:wrench`): right-click a kart with it to switch **"can start races"** on or off (on by default; kept in the kart's NBT). An off kart is never counted as
   inside an area. The tuning profile is meant to go on this item later.
 - **Respawn:** key **R** (rebindable) during a race puts the kart on the last ring it passed, facing the next one (`RaceManager.respawn`, 3 s cooldown), speed 0.
   CTR does the same with a mask grab to the last valid checkpoint (`VehStuckProc_MaskGrab_FindDestPos`: the restart point of the last valid quad, facing the next one, then
@@ -112,7 +112,7 @@ node is. If a node block is broken, its data and links are removed.
 They have an outline/selection shape and a ghost marker (a box plus a direction arrow, ring for checkpoints) drawn by the client only when the player holds the Track Tool
 (`RenderLevelStageEvent`; the block's `getShape` can use the `CollisionContext` to return a small box only for a player holding the tool, so others cannot even click them).
 
-**Track Tool** (`ctrcraft:track_tool`). Remembers the **selected node** (item component). Right-click a node: nothing selected → select it; something selected → toggle the
+**Track Tool** (`craftteamracing:track_tool`). Remembers the **selected node** (item component). Right-click a node: nothing selected → select it; something selected → toggle the
 link between selected and clicked, and the clicked one becomes the selected one (so you can walk a chain: start, c1, c2, ... start). Sneak + right-click clears the
 selection. The tool also starts and stops the test drive (sneak + use on the Start node) and shows the track's state in chat/an actionbar.
 
@@ -159,3 +159,33 @@ they have no links to checkpoints and the recorded routes ignore them. A Start n
   sees all three places: the camera goes round the group and its look-at point glides from the third place to the second and the first (no cuts, whatever the nodes' layout). Both are pulled in by blocks like a third-person camera and give up
   for the normal view when the space is too tight. The group shot needs the podium inside the player's loaded world (the server only sends chunks and entities round the player), otherwise the normal view stays.
 - **Cool-down:** after a race that had a podium ceremony, the Start node accepts no new race for 15 seconds after the ceremony; the usual race-starting text shows "Next race in N", and a race starts by itself when it ends if enough karts are waiting in the area.
+
+## Race progress model (revised 2026-11-17)
+
+Replaces the older "rings in order, forward only" description of `RaceProgress` above. There are two things, kept apart:
+
+- **The distance round the course** (`RaceProgress.track`, `unwrapped`): where the racer physically is. Each position report finds the nearest point of the course (the main path, or a recorded branch), a branch's own length
+  mapped onto the stretch of main path it replaces, and adds the change in the share of the lap to a running total (so crossing the start line either way never mixes up the laps). It goes **both ways** and drives the track bar, the race
+  order (laps plus share; finished racers first, then the rest) and the Warp Orb's idea of where a racer is. A racer who drives backwards loses places.
+- **The checkpoint line** (`at`, `current`, `via`, `behind`): one string of rings from the start that proves a legitimate route. It is only ever one line:
+  - **Marking:** the next ring of the line counts when its box is **touched, whichever way** (a corner or a shortcut leaving at the ring does not make it miss). Only when two rings that could both be next are touched in one move does the line the racer
+    is nearest to tell which. A ring that is not next does nothing, so a skipped ring stays skipped until the racer goes back to it.
+  - **Going back is by position, not by touch:** when the racer is behind the last ring of the line by more than its box (by their share of the lap, and by the nearest segment of the course), that ring is unmarked, and so on back, through a
+    shortcut's rings if the line came out of one and out of its start.
+  - **The start line is the only directional thing:** a lap counts when it is crossed with the distance going up and every ring of the lap marked. Crossing it while behind it (the grid, or after driving back over it) only clears the
+    "behind the start line" flag (the original's `ACTION_BEHIND_START_LINE`), so there is no lap to take back. A lap also needs the racer to really be near the start line (a stray touch of a ring cannot give one).
+- **Branches:** a branch is entered at the one of its two main nodes that comes first along the main path (fewer main nodes before it, which is "nearer the start"), whichever way it was driven when recorded, and rejoins at the other (`RaceProgress`
+  constructor); one that starts or ends at the Start Node itself is told by matching its length to the two stretches. Which branch a racer is on is the nearest line of the course (a block of give), not only the rings passed, so driving a
+  shortcut the wrong way round is tracked too.
+- **Warnings** (`RaceProgress.wrongWay`, `skipped`; shown by `RaceHud`, switched off in the client settings): *wrong way* when the distance has gone down for about a second; *checkpoint skipped* when the racer is further along the course than the line
+  (past the next ring, or on a shortcut not entered at its start) for half a second. They are not shown together, and not while the racer is on a podium.
+- **Debug view:** `/ctr debug rings` and `/ctr debug path` (client commands; the server sends the data while one is on, `RaceDebugPayload`): the checkpoint boxes by state, the line the racer is nearest to and the point on it, and a line of text.
+- **Finishing:** a finished racer keeps their place; the first three go on the podium nodes (below). A racer who leaves the kart or the race is out.
+
+### The track bar
+A black line over the clock (top left) for one lap with the head of each racer on it (`RacePayload.barIds` / `barPos`; the share of the lap, never behind the start of the bar before the first lap); yours is larger with a yellow frame; finished racers and racers
+locked on a podium are not shown.
+
+
+### Debug views (client commands)
+`/ctr debug rings` (the checkpoints: passed, next, head) and `/ctr debug path` (the course line and the racer's point on it) work during a race; `/ctr debug nodes` draws the nodes, the start grid and the pickup spots without an editing item in hand, also during a race.

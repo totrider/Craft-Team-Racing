@@ -123,6 +123,6 @@ def frames(files, cone_name="shield_green", sheen_name="shield_highlight", prefi
         obj = ["# CTR sheen frame %d from the owner's own disc (local use only)" % i, "mtllib %s.mtl" % sheen_name, "o %s" % name, "usemtl atlas"] + v_lines + vt_lines + vn_lines + f_lines
         out["models/item/%s.obj" % name] = "\n".join(obj) + "\n"
         js = dict(base_json)
-        js["model"] = "ctrcraft:models/item/%s.obj" % name
+        js["model"] = "craftteamracing:models/item/%s.obj" % name
         out["models/item/pickup_%s.json" % name] = js
     return out

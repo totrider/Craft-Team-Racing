@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "craftteamracing:item_crates"
+    },
+    {
+      "item": "craftteamracing:checkpoint_node"
+    }
+  ],
+  "result": {
+    "id": "craftteamracing:powerup_crate_spot",
+    "count": 1
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Acceleration",
+  "description": "The original's Acceleration class: quick off the line and out of a turn, but it gives up top speed and loses a lot of it when it steers.",
+  "official": true,
+  "enabled": true,
+  "stats": {
+    "accel": 544,
+    "speed": 13520,
+    "turn_rate": 26,
+    "turn_decrease": 9080,
+    "turn_input_delay": 4500,
+    "drift_turn_base": 10,
+    "weight": 256
+  }
+}

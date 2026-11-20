@@ -4,7 +4,7 @@ The baseline kart: a Blockbench model with the original's proportions (not its g
   python tools/make_kart_ctr.py
 
 blockbench/kart/kart_ctr.bbmodel is the source (written once from the numbers below if it is missing, then it is yours; this script only reads it) and
-src/main/resources/assets/ctrcraft/models/item/kart_ctr.json is generated from it (the entity renderer fetches that model) and so is the spawn item's models/item/kart.json (the same kart with its wheels and steering wheel in place).
+src/main/resources/assets/craftteamracing/models/item/kart_ctr.json is generated from it (the entity renderer fetches that model) and so is the spawn item's models/item/kart.json (the same kart with its wheels and steering wheel in place).
 The placeholder texture is the same 16x16 palette as the old kart's (textures/item/kart.png).
 
 Where the numbers come from: tools/inspect_ctr_kart.py measures the original's racer models (local only). Crash's kart in level units, drawn at 72.7 units to the block (16 pixels = 1 block here, so 1 unit = 0.22 px; between the crates' 108.8, which was too small beside a player, and the physics' 50, which was a car): 56 units across is 0.77 block:

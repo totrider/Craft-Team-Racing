@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "craftteamracing:power_fruit_bag"
+    }
+  ],
+  "result": {
+    "id": "craftteamracing:power_fruit",
+    "count": 9
+  }
+}

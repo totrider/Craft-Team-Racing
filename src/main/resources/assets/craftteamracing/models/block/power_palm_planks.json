@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "craftteamracing:block/power_palm_planks"
+  }
+}

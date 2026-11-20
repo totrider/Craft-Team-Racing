@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "W": {
+      "item": "craftteamracing:wheel"
+    },
+    "S": {
+      "item": "minecraft:slime_ball"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    "WSW",
+    "SIS",
+    "WSW"
+  ],
+  "result": {
+    "id": "craftteamracing:offroad_tires",
+    "count": 1
+  }
+}

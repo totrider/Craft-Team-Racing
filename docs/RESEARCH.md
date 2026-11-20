@@ -47,7 +47,7 @@ Nothing there is runnable inside Minecraft, but the architecture transfers.
 - `crates/ctr-kart` = the physics port of ctr-native (`kart.rs`, `collision.rs`, `terrain.rs`, `stats.rs`).
   **`docs/ctr-physics-spec.md` (72 KB) is the best porting guide - read it in full before milestone 1 work.**
 - **The physics core is pure and host-agnostic**: the host feeds it ground type and triangle collision, the core
-  returns a pose. We copy this split: `com.ctrcraft.physics` has no Minecraft imports.
+  returns a pose. We copy this split: `com.craftteamracing.physics` has no Minecraft imports.
 - Fixed 30 Hz tick with an accumulator; render interpolates previous/current tick (position lerp, rotation slerp);
   button taps between ticks are latched so short presses are not lost.
 - Integer fidelity (positions in 1/256 units, 4096-angle, arithmetic shift) keeps behaviour identical to the decomp.

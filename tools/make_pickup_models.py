@@ -4,7 +4,7 @@ The pickups in the world: the Power Fruit, the fruit crate and the power-up ("?"
   python tools/make_pickup_models.py
 
 The models are Blockbench's: blockbench/pickups/<name>.bbmodel is the source (written once from the shapes below if missing, then it is yours; this
-script only reads it). Writes src/main/resources/assets/ctrcraft/models/item/pickup_<name>.json (the pickup entity renderer fetches these baked
+script only reads it). Writes src/main/resources/assets/craftteamracing/models/item/pickup_<name>.json (the pickup entity renderer fetches these baked
 models) and draws the shared placeholder texture textures/item/pickups.png once if it is missing (yours to repaint).
 
 SIZES are the original game's PROPORTIONS, normalised so that a crate is exactly one block, the unit Minecraft works in (the kart, which already
@@ -30,10 +30,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bbmodel  # noqa: E402
 
 RES = os.path.join("src", "main", "resources")
-ASSETS = os.path.join(RES, "assets", "ctrcraft")
+ASSETS = os.path.join(RES, "assets", "craftteamracing")
 TEX = os.path.join(ASSETS, "textures", "item", "pickups.png")
 BB = os.path.join("blockbench", "pickups")
 BLANK_TEX = os.path.join(ASSETS, "textures", "item", "crate_blank.png")
+EXCLAIM_TEX = os.path.join(ASSETS, "textures", "item", "crate_exclaim.png")
 
 PX_PER_BLOCK = 16.0
 PX_PER_UNIT = PX_PER_BLOCK / 108.8          # the original's crate (108.8 level units) is one block
@@ -63,6 +64,17 @@ PALETTE = {
     "yellow": (0, 2, (255, 215, 40)), "yellow_dark": (1, 2, (200, 160, 20)), "red": (2, 2, (215, 50, 50)), "red_dark": (3, 2, (140, 30, 30)),
     "white": (0, 3, (245, 245, 245)), "black": (1, 3, (30, 28, 34)), "wood": (2, 3, (214, 124, 40)), "wood_dark": (3, 3, (150, 80, 25)),
 }
+# The crates' wood and metal, picked by eye from Minecraft's oak, spruce and dark oak planks and its iron block (colours only: the pixels are drawn here, not copied).
+OAK = {"base": (178, 144, 88), "dark": (126, 98, 55), "light": (196, 160, 100), "edge": (103, 80, 44)}               # the frame: pale oak
+SPRUCE = {"base": (130, 97, 58), "dark": (94, 66, 36), "light": (146, 110, 64), "edge": (62, 41, 18)}               # the "?" crate's panel
+DARK_OAK = {"base": (88, 58, 28), "dark": (62, 40, 19), "light": (106, 72, 36), "edge": (34, 21, 9)}                  # the fruit crate's slats
+IRON = {"light": (235, 235, 235), "base": (200, 200, 200), "dark": (150, 150, 155), "edge": (100, 100, 106)}         # studs and nails
+
+
+def rgba(c):
+    return tuple(c) + (255,)
+
+
 QUESTION = [  # a 7 x 9 "?"
     ".XXXXX.", "XX...XX", "XX...XX", "....XX.", "...XX..", "...XX..", "...XX..", ".......", "...XX..",
 ]
@@ -88,16 +100,17 @@ def wood(d, box, base, dark, light, seed, vertical=True):
 
 
 def wood_strip():
-    """The crate trim's 16 x 16 texture, as the original's: orange wood with the grain along v, darker edges, and a rivet speck in the middle of the first
-    and the last row."""
+    """The crate trim's 16 x 16 texture, as the original's: pale oak with the grain along v, darker edges, and an iron stud in the middle of the first and the last
+    row (they end up on the mitres, at the corners)."""
     im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
-    p = lambda n: PALETTE[n][2] + (255,)
-    wood(d, [0, 0, 15, 15], p("wood"), p("wood_dark"), p("orange_light"), 3)
-    d.line([(0, 0), (0, 15)], fill=p("wood_dark"))
-    d.line([(15, 0), (15, 15)], fill=p("wood_dark"))
-    d.rectangle([6, 0, 9, 0], fill=p("black"))
-    d.rectangle([6, 15, 9, 15], fill=(150, 154, 164, 255))
+    wood(d, [0, 0, 15, 15], rgba(OAK["base"]), rgba(OAK["dark"]), rgba(OAK["light"]), 3)
+    d.line([(0, 0), (0, 15)], fill=rgba(OAK["edge"]))
+    d.line([(15, 0), (15, 15)], fill=rgba(OAK["edge"]))
+    d.line([(1, 0), (1, 15)], fill=rgba(OAK["light"]))                      # the lit edge of the bevel
+    for y, top in ((0, IRON["base"]), (15, IRON["light"])):
+        d.rectangle([6, y, 9, y], fill=rgba(top))
+        d.point([(5, y), (10, y)], fill=rgba(IRON["edge"]))
     return im
 
 
@@ -114,6 +127,27 @@ def trapezoid(size, frame, strip):
     return out
 
 
+def outer_ring(face, size):
+    """The dark line round the outside of a crate face, all the way round (the four mitred strips each stop short of a corner, so it is drawn over them). Not one colour: runs of two to
+    four pixels along each edge in the planks' dark tones (oak's and spruce's darker boards and their edge), a lighter streak now and then, so it has a grain like wood."""
+    rnd = random.Random(11)
+    tones = [(OAK["dark"], 5), (SPRUCE["dark"], 3), (OAK["edge"], 2), ((112, 86, 49), 3), (SPRUCE["base"], 1)]
+    pool = [c for c, w in tones for _ in range(w)]
+    ring = max(1, size // 16)
+    px = face.load()
+
+    for k in range(ring):
+        last = size - 1 - k
+        cells = [(x, k) for x in range(k, last + 1)] + [(last, y) for y in range(k + 1, last + 1)] + [(x, last) for x in range(last - 1, k - 1, -1)] + [(k, y) for y in range(last - 1, k, -1)]
+        i = 0
+        while i < len(cells):
+            colour = rnd.choice(pool)
+            n = rnd.randint(2, 4)
+            for x, y in cells[i:i + n]:
+                px[x, y] = rgba(colour)
+            i += n
+
+
 def crate_face(size, panel_art):
     """A whole crate face, size x size: four mitred strips round a square panel, all in one plane, as the original's. {panel_art(n)} draws the panel, n px square."""
     frame = round(size * 18.1 / 108.8)
@@ -124,20 +158,22 @@ def crate_face(size, panel_art):
         face.alpha_composite(base.rotate(90 * turns))
     inner = size - 2 * frame
     face.alpha_composite(panel_art(inner), (frame, frame))
+    outer_ring(face, size)
     return face
 
 
 def blank_panel(n):
-    """The panel without its "?": planks and crossed braces (the face of a crate that is locked to a power-up, which shows that power-up's icon instead)."""
+    """The panel without its "?": spruce planks and crossed oak braces (the face of a crate that is locked to a power-up, which shows that power-up's icon instead)."""
     im = Image.new("RGBA", (n, n), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
-    p = lambda name: PALETTE[name][2] + (255,)
-    wood(d, [0, 0, n - 1, n - 1], p("wood"), p("wood_dark"), p("orange_light"), 1, vertical=False)
+    wood(d, [0, 0, n - 1, n - 1], rgba(SPRUCE["base"]), rgba(SPRUCE["dark"]), rgba(SPRUCE["light"]), 1, vertical=False)
     for a, b in (((0, 0), (n - 1, n - 1)), ((n - 1, 0), (0, n - 1))):          # crossed braces
         thick, thin = (max(3, n // 5), max(2, n // 7)) if n >= 16 else (2, 1)
-        d.line([a, b], fill=p("wood_dark"), width=thick)
-        d.line([a, b], fill=p("orange"), width=thin)
-    d.rectangle([0, 0, n - 1, n - 1], outline=p("wood_dark"))
+        d.line([a, b], fill=rgba(SPRUCE["dark"]), width=thick)
+        d.line([a, b], fill=rgba(OAK["base"]), width=thin)
+    d.rectangle([0, 0, n - 1, n - 1], outline=rgba(SPRUCE["edge"]))
+    for x, y in ((1, 1), (n - 2, 1), (1, n - 2), (n - 2, n - 2)):           # iron nails where the braces end
+        d.point((x, y), fill=rgba(IRON["base"]))
     return im
 
 
@@ -168,20 +204,59 @@ def question_panel(n):
     return im
 
 
+EXCLAIM_SMALL = [  # a 2 x 6 "!"
+    "XX", "XX", "XX", "XX", "..", "XX",
+]
+
+
+def exclaim_panel(n):
+    """The trigger crate's panel: the blank panel with a "!" in the "?"'s colours (yellow with a red outline)."""
+    im = blank_panel(n)
+    p = lambda name: PALETTE[name][2] + (255,)
+    glyph = EXCLAIM_SMALL
+    gw, gh = len(glyph[0]), len(glyph)
+    k = max(1, (n - 2) // gh)
+    mask = Image.new("L", (n, n), 0)
+    md = ImageDraw.Draw(mask)
+    gx, gy = (n - gw * k) // 2, (n - gh * k) // 2
+    for y, row in enumerate(glyph):
+        for x, c in enumerate(row):
+            if c == "X":
+                md.rectangle([gx + x * k, gy + y * k, gx + x * k + k - 1, gy + y * k + k - 1], fill=255)
+    outline = Image.new("L", (n, n), 0)
+    od = ImageDraw.Draw(outline)
+    for dx in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            od.bitmap((dx, dy), mask, fill=255)
+    for y in range(n):
+        for x in range(n):
+            if outline.getpixel((x, y)):
+                im.putpixel((x, y), p("red"))
+            if mask.getpixel((x, y)):
+                im.putpixel((x, y), p("yellow"))
+    return im
+
+
+def exclaim_crate(size):
+    """The whole face of the trigger crate ("!" on the blank crate), at the sheet's resolution (textures/item/crate_exclaim.png)."""
+    return crate_face(ART, exclaim_panel).resize((size, size), Image.NEAREST)
+
+
 def blank_crate(size):
     """The whole face of the blank crate, drawn at the sheet's resolution (textures/item/crate_blank.png)."""
     return crate_face(ART, blank_panel).resize((size, size), Image.NEAREST)
 
 
 def plank_panel(n):
+    """The fruit crate's panel: upright slats, dark oak and spruce side by side, black-brown seams."""
     im = Image.new("RGBA", (n, n), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
-    p = lambda name: PALETTE[name][2] + (255,)
     for i in range(4):
         x0, x1 = i * n // 4, (i + 1) * n // 4 - 1                      # four planks that together cover the panel at any size
-        wood(d, [x0, 0, x1, n - 1], p("wood_dark") if i % 2 else p("brown"), p("brown_dark"), p("red_dark"), 10 + i)
-        d.line([(x0, 0), (x0, n - 1)], fill=p("black"))
-    d.rectangle([0, 0, n - 1, n - 1], outline=p("black"))
+        c = SPRUCE if i % 2 else DARK_OAK
+        wood(d, [x0, 0, x1, n - 1], rgba(c["base"]), rgba(c["dark"]), rgba(c["light"]), 10 + i)
+        d.line([(x0, 0), (x0, n - 1)], fill=rgba(DARK_OAK["edge"]))
+    d.rectangle([0, 0, n - 1, n - 1], outline=rgba(DARK_OAK["dark"]))
     return im
 
 
@@ -401,8 +476,15 @@ def crate_blank_model():
                        "faces": {f: dict(face) for f in ("north", "east", "south", "west", "up", "down")}}])]
 
 
+def exclaim_model():
+    face = {"uv": [0, 0, 16, 16], "texture": "#exclaim"}
+    return [("cube", [{"from": [CRATE_LO, 0, CRATE_LO], "to": [CRATE_HI, CRATE, CRATE_HI],
+                       "faces": {f: dict(face) for f in ("north", "east", "south", "west", "up", "down")}}])]
+
+
 def models():
     return {
+        "trigger_crate": exclaim_model(),
         "power_fruit": power_fruit(),
         "fruit_crate": crate(PLANKS_UV),
         "powerup_crate": crate(QUESTION_UV),
@@ -424,7 +506,7 @@ def embed():
     """Put the current sheet into the texture slot of every pickup bbmodel (the models carry their own copy of the picture)."""
     import base64
     for name in models():
-        tex = BLANK_TEX if name.endswith("_blank") else TEX
+        tex = BLANK_TEX if name.endswith("_blank") else EXCLAIM_TEX if name == "trigger_crate" else TEX
         src = "data:image/png;base64," + base64.b64encode(open(tex, "rb").read()).decode()
         path = os.path.join(BB, name + ".bbmodel")
         m = json.load(open(path, encoding="utf-8"))
@@ -442,18 +524,21 @@ def main():
         draw_texture().save(TEX)
     if not os.path.exists(BLANK_TEX):
         blank_crate(SHEET).save(BLANK_TEX)
+    if not os.path.exists(EXCLAIM_TEX):
+        exclaim_crate(SHEET).save(EXCLAIM_TEX)
     os.makedirs(BB, exist_ok=True)
     for name, groups in models().items():
         path = os.path.join(BB, name + ".bbmodel")
         if not os.path.exists(path):
-            bbmodel.write(path, name, {"blank": BLANK_TEX} if name.endswith("_blank") else {"pickups": TEX}, groups, display=display(), gui_light_front=False,
+            bbmodel.write(path, name, {"blank": BLANK_TEX} if name.endswith("_blank") else {"exclaim": EXCLAIM_TEX} if name == "trigger_crate" else {"pickups": TEX}, groups, display=display(), gui_light_front=False,
                           comment="Stand-in pickup model in the original game's proportions (a crate is exactly one block). One group per part. The single texture "
                                   "slot 'pickups' is shared by all pickups: a small sheet (palette cells, the ? face, the fruit crate side), see "
                                   "tools/make_pickup_models.py.")
         model = bbmodel.read(path)
         dump(os.path.join(ASSETS, "models", "item", "pickup_" + name + ".json"), {
-            "textures": {"blank": "ctrcraft:item/crate_blank", "particle": "ctrcraft:item/crate_blank"} if name.endswith("_blank")
-            else {"pickups": "ctrcraft:item/pickups", "particle": "ctrcraft:item/pickups"},
+            "textures": {"blank": "craftteamracing:item/crate_blank", "particle": "craftteamracing:item/crate_blank"} if name.endswith("_blank")
+            else {"exclaim": "craftteamracing:item/crate_exclaim", "particle": "craftteamracing:item/crate_exclaim"} if name == "trigger_crate"
+            else {"pickups": "craftteamracing:item/pickups", "particle": "craftteamracing:item/pickups"},
             "elements": bbmodel.elements(model),
             "display": model["display"] or display(),
         })

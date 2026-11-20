@@ -2,7 +2,7 @@
 Extract CTR's original kart sounds from YOUR OWN copy of the game into a LOCAL resource pack.
 
   python tools/extract_ctr_sounds.py                      (finds the disc image in the project folder)
-  python tools/extract_ctr_sounds.py --disc "D:/CTR.bin" --install "F:/ATLauncher/instances/CTRCraft/resourcepacks"
+  python tools/extract_ctr_sounds.py --disc "D:/CTR.bin" --install "<instance>/resourcepacks"
 
 What it does: reads the raw disc image (.bin / MODE2/2352, or a plain .iso), finds SOUNDS\\KART.HWL (CTR's HOWL sound bank),
 decodes the PS-ADPCM samples the kart events use, and writes them as mono Ogg Vorbis into a resource pack folder
@@ -333,7 +333,7 @@ def main():
     print("HOWL: %d OtherFX, %d EngineFX, %d samples" % (len(howl.other), len(howl.engine), len(howl.samples)))
 
     pack = args.out
-    sounds_dir = os.path.join(pack, "assets", "ctrcraft", "sounds")
+    sounds_dir = os.path.join(pack, "assets", "craftteamracing", "sounds")
     if os.path.isdir(pack):
         shutil.rmtree(pack)
     os.makedirs(sounds_dir)
@@ -344,11 +344,11 @@ def main():
     # the sounds the mod made up and the game does not have are SILENT in this pack (an event with "replace": true and no sounds plays nothing): the boost bar's pling, the early
     # boost's fizzle, the drift's start and the spin-out
     silent = {name: {"replace": True, "sounds": []} for name in INVENTED}
-    with open(os.path.join(pack, "assets", "ctrcraft", "sounds.json"), "w", encoding="utf-8", newline="\n") as f:
+    with open(os.path.join(pack, "assets", "craftteamracing", "sounds.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump(silent, f, indent=2)
     with open(os.path.join(pack, "pack.mcmeta"), "w", encoding="utf-8", newline="\n") as f:
         json.dump({"pack": {"pack_format": 34,
-                            "description": "Craft Team Racing: original sounds extracted from your own disc (local use only, do not share)"}}, f, indent=2)
+                            "description": "CTR: Original Sounds (extracted from your own disc (local use only, do not share)"}}, f, indent=2)
     with open(os.path.join(pack, "README.txt"), "w", encoding="utf-8", newline="\n") as f:
         f.write("Made by tools/extract_ctr_sounds.py from the owner's own copy of Crash Team Racing.\n"
                 "The recordings belong to Sony / Naughty Dog: keep this pack on this machine, do not share or upload it.\n"
@@ -360,7 +360,7 @@ def main():
         print("%-12s %-22s %7d %7.2f  %s" % (r["event"], r["howl"], r["rate"], r["seconds"], "loop" if r["loop"] else ""))
     print("\nPack written to", pack)
     if args.install:
-        dst = os.path.join(args.install, "CTRCraft-OriginalSounds")
+        dst = os.path.join(args.install, "CTR-OriginalSounds")
         if os.path.isdir(dst):
             shutil.rmtree(dst)
         shutil.copytree(pack, dst)

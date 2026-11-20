@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "craftteamracing:power_ingot"
+    }
+  ],
+  "result": {
+    "id": "craftteamracing:power_nugget",
+    "count": 9
+  }
+}

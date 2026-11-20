@@ -7,7 +7,7 @@ The TNT keeps the Minecraft TNT block's own textures (as decided with the author
 block at each of the eight corners and a strap along each of the twelve edges. The charged one is a creeper crate: green with a creeper's face on its four sides and the same steel.
 The models are Blockbench's: blockbench/pickups/tnt.bbmodel and nitro.bbmodel are the source (written once from the shapes below if missing, then they are yours; this script only
 reads them). Writes models/item/pickup_tnt.json and pickup_nitro.json, and draws once if missing (yours to repaint) textures/item/tnt_metal.png (16 x 16: the steel plate, the
-top left 4 x 4 is what the frame's pieces show), creeper_face.png and creeper_skin.png (16 x 16). Origin: the bottom centre of the block; 16 px is one block.
+top left 4 x 4 is what the frame's pieces show), creeper_face.png and creeper_skin.png (16 x 16; the creeper's, from Minecraft's creeper head, written every run). Origin: the bottom centre of the block; 16 px is one block.
 """
 import json
 import os
@@ -19,7 +19,7 @@ from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bbmodel  # noqa: E402
 
-ASSETS = os.path.join("src", "main", "resources", "assets", "ctrcraft")
+ASSETS = os.path.join("src", "main", "resources", "assets", "craftteamracing")
 TEX = os.path.join(ASSETS, "textures", "item")
 BB = os.path.join("blockbench", "pickups")
 
@@ -41,20 +41,53 @@ def draw_metal():
     return im
 
 
+# The creeper's face, taken from Minecraft's creeper head (an 8 x 8 face): eyes, a nose block, a frown with two feet. X is black. Here every pixel is two wide and two tall, on a 16 x 16 crate face.
+CREEPER_FACE = [
+    "........",
+    "........",
+    ".XX..XX.",
+    ".XX..XX.",
+    "...XX...",
+    "..XXXX..",
+    "..XXXX..",
+    "..X..X..",
+]
+# the head's greens, from the dark rim round the features through the mid greens to the pale flecks (colours only; the mottling is drawn here)
+GREENS = [((76, 179, 65), 8), ((103, 215, 85), 6), ((60, 150, 52), 5), ((133, 220, 116), 3), ((30, 78, 24), 2), ((165, 205, 159), 1), ((19, 169, 15), 1)]
+BLACK = (14, 18, 14)
+
+
+def mottle(rnd, n):
+    pool = [c for c, w in GREENS for _ in range(w)]
+    return [[rnd.choice(pool) for _ in range(n)] for _ in range(n)]
+
+
 def draw_creeper():
+    """The creeper crate's pictures: the face (side, 16 x 16) and the skin (top and bottom): the head's mottled greens at the crate's resolution, a dark halo round the features as the head has,
+    the face two pixels to the head's one. Written every run (edit the code, not the PNGs)."""
     rnd = random.Random(11)
     face = Image.new("RGBA", (16, 16), (0, 0, 0, 255))
     skin = Image.new("RGBA", (16, 16), (0, 0, 0, 255))
-    for y in range(16):
-        for x in range(16):
-            g = rnd.choice(((86, 170, 66), (70, 150, 55), (104, 188, 80), (58, 130, 48), (92, 176, 72)))
-            face.putpixel((x, y), g + (255,))
-            skin.putpixel((x, y), rnd.choice(((86, 170, 66), (70, 150, 55), (104, 188, 80), (58, 130, 48), (92, 176, 72))) + (255,))
-    black = (18, 24, 18, 255)
-    for x0, y0, x1, y1 in ((3, 4, 6, 7), (10, 4, 13, 7), (6, 7, 10, 10), (5, 10, 7, 13), (9, 10, 11, 13)):
-        for y in range(y0, y1):
-            for x in range(x0, x1):
-                face.putpixel((x, y), black)
+    cells = mottle(rnd, 8)
+    skin_cells = mottle(rnd, 8)
+    dark = lambda c, k: tuple(int(v * k) for v in c)
+    for fy in range(8):
+        for fx in range(8):
+            c = cells[fy][fx]
+            near = any(0 <= fy + dy < 8 and 0 <= fx + dx < 8 and CREEPER_FACE[fy + dy][fx + dx] == "X" for dx in (-1, 0, 1) for dy in (-1, 0, 1))
+            if CREEPER_FACE[fy][fx] == "X":
+                c = BLACK
+            elif near:
+                c = dark(c, 0.55)
+            for dy in (0, 1):
+                for dx in (0, 1):
+                    jitter = 1.0 + rnd.choice((-0.07, 0.0, 0.0, 0.07)) if c != BLACK else 1.0          # the head's pixels are flat: a whisper of grain at the finer grid
+                    face.putpixel((fx * 2 + dx, fy * 2 + dy), tuple(min(255, int(v * jitter)) for v in c) + (255,))
+            sc = skin_cells[fy][fx]
+            for dy in (0, 1):
+                for dx in (0, 1):
+                    jitter = 1.0 + rnd.choice((-0.07, 0.0, 0.0, 0.07))
+                    skin.putpixel((fx * 2 + dx, fy * 2 + dy), tuple(min(255, int(v * jitter)) for v in sc) + (255,))
     return face, skin
 
 
@@ -100,21 +133,31 @@ def display():
     return {"gui": {"rotation": [30, 225, 0], "scale": [0.6, 0.6, 0.6]}, "ground": {"translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]}}
 
 
+def embed(path, files):
+    """Refresh the copies of the generated pictures that the bbmodel carries in its texture slots (so Blockbench shows the current ones)."""
+    import base64
+    m = json.load(open(path, encoding="utf-8"))
+    for t in m["textures"]:
+        if t.get("name") in files:
+            t["source"] = "data:image/png;base64," + base64.b64encode(open(files[t["name"]], "rb").read()).decode()
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(m, f, indent=1)
+
+
 def main():
     os.makedirs(TEX, exist_ok=True)
     metal, face, skin = (os.path.join(TEX, n + ".png") for n in ("tnt_metal", "creeper_face", "creeper_skin"))
     if not os.path.exists(metal):
         draw_metal().save(metal)
-    if not os.path.exists(face) or not os.path.exists(skin):
-        f, k = draw_creeper()
-        f.save(face)
-        k.save(skin)
+    f, k = draw_creeper()
+    f.save(face)
+    k.save(skin)
     os.makedirs(BB, exist_ok=True)
     jobs = {
         "tnt": ({"side": None, "top": None, "bottom": None, "metal": metal}, [("body", [body_tnt()]), ("frame", frame())],
-                {"side": "minecraft:block/tnt_side", "top": "minecraft:block/tnt_top", "bottom": "minecraft:block/tnt_bottom", "metal": "ctrcraft:item/tnt_metal", "particle": "ctrcraft:item/tnt_metal"}),
+                {"side": "minecraft:block/tnt_side", "top": "minecraft:block/tnt_top", "bottom": "minecraft:block/tnt_bottom", "metal": "craftteamracing:item/tnt_metal", "particle": "craftteamracing:item/tnt_metal"}),
         "nitro": ({"face": face, "skin": skin, "metal": metal}, [("body", [body_creeper()]), ("frame", frame())],
-                  {"face": "ctrcraft:item/creeper_face", "skin": "ctrcraft:item/creeper_skin", "metal": "ctrcraft:item/tnt_metal", "particle": "ctrcraft:item/creeper_skin"}),
+                  {"face": "craftteamracing:item/creeper_face", "skin": "craftteamracing:item/creeper_skin", "metal": "craftteamracing:item/tnt_metal", "particle": "craftteamracing:item/creeper_skin"}),
     }
     for name, (slots, groups, textures) in jobs.items():
         path = os.path.join(BB, name + ".bbmodel")
@@ -126,6 +169,7 @@ def main():
         out = os.path.join(ASSETS, "models", "item", "pickup_" + name + ".json")
         with open(out, "w", encoding="utf-8", newline="\n") as f:
             json.dump({"textures": textures, "elements": bbmodel.elements(model), "display": model["display"] or display()}, f, indent=2)
+    embed(os.path.join(BB, "nitro.bbmodel"), {"face.png": face, "skin.png": skin})
     print("tnt models written")
 
 

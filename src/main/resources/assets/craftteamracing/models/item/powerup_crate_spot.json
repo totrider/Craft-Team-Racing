@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "craftteamracing:block/powerup_crate_spot"
+  }
+}

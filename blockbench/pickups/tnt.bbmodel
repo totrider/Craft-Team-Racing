@@ -2004,7 +2004,7 @@
    "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAJUlEQVR4nGM8ceLEfwYKABMlmkcNgAAmBgoB06gBDKMGMFBuAADOlwN3OndYhAAAAABJRU5ErkJggg=="
   },
   {
-   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\ctrcraft\\textures\\item\\tnt_metal.png",
+   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\craftteamracing\\textures\\item\\tnt_metal.png",
    "name": "metal.png",
    "folder": "",
    "namespace": "",
@@ -2020,7 +2020,7 @@
    "mode": "bitmap",
    "saved": true,
    "uuid": "d84553a1-c87a-4bf2-8b0e-b1e318bcefd5",
-   "relative_path": "../../src/main/resources/assets/ctrcraft/textures/item/tnt_metal.png",
+   "relative_path": "../../src/main/resources/assets/craftteamracing/textures/item/tnt_metal.png",
    "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABz0lEQVR4nE2TSWrDUAyG5ZeXeSa3KKU0i2y6CfQuXWdTyC1ygyy67h2y6SIESi9iTObBjofyCWQiMLb0pP//nyQHTy/vxXj8LI1GQ1arH5nNPiQIAvUvl4v0+3193+93jbfbbcHO57NUq1Vxk8mrzOefkmWJTKdvmuC9l3q9LrVaTbIs08JmsyndbreMcQ6Jw1ksForqnCvZttutFEWhMYowfFOC3W43cZvNn+R5IHGcynr9qyw8MMKQJInKjeNYwQAhBoiqW359F3mey+l0Ku+O8c1VKOAMQwnSj8ejxsn1NAJZw+FQg7D1ej1Fhwnw0Wgkh8NBATEKK5WKNtFzD5zdbqdvpBNL01QffBhhBwxgA4fMcbdyJM4pE0AkwQgIgNfrtewB5xhKPQk0DXQMIIrxW61WOUaKIQKUK3BtlHkWxdCNFRbQVaJzuhtcASWco6DT6ei3BwUjQOHjjFEHAGwo4uGcqQAahqF40JBKEv2gaDAYiNmjZBQaKEadB5Htsx0gEZ9DZFPAhGx8AAJEjo6RBhLA6IUVEaOAN4pspPv9Xn8wfO0dOw8rDWPLrFEURlGkwDYhfPqEInqn/4KNyJJQALJtIQ2z8ZGHKquh4B+oVW6velNgIQAAAABJRU5ErkJggg=="
   }
  ],

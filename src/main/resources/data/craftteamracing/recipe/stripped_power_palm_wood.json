@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": {
+      "item": "craftteamracing:stripped_power_palm_log"
+    }
+  },
+  "pattern": [
+    "LL",
+    "LL"
+  ],
+  "result": {
+    "id": "craftteamracing:stripped_power_palm_wood",
+    "count": 3
+  }
+}

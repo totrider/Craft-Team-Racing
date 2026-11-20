@@ -1,22 +1,26 @@
 # Craft Team Racing - project rules
 
-NeoForge 1.21.1 (21.1.265) mod, Java 21, Parchment mappings. Mod id `ctrcraft`, package `com.ctrcraft`.
+NeoForge 1.21.1 (21.1.265) mod, Java 21, Parchment mappings. Mod id `craftteamracing`, package `com.craftteamracing`.
 Roadmap: `docs/ROADMAP.md`. Research: `docs/RESEARCH.md`.
 
 ## Workflow
-- Test instances: `F:\ATLauncher\instances\CTRCraft` (NeoForge 21.1.265) and `F:\ATLauncher\instances\CTRCraftMP` (multiplayer tests;
+- Test instances: `F:\ATLauncher\instances\CraftTeamRacing` (NeoForge 21.1.265) and `F:\ATLauncher\instances\CraftTeamRacingMP` (multiplayer tests;
   every build goes to both). `build-and-install.bat` builds and copies the
   jar into its `mods` folder. Minecraft locks the jar while it runs: close the game first.
 - Models: **Blockbench first**. Every block/item/entity model's geometry lives in `blockbench/<family>/*.bbmodel` and is
   the source of truth; generators in `tools/` read them. Never put geometry only in Java or hand-edit generated model
   JSON. Patch existing bbmodels in place so the user's manual edits survive. New model = new bbmodel first.
+- Mesh models (anything that is a mesh rather than boxes, e.g. the Slime Shield's layers): `blender/<family>/*.blend` is the source, next to `blockbench/`; `tools/export_blender_models.py` exports each collection to
+  OBJ + model JSON (conventions in `blender/README.md`). Same rules: never hand-edit the exported OBJ/JSON.
+- Power-up sprites: drawn 16 x 16 WITHOUT an outline, then outlined in black (18 x 18 at most) and put into the original's 3 : 2 icon shape (96 x 64, the sprite stretched 4 x 3 so it shows square: a
+  reference pixel is 0.7361 as wide as tall); `tools/sprite_outline.py`, `tools/make_power_sprites.py`. Minecraft's own sprites the mod borrows (totem, clock) are outlined at run time (`client/IconSprites`), never copied.
 - Textures: layered Krita `.kra` in `art/` (not .ora); a build script exports PNGs. Never hand-edit generated PNGs.
 - When handing over an editable source file (bbmodel, kra, config), say up front anything non-obvious about its structure.
 - `.mcp.json` is local only (gitignored). The Blockbench MCP server is configured there (local path).
 - Datagen output in `src/generated/resources`; data-driven things (terrain table, recipes, tags) as data packs where possible.
 
 ## Code rules
-- `com.ctrcraft.physics` must not import Minecraft or NeoForge classes. It uses CTR's integer fixed-point math exactly
+- `com.craftteamracing.physics` must not import Minecraft or NeoForge classes. It uses CTR's integer fixed-point math exactly
   (see RESEARCH.md conventions). Anything Minecraft-specific goes through an interface in that package.
 - Port from ctr-native / world-of-kartcraft's spec function by function; note the C source function in a comment and in
   `docs/PHYSICS_PORT.md`. Verify constants against the raw files, never from memory.
@@ -27,6 +31,11 @@ Roadmap: `docs/ROADMAP.md`. Research: `docs/RESEARCH.md`.
   `tools/extract_ctr_textures.py` (`extract-ctr-sounds.bat`, `extract-ctr-textures.bat`; output in git-ignored `local-assets/`, installed into the instance's `resourcepacks/`, never in the jar,
   never uploaded). The disc image in the project folder is git-ignored too. The mod ships synthesised placeholders (`tools/make_sounds.py`).
 - Client-side sim at fixed 30 Hz with interpolation; server validates, does not simulate.
+
+## Naming (decided 2026-11-20)
+- The mod is **Craft Team Racing** (**CTR** in short); mod id `craftteamracing`, package `com.craftteamracing`. Never "CTRCraft" in anything that ships, in docs or in text a player sees.
+- Player-visible text (lang, tooltips, config comments, pack names, advancements) uses Minecraft-themed or generic names (Redstone Surge, Rocket, Potion, Slime Shield, Totem, End Crystal, Power Fruit...).
+  The original's names (Aku Aku, Wumpa, level names...) live only in the local resource packs' lang files and in notes that are about the original's mechanics (`docs/POWERUPS.md` has the mapping).
 
 ## Fidelity policy (decided 2026-11-12)
 - **Default behaviour is the PS1 game's**, as read from the decomp (ctr-native), not from later games (Nitro-Fueled etc.) and not from

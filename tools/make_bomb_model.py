@@ -1,55 +1,50 @@
 """
-The Bomb: the jar's stand-in 3D model, its texture, its spark and where the spark is.
+The Bomb: the mod's own 3D model, its two textures, its spark and where the spark is.
 
   python tools/make_bomb_model.py
 
-The model is Blockbench's: blockbench/pickups/bomb.bbmodel is the source (written once from the shape below if it is missing, then it is yours; this script only reads it). Writes
-src/main/resources/assets/ctrcraft/models/item/pickup_bomb.json (the renderer fetches that model; the local resource pack's original bomb replaces it) and, once if missing,
-textures/item/bomb.png (a 16 x 16 palette of flat 4 x 4 cells, yours to repaint), textures/entity/bomb_spark.png (the glow at the tip of the fuse) and bomb/bomb_fuse.json
-({tip: [x, y, z] in blocks from the ball's middle, spark_size, ground: the ball's radius}).
+A round iron bomb with a rope fuse, modelled in Blender (blender/bomb/bomb.blend, made once by this script and yours after that) and exported by tools/export_blender_models.py to
+models/item/bomb.obj + pickup_bomb.json, and, for the powered-up bomb (ten power fruit), bomb_charged.obj + pickup_bomb_charged.json (the same mesh, the glowing texture).
+The ball is a sphere flattened at the two ends of the axle it rolls about, with a skull plate on each end, a steel belt round its middle and a collar where the fuse comes out. A resource
+pack's original bomb (models/item/bomb.obj, pickup_bomb.json) replaces it; the powered-up model is then not used (the renderer tints the pack's bomb red, as before).
 
-The ball is a sphere approximated as five octagonal prisms along x (the axle it rolls about), narrowing to the poles, each made of four flat slabs, 0, 90 and +-45 degrees (the
-only angles a block model takes): a regular octagon is the union of four rectangles as long as it is wide between flats and 0.414 of that across, at 45 degree steps. Their caps
-are put a hair apart so they do not fight. The model's middle (8, 8, 8) is the ball's middle; the front is north (-z); the fuse leaves the -x cap towards the back, as the original's leaves its ball.
+Textures (drawn here every run: edit the code, not the PNGs), 32 x 32, in the grey of Minecraft's cauldron and anvil for the iron, the skeleton's face and the bone item's cream for the skulls:
+  bomb_iron.png   iron (top left), skull plate (top right), steel belt (bottom left, upper half), collar (bottom left, lower half), rope (bottom right, upper half), burnt tip (lower half)
+  bomb_hot.png    the same layout for the powered-up bomb: heated iron with glowing orange cracks (after the fire charge), the skulls' eyes alight, a flame-coloured fuse
+Also writes textures/entity/bomb_spark.png (the glow at the fuse's tip) and bomb/bomb_fuse.json ({tip: [x, y, z] in blocks from the ball's middle, spark_size, ground: the ball's radius}):
+the tip is where BombFx puts the flames, so the model's fuse ends there. The model's middle (0.5, 0.5, 0.5) is the ball's middle; its front is north (-z); the fuse leaves the -x end.
+Run from the project folder.
 """
 import json
 import math
 import os
+import random
+import subprocess
 import sys
 
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import bbmodel  # noqa: E402
+import export_blender_models as ebm  # noqa: E402
 
-ASSETS = os.path.join("src", "main", "resources", "assets", "ctrcraft")
-TEX = os.path.join(ASSETS, "textures", "item", "bomb.png")
+ASSETS = os.path.join("src", "main", "resources", "assets", "craftteamracing")
+TEX = os.path.join(ASSETS, "textures", "item")
 SPARK = os.path.join(ASSETS, "textures", "entity", "bomb_spark.png")
 FUSE = os.path.join(ASSETS, "bomb", "bomb_fuse.json")
-OUT = os.path.join(ASSETS, "models", "item", "pickup_bomb.json")
-BB = os.path.join("blockbench", "pickups", "bomb.bbmodel")
+BLEND = os.path.join("blender", "bomb", "bomb.blend")
 
-PALETTE = {
-    "ball": (0, 0, (34, 36, 64)),
-    "band": (4, 0, (70, 72, 104)),
-    "white": (8, 0, (236, 236, 236)),
-    "fuse": (12, 0, (150, 124, 78)),
-}
-D = 12.0                    # the ball's width between flats, pixels
-S = D * (math.sqrt(2.0) - 1.0)           # 0.414 D: the side of the octagon
-X0, X1 = 3.0, 13.0          # the ball's length along the axle
 TIP = (-0.55, 0.09, 0.31)    # the fuse's tip, blocks from the ball's middle
 SPARK_SIZE = 0.8
 GROUND = 0.4                # the ball's radius (blocks)
 
-
-def draw_texture():
-    im = Image.new("RGBA", (16, 16), (255, 0, 255, 255))
-    for _, (cx, cy, rgb) in PALETTE.items():
-        for y in range(cy, cy + 4):
-            for x in range(cx, cx + 4):
-                im.putpixel((x, y), rgb + (255,))
-    return im
+# iron: the cauldron's and the anvil's greys (colours only; the grain is drawn here)
+IRON = [(45, 45, 50), (52, 52, 56), (63, 62, 66), (73, 72, 72), (79, 79, 79), (89, 88, 88)]
+# bone: the bone item's creams and the skeleton face's greys
+BONE, BONE_LIGHT, BONE_DARK, BONE_SHADE = (232, 229, 210), (252, 251, 237), (203, 198, 165), (123, 126, 107)
+SOCKET = (46, 46, 46)
+# the fire charge: the dark crust and the glowing cracks
+CRUST = [(31, 22, 21), (40, 30, 28), (55, 42, 40), (81, 73, 49)]
+GLOW = [(255, 200, 60), (255, 150, 30), (230, 100, 20)]
 
 
 def draw_spark():
@@ -64,66 +59,139 @@ def draw_spark():
     return im
 
 
-def box(frm, to, colour, rotation=None):
-    cx, cy, _ = PALETTE[colour]
-    face = {"uv": [cx + 1, cy + 1, cx + 3, cy + 3], "texture": "#bomb"}
-    el = {"from": [round(v, 4) for v in frm], "to": [round(v, 4) for v in to], "faces": {f: dict(face) for f in bbmodel.FACES}}
-    if rotation:
-        el["rotation"] = {"origin": [8, 8, 8], "axis": "x", "angle": rotation}
-    return el
+SKULL = [  # 16 x 16: a skull over two crossed bones (B bone, L light, D shade, S socket, . plate)
+    "................",
+    "....LLLLLLLL....",
+    "...LBBBBBBBBL...",
+    "..LBBBBBBBBBBD..",
+    "..LBBBBBBBBBBD..",
+    "..LBSSSBBSSSBD..",
+    "..LBSSSBBSSSBD..",
+    "..LBSSSBBSSSBD..",
+    "...BBBBSSBBBD...",
+    "....BBBSSBBD....",
+    "....BBBBBBBD....",
+    "....BLBLBLBD....",
+    "..BB.DDDDDD.BB..",
+    ".BBB........BBB.",
+    ".LB..........BL.",
+    "................",
+]
 
 
-def parts():
-    """The ball is a sphere approximated as a lathe along the axle: five octagonal prisms (each four slabs at 0, 90 and +-45 degrees) whose widths follow a circle, so it
-    reads round from every side. The fuse leaves the -x pole off the axle (the original's is 35 units off it) and steps up and out, so it stands at a slant instead of straight."""
-    eps = 0.02
-    # (x from, x to, width between flats): a circle of 12 px across, x from 2 to 14
-    rings = [(2.0, 3.3, 6.0), (3.3, 5.0, 10.0), (5.0, 11.0, 12.0), (11.0, 12.7, 10.0), (12.7, 14.0, 6.0)]
-    slabs = []
-    for n, (x0, x1, d) in enumerate(rings):
-        h, s_ = d / 2.0, d * (math.sqrt(2.0) - 1.0) / 2.0
-        k = n * 4 * eps
-        slabs += [
-            box([x0, 8 - h, 8 - s_], [x1, 8 + h, 8 + s_], "ball"),
-            box([x0 + eps, 8 - s_, 8 - h], [x1 - eps, 8 + s_, 8 + h], "ball"),
-            box([x0 + 2 * eps, 8 - h, 8 - s_], [x1 - 2 * eps, 8 + h, 8 + s_], "band", rotation=45),
-            box([x0 + 3 * eps, 8 - h, 8 - s_], [x1 - 3 * eps, 8 + h, 8 + s_], "band", rotation=-45),
-        ]
-    skulls = [box([2.0 - 0.06, 8 - 2.4, 8 - 1.9], [2.0 + 0.01, 8 + 2.4, 8 + 1.9], "white"), box([14.0 - 0.01, 8 - 2.4, 8 - 1.9], [14.0 + 0.06, 8 + 2.4, 8 + 1.9], "white")]
-    # the fuse: from the ball's surface (5 px off the axle, where the ball is 10 across) out along -x, then a step up: the tip is (TIP)
-    tx = 8 + TIP[0] * 16
-    ty = 8 + TIP[1] * 16
-    tz = 8 + TIP[2] * 16
-    fuse = [box([2.4, 8 - 0.4, tz - 0.4], [4.4, 8 + 0.4, tz + 0.4], "fuse"),
-            box([(tx + 2.4) / 2.0, 8 - 0.4 + (ty - 8) / 2.0, tz - 0.4], [2.4, 8 + 0.4 + (ty - 8) / 2.0, tz + 0.4], "fuse"),
-            box([tx, ty - 0.4, tz - 0.4], [(tx + 2.4) / 2.0, ty + 0.4, tz + 0.4], "fuse")]
-    return {"ball": slabs, "skulls": skulls, "fuse": fuse}
+def plate(hot, rnd):
+    im = Image.new("RGBA", (16, 16), (0, 0, 0, 255))
+    base = CRUST if hot else IRON
+    for y in range(16):
+        for x in range(16):
+            im.putpixel((x, y), rnd.choice(base[:3]) + (255,))
+    col = {"B": BONE, "L": BONE_LIGHT, "D": BONE_DARK, "S": (255, 150, 30) if hot else SOCKET}
+    for y, row in enumerate(SKULL):
+        for x, c in enumerate(row):
+            if c in col:
+                im.putpixel((x, y), col[c] + (255,))
+    return im
 
 
-def display():
-    return {"gui": {"rotation": [30, 225, 0], "scale": [0.5, 0.5, 0.5]}, "ground": {"translation": [0, 2, 0], "scale": [0.4, 0.4, 0.4]},
-            "fixed": {"rotation": [0, 180, 0], "scale": [0.5, 0.5, 0.5]}}
+def iron(hot, rnd):
+    """16 x 16 iron: the anvil's grain (long strokes across the roll), or the fire charge's crust with glowing cracks."""
+    im = Image.new("RGBA", (16, 16), (0, 0, 0, 255))
+    if not hot:
+        for y in range(16):
+            row = rnd.choice(IRON[1:5])
+            for x in range(16):
+                v = row if rnd.random() < 0.75 else rnd.choice(IRON)
+                im.putpixel((x, y), v + (255,))
+        for x, y in ((3, 4), (4, 4), (3, 5)):                              # a glint
+            im.putpixel((x, y), IRON[5] + (255,))
+        return im
+    for y in range(16):
+        for x in range(16):
+            im.putpixel((x, y), rnd.choice(CRUST[:3]) + (255,))
+    for _ in range(6):                                                      # cracks that wander across
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        for _ in range(rnd.randint(4, 7)):
+            im.putpixel((x % 16, y % 16), rnd.choice(GLOW) + (255,))
+            x += rnd.choice((-1, 0, 1, 1))
+            y += rnd.choice((-1, 0, 1))
+    return im
+
+
+def belt(hot, rnd):
+    """16 x 8: the steel belt round the middle: lighter, with rivets."""
+    im = Image.new("RGBA", (16, 8), (0, 0, 0, 255))
+    for y in range(8):
+        for x in range(16):
+            c = rnd.choice(IRON[3:]) if not hot else rnd.choice(CRUST[1:])
+            if y in (0, 7):
+                c = IRON[1] if not hot else CRUST[0]
+            im.putpixel((x, y), c + (255,))
+    for x in (2, 6, 10, 14):
+        im.putpixel((x, 3), IRON[5] + (255,) if not hot else GLOW[1] + (255,))
+        im.putpixel((x, 4), IRON[2] + (255,) if not hot else GLOW[2] + (255,))
+    return im
+
+
+def collar(hot, rnd):
+    im = Image.new("RGBA", (16, 8), (0, 0, 0, 255))
+    for y in range(8):
+        for x in range(16):
+            c = rnd.choice(IRON[:3]) if not hot else rnd.choice(CRUST[:2])
+            if y == 0:
+                c = IRON[4] if not hot else GLOW[2]
+            im.putpixel((x, y), c + (255,))
+    return im
+
+
+def rope(hot):
+    """16 x 8: twisted rope in diagonal bands."""
+    im = Image.new("RGBA", (16, 8), (0, 0, 0, 255))
+    a, b = ((150, 124, 78), (112, 90, 56)) if not hot else ((205, 120, 40), (150, 70, 25))
+    for y in range(8):
+        for x in range(16):
+            im.putpixel((x, y), (a if (x + y) % 4 < 2 else b) + (255,))
+    return im
+
+
+def tip(hot):
+    """16 x 8: the burnt end of the fuse."""
+    im = Image.new("RGBA", (16, 8), (30, 24, 20, 255))
+    if hot:
+        for x in range(16):
+            for y in range(8):
+                im.putpixel((x, y), GLOW[(x + y) % 3] + (255,))
+    return im
+
+
+def draw_texture(hot):
+    rnd = random.Random(21 if hot else 12)
+    im = Image.new("RGBA", (32, 32), (0, 0, 0, 255))
+    im.paste(iron(hot, rnd), (0, 0))
+    im.paste(plate(hot, rnd), (16, 0))
+    im.paste(belt(hot, rnd), (0, 16))
+    im.paste(collar(hot, rnd), (0, 24))
+    im.paste(rope(hot), (16, 16))
+    im.paste(tip(hot), (16, 24))
+    return im
 
 
 def main():
-    for path, make in ((TEX, draw_texture), (SPARK, draw_spark)):
-        if not os.path.exists(path):
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            make().save(path)
-    if not os.path.exists(FUSE):
-        os.makedirs(os.path.dirname(FUSE), exist_ok=True)
-        with open(FUSE, "w", encoding="utf-8", newline="\n") as f:
-            json.dump({"tip": list(TIP), "spark_size": SPARK_SIZE, "ground": GROUND}, f, indent=2)
-    if not os.path.exists(BB):
-        bbmodel.write(BB, "bomb", {"bomb": TEX}, list(parts().items()), display=display(), gui_light_front=False,
-                      comment="Stand-in Bomb: an octagonal prism along x (the axle it rolls about) from four slabs (0, 90, +-45 degrees), the model's middle (8, 8, 8) is the ball's middle. "
-                              "The fuse leaves the -x cap; the spark is a billboard drawn by the game at the fuse's tip (bomb/bomb_fuse.json), not part of this model.")
-    model = bbmodel.read(BB)
-    els = bbmodel.elements(model)
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    with open(OUT, "w", encoding="utf-8", newline="\n") as f:
-        json.dump({"textures": {"bomb": "ctrcraft:item/bomb", "particle": "ctrcraft:item/bomb"}, "elements": els, "display": model["display"]}, f, indent=2)
-    print("bomb written")
+    os.makedirs(TEX, exist_ok=True)
+    draw_texture(False).save(os.path.join(TEX, "bomb_iron.png"))
+    draw_texture(True).save(os.path.join(TEX, "bomb_hot.png"))
+    os.makedirs(os.path.dirname(SPARK), exist_ok=True)
+    draw_spark().save(SPARK)
+    os.makedirs(os.path.dirname(FUSE), exist_ok=True)
+    with open(FUSE, "w", encoding="utf-8", newline="\n") as f:
+        json.dump({"tip": list(TIP), "spark_size": SPARK_SIZE, "ground": GROUND}, f, indent=2)
+    if not os.path.exists(BLEND):
+        os.makedirs(os.path.dirname(BLEND), exist_ok=True)
+        exe = ebm.find_blender()
+        if not exe:
+            sys.exit("Blender not found (set BLENDER to its blender.exe): cannot create " + BLEND)
+        subprocess.run([exe, "--background", "--factory-startup", "--python", os.path.join("tools", "blender_create_bomb.py"), "--", BLEND], check=True)
+    ebm.export_all()
+    print("bomb ok")
 
 
 if __name__ == "__main__":

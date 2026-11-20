@@ -1,0 +1,1000 @@
+{
+  "textures": {
+    "missile": "craftteamracing:item/missile",
+    "particle": "craftteamracing:item/missile"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        7,
+        3.4
+      ],
+      "to": [
+        9,
+        9,
+        4.2
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "east": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "south": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "west": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "down": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        }
+      },
+      "name": "cone_0"
+    },
+    {
+      "from": [
+        7.3,
+        7.3,
+        2.6
+      ],
+      "to": [
+        8.7,
+        8.7,
+        3.4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            5,
+            1,
+            7,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "east": {
+          "uv": [
+            5,
+            1,
+            7,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "south": {
+          "uv": [
+            5,
+            1,
+            7,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "west": {
+          "uv": [
+            5,
+            1,
+            7,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "up": {
+          "uv": [
+            5,
+            1,
+            7,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "down": {
+          "uv": [
+            5,
+            1,
+            7,
+            3
+          ],
+          "texture": "#missile"
+        }
+      },
+      "name": "cone_1"
+    },
+    {
+      "from": [
+        7.65,
+        7.65,
+        1.8
+      ],
+      "to": [
+        8.35,
+        8.35,
+        2.6
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "east": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "south": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "west": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "down": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        }
+      },
+      "name": "cone_2"
+    },
+    {
+      "from": [
+        6.8,
+        6.8,
+        4.2
+      ],
+      "to": [
+        9.2,
+        9.2,
+        5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            5,
+            3,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "east": {
+          "uv": [
+            1,
+            5,
+            3,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "south": {
+          "uv": [
+            1,
+            5,
+            3,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "west": {
+          "uv": [
+            1,
+            5,
+            3,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "up": {
+          "uv": [
+            1,
+            5,
+            3,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "down": {
+          "uv": [
+            1,
+            5,
+            3,
+            7
+          ],
+          "texture": "#missile"
+        }
+      },
+      "name": "band_0"
+    },
+    {
+      "from": [
+        6.75,
+        6.75,
+        5
+      ],
+      "to": [
+        9.25,
+        9.25,
+        5.95
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "east": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "south": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "west": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "down": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        }
+      },
+      "name": "tube_0"
+    },
+    {
+      "from": [
+        6.75,
+        6.75,
+        5.95
+      ],
+      "to": [
+        9.25,
+        9.25,
+        6.9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "east": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "south": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "west": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "up": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "down": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        }
+      },
+      "name": "tube_1"
+    },
+    {
+      "from": [
+        6.75,
+        6.75,
+        6.9
+      ],
+      "to": [
+        9.25,
+        9.25,
+        7.85
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "east": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "south": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "west": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "down": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        }
+      },
+      "name": "tube_2"
+    },
+    {
+      "from": [
+        6.75,
+        6.75,
+        7.85
+      ],
+      "to": [
+        9.25,
+        9.25,
+        8.8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "east": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "south": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "west": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "up": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "down": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        }
+      },
+      "name": "tube_3"
+    },
+    {
+      "from": [
+        6.75,
+        6.75,
+        8.8
+      ],
+      "to": [
+        9.25,
+        9.25,
+        9.75
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "east": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "south": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "west": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "down": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        }
+      },
+      "name": "tube_4"
+    },
+    {
+      "from": [
+        6.75,
+        6.75,
+        9.75
+      ],
+      "to": [
+        9.25,
+        9.25,
+        10.7
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "east": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "south": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "west": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "up": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "down": {
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "texture": "#missile"
+        }
+      },
+      "name": "tube_5"
+    },
+    {
+      "from": [
+        6.75,
+        6.75,
+        10.7
+      ],
+      "to": [
+        9.25,
+        9.25,
+        11.65
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "east": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "south": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "west": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        },
+        "down": {
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ],
+          "texture": "#missile"
+        }
+      },
+      "name": "tube_6"
+    },
+    {
+      "from": [
+        7.1,
+        7.1,
+        11.65
+      ],
+      "to": [
+        8.9,
+        8.9,
+        12.4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            5,
+            5,
+            7,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "east": {
+          "uv": [
+            5,
+            5,
+            7,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "south": {
+          "uv": [
+            5,
+            5,
+            7,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "west": {
+          "uv": [
+            5,
+            5,
+            7,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "up": {
+          "uv": [
+            5,
+            5,
+            7,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "down": {
+          "uv": [
+            5,
+            5,
+            7,
+            7
+          ],
+          "texture": "#missile"
+        }
+      },
+      "name": "nozzle_0"
+    },
+    {
+      "from": [
+        7.7,
+        7.7,
+        12.4
+      ],
+      "to": [
+        8.3,
+        8.3,
+        14.3
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9,
+            5,
+            11,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "east": {
+          "uv": [
+            9,
+            5,
+            11,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "south": {
+          "uv": [
+            9,
+            5,
+            11,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "west": {
+          "uv": [
+            9,
+            5,
+            11,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "up": {
+          "uv": [
+            9,
+            5,
+            11,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "down": {
+          "uv": [
+            9,
+            5,
+            11,
+            7
+          ],
+          "texture": "#missile"
+        }
+      },
+      "name": "stick_0"
+    },
+    {
+      "from": [
+        7.75,
+        7.75,
+        14.3
+      ],
+      "to": [
+        8.25,
+        8.25,
+        14.55
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "east": {
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "south": {
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "west": {
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "up": {
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ],
+          "texture": "#missile"
+        },
+        "down": {
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ],
+          "texture": "#missile"
+        }
+      },
+      "name": "stick_1"
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    },
+    "ground": {
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Speed",
+  "description": "The original's Speed class: the highest top speed, slow to turn, and a heavy bump.",
+  "official": true,
+  "enabled": true,
+  "stats": {
+    "accel": 448,
+    "speed": 13900,
+    "turn_rate": 24,
+    "turn_decrease": 5666,
+    "turn_input_delay": 4000,
+    "drift_turn_base": 5,
+    "weight": 300
+  }
+}

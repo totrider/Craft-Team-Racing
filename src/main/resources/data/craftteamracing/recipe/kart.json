@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "W": {
+      "item": "craftteamracing:wheel"
+    },
+    "L": {
+      "item": "minecraft:leather"
+    },
+    "P": {
+      "item": "craftteamracing:power_ingot"
+    },
+    "M": {
+      "item": "minecraft:minecart"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "WLW",
+    "PMP",
+    "WRW"
+  ],
+  "result": {
+    "id": "craftteamracing:kart",
+    "count": 1
+  }
+}

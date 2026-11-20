@@ -1,18 +1,14 @@
 """
-N. Brio's Beaker, the stand-in 3D model: a round-bottomed flask with a neck and a lip, one green and one red (the charged beaker), built from boxes.
+N. Brio's Beaker, the mod's own 3D model: a round flask with a flat base, a wide bulb, a long narrow neck and a flared lip, one green and one red (the charged beaker).
 
   python tools/make_beaker_models.py
 
-The models are Blockbench's: blockbench/pickups/beaker_green.bbmodel and beaker_red.bbmodel are the source (written once from the shapes below if missing, then they
-are yours; this script only reads them). Writes src/main/resources/assets/ctrcraft/models/item/pickup_beaker_green.json and pickup_beaker_red.json (the beaker entity
-renderer fetches these baked models), and draws the placeholder texture textures/item/beaker.png once if it is missing (yours to repaint).
-
-The shape follows the original's flask in outline: a bulb (a stack of boxes narrowing at the bottom and the shoulder, so it reads as round), a narrow neck and a lip. One
-model is one block tall at most (16 model px); the renderer scales it to the entity (0.58 blocks tall). The texture is four cells by four of 4 px: the top two rows are the
-green and red palettes (liquid, shade, light, glass), the third row a cork and an outline. Origin: the bottom centre of the block.
-The original's beakers (BEAKERGREEN, BEAKERRED in the shared model pack) are 40 triangles, six of which are the bubbles of a 15 frame animation: they replace these models in a
-local resource pack (docs/POWERUPS.md). The bubbles are billboards (client/BeakerBubbles): textures/entity/beaker_<colour>_bubbles.png and beaker/beaker_<colour>_bubbles.json are
-the generic ones, written once here and yours to edit; the pack's override them.
+The model is Blender's: blender/beaker/beaker.blend (made once by this script from tools/blender_create_beaker.py, yours after that) holds the collections beaker_green and beaker_red, exported
+by tools/export_blender_models.py to models/item/beaker_<colour>.obj + pickup_beaker_<colour>.json (the beaker entity renderer fetches those baked models; a resource pack's original
+replaces them under the same names). The shape follows the original's flask measured from its model: 0.49 wide, 0.64 high, a base 0.28 across, the bulb widest a third of the way up,
+a neck 0.18 across from 0.38 to 0.57 and a lip 0.30 across. The texture, textures/item/beaker.png, is drawn here every run (a palette of 4 x 4 texel cells: the top two rows are the green and red
+sets: liquid, shade, light, glass; edit the code, not the PNG). The bubbles that rise in it are billboards (client/BeakerBubbles): textures/entity/beaker_<colour>_bubbles.png and
+beaker/beaker_<colour>_bubbles.json are drawn here every run. Run from the project folder.
 """
 import json
 import os
@@ -21,17 +17,16 @@ import sys
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import bbmodel  # noqa: E402
 
 RES = os.path.join("src", "main", "resources")
-ASSETS = os.path.join(RES, "assets", "ctrcraft")
+ASSETS = os.path.join(RES, "assets", "craftteamracing")
 TEX = os.path.join(ASSETS, "textures", "item", "beaker.png")
 BB = os.path.join("blockbench", "pickups")
 
 # cell (column, row) -> rgb; every cell is 4 x 4 texels of the 16 x 16 sheet
 PALETTE = {
-    "green": ((0, 0), (62, 200, 60)), "green_dark": ((1, 0), (30, 130, 45)), "green_light": ((2, 0), (160, 240, 120)), "green_glass": ((3, 0), (205, 242, 205)),
-    "red": ((0, 1), (222, 52, 40)), "red_dark": ((1, 1), (140, 24, 26)), "red_light": ((2, 1), (255, 135, 112)), "red_glass": ((3, 1), (246, 208, 208)),
+    "green": ((0, 0), (62, 200, 60)), "green_dark": ((1, 0), (30, 130, 45)), "green_light": ((2, 0), (160, 240, 120)), "green_glass": ((3, 0), (238, 244, 248)),
+    "red": ((0, 1), (222, 52, 40)), "red_dark": ((1, 1), (140, 24, 26)), "red_light": ((2, 1), (255, 135, 112)), "red_glass": ((3, 1), (238, 244, 248)),
     "cork": ((0, 2), (156, 104, 56)), "outline": ((1, 2), (40, 52, 48)),
 }
 
@@ -53,42 +48,26 @@ def cell(name):
     return [cx * 4 + 0.25, cy * 4 + 0.25, cx * 4 + 3.75, cy * 4 + 3.75]
 
 
-def box(frm, to, side, top, bottom, name=None):
-    faces = {}
-    for f in ("north", "east", "south", "west"):
-        faces[f] = {"uv": cell(side), "texture": "#beaker"}
-    faces["up"] = {"uv": cell(top), "texture": "#beaker"}
-    faces["down"] = {"uv": cell(bottom), "texture": "#beaker"}
-    return {"from": [round(v, 3) for v in frm], "to": [round(v, 3) for v in to], "faces": faces}
+# The original's flask is 98.7 units tall and 53 wide at 108.8 units to the block: 0.907 x 0.49 blocks. The shapes below were drawn 14.75 x 10 px; they are fitted to it here
+# (the bbmodels are patched the same way in place, so edits survive).
+FIT_XZ = 0.49 * 16 / 10.0
+FIT_Y = 0.907 * 16 / 14.75
 
 
-def flask(colour):
-    """Groups of boxes: the bulb (liquid), the neck and the lip (glass)."""
-    liquid, dark, light, glass = colour, colour + "_dark", colour + "_light", colour + "_glass"
-    bulb = [
-        box((4.5, 0.0, 4.5), (11.5, 1.5, 11.5), liquid, dark, dark),          # the base, narrower: a rounded bottom
-        box((3.0, 1.5, 3.0), (13.0, 7.5, 13.0), liquid, light, dark),          # the widest part
-        box((4.0, 7.5, 4.0), (12.0, 9.0, 12.0), liquid, light, dark),          # the shoulder
-        box((5.5, 9.0, 5.5), (10.5, 10.5, 10.5), glass, light, dark),          # into the neck
-    ]
-    neck = [box((6.5, 10.5, 6.5), (9.5, 13.5, 9.5), glass, light, dark)]
-    lip = [box((5.75, 13.5, 5.75), (10.25, 14.75, 10.25), glass, light, dark)]
-    return [("bulb", bulb), ("neck", neck), ("lip", lip)]
+def fit(frm, to):
+    f = lambda v, k: (8.0 + (v - 8.0) * FIT_XZ) if k != 1 else v * FIT_Y
+    return [f(frm[0], 0), f(frm[1], 1), f(frm[2], 2)], [f(to[0], 0), f(to[1], 1), f(to[2], 2)]
 
 
-def display():
-    return {"gui": {"rotation": [30, 225, 0], "scale": [0.6, 0.6, 0.6]}, "ground": {"translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]}}
 
 
-def models():
-    return {"beaker_green": flask("green"), "beaker_red": flask("red")}
 
 
 BUBBLE_TEX = os.path.join(ASSETS, "textures", "entity", "beaker_%s_bubbles.png")
 BUBBLE_DATA = os.path.join(ASSETS, "beaker", "beaker_%s_bubbles.json")
 FRAMES = 15
 # six bubbles: (rise phase in frames, x, z, size in blocks, bright?)
-BUBBLES = [(0, -0.04, -0.02, 0.07, False), (3, 0.04, 0.0, 0.085, True), (6, 0.0, -0.04, 0.095, False), (8, 0.03, -0.02, 0.085, True), (11, -0.05, 0.0, 0.07, False), (13, 0.0, 0.04, 0.08, True)]
+BUBBLES = [(0, -0.04, -0.02, 0.05, False), (3, 0.04, 0.0, 0.06, True), (6, 0.0, -0.04, 0.068, False), (8, 0.03, -0.02, 0.06, True), (11, -0.05, 0.0, 0.05, False), (13, 0.0, 0.04, 0.056, True)]
 
 
 def draw_bubbles(colour):
@@ -116,37 +95,32 @@ def bubble_data(colour):
         centres = []
         for f in range(FRAMES):
             tt = ((f + phase) % FRAMES) / (FRAMES - 1.0)
-            centres.append([x * (1.0 if tt < 0.55 else 0.5), round(0.14 + 0.90 * (1.0 - (1.0 - tt) ** 2), 4), z * (1.0 if tt < 0.55 else 0.5)])   # up through the neck and out past the lip (0.92 of the block) before it starts over
+            centres.append([x * (1.0 if tt < 0.55 else 0.5), round(0.10 + 0.62 * (1.0 - (1.0 - tt) ** 2), 4), z * (1.0 if tt < 0.55 else 0.5)])   # up through the neck and out past the lip (0.64 of the block) before it starts over
         out.append({"uv": [0.5, 0.0, 1.0, 1.0] if bright else [0.0, 0.0, 0.5, 1.0], "width": size, "height": size, "centres": centres})
-    return {"frames": FRAMES, "texture": "ctrcraft:textures/entity/beaker_%s_bubbles.png" % colour, "bubbles": out}
+    return {"frames": FRAMES, "texture": "craftteamracing:textures/entity/beaker_%s_bubbles.png" % colour, "bubbles": out}
 
 
 def main():
+    import subprocess
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import export_blender_models as ebm
     for colour in ("green", "red"):
-        if not os.path.exists(BUBBLE_TEX % colour):
-            os.makedirs(os.path.dirname(BUBBLE_TEX % colour), exist_ok=True)
-            draw_bubbles(colour).save(BUBBLE_TEX % colour)
-        if not os.path.exists(BUBBLE_DATA % colour):
-            os.makedirs(os.path.dirname(BUBBLE_DATA % colour), exist_ok=True)
-            with open(BUBBLE_DATA % colour, "w", encoding="utf-8", newline="\n") as f:
-                json.dump(bubble_data(colour), f, indent=1)
+        for path, make in ((BUBBLE_TEX % colour, lambda c=colour: draw_bubbles(c).save(BUBBLE_TEX % c)), ):
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            make()
+        os.makedirs(os.path.dirname(BUBBLE_DATA % colour), exist_ok=True)
+        with open(BUBBLE_DATA % colour, "w", encoding="utf-8", newline="\n") as f:
+            json.dump(bubble_data(colour), f, indent=1)
     os.makedirs(os.path.dirname(TEX), exist_ok=True)
-    if not os.path.exists(TEX):
-        draw_texture().save(TEX)
-    os.makedirs(BB, exist_ok=True)
-    for name, groups in models().items():
-        path = os.path.join(BB, name + ".bbmodel")
-        if not os.path.exists(path):
-            bbmodel.write(path, name, {"beaker": TEX}, groups, display=display(), gui_light_front=False,
-                          comment="Stand-in N. Brio's Beaker: a round-bottomed flask from boxes (bulb, neck, lip). One group per part. The texture slot 'beaker' is "
-                                  "textures/item/beaker.png (palette cells: green, red; liquid, shade, light, glass), see tools/make_beaker_models.py.")
-        model = bbmodel.read(path)
-        out = os.path.join(ASSETS, "models", "item", "pickup_" + name + ".json")
-        os.makedirs(os.path.dirname(out), exist_ok=True)
-        with open(out, "w", encoding="utf-8", newline="\n") as f:
-            json.dump({"textures": {"beaker": "ctrcraft:item/beaker", "particle": "ctrcraft:item/beaker"},
-                       "elements": bbmodel.elements(model),
-                       "display": model["display"] or display()}, f, indent=2)
+    draw_texture().save(TEX)
+    blend = os.path.join("blender", "beaker", "beaker.blend")
+    if not os.path.exists(blend):
+        os.makedirs(os.path.dirname(blend), exist_ok=True)
+        exe = ebm.find_blender()
+        if not exe:
+            sys.exit("Blender not found (set BLENDER to its blender.exe): cannot create " + blend)
+        subprocess.run([exe, "--background", "--factory-startup", "--python", os.path.join("tools", "blender_create_beaker.py"), "--", blend], check=True)
+    ebm.export_all()
     print("beaker models written")
 
 

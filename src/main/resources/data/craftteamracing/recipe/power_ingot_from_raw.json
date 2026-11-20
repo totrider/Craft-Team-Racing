@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "ingredient": {
+    "item": "craftteamracing:raw_power_ore"
+  },
+  "result": {
+    "id": "craftteamracing:power_ingot"
+  },
+  "experience": 1.0,
+  "cookingtime": 200
+}

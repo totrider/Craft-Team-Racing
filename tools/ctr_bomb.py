@@ -2,7 +2,7 @@
 The original bomb as a 3D model for a LOCAL resource pack (from YOUR OWN disc, never in the jar): the ball and the fuse as an OBJ (NeoForge's OBJ loader), and the spark at the tip of
 the fuse as a picture and a place, because the game draws the spark as a flat star that always glows: the mod draws it as a billboard at the fuse's tip (client/BombRenderer).
 
-  files = bomb_files(vram, model, rm)         {path under assets/ctrcraft: image, text or dict (JSON)}:
+  files = bomb_files(vram, model, rm)         {path under assets/craftteamracing: image, text or dict (JSON)}:
     models/item/pickup_bomb.json, bomb.obj, bomb.mtl, textures/item/bomb_original.png   the ball and the fuse (tools/ctr_mesh_pack.py; the colour table's shading baked in)
     textures/entity/bomb_spark.png                                                       the spark's picture (black made see-through by its brightness)
     bomb/bomb_fuse.json                                                                  {tip: [x, y, z], spark_size, ground} in blocks from the ball's middle, the spark's width, the ball's radius

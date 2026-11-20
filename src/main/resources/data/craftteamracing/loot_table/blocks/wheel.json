@@ -1,0 +1,97 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "craftteamracing:wheel",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "craftteamracing:wheel",
+              "properties": {
+                "wheels": "1"
+              }
+            }
+          ],
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": 1.0,
+              "add": false
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "craftteamracing:wheel",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "craftteamracing:wheel",
+              "properties": {
+                "wheels": "2"
+              }
+            }
+          ],
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": 2.0,
+              "add": false
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "craftteamracing:wheel",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "craftteamracing:wheel",
+              "properties": {
+                "wheels": "3"
+              }
+            }
+          ],
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": 3.0,
+              "add": false
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "craftteamracing:wheel",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "craftteamracing:wheel",
+              "properties": {
+                "wheels": "4"
+              }
+            }
+          ],
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": 4.0,
+              "add": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "random_sequence": "craftteamracing:blocks/wheel"
+}

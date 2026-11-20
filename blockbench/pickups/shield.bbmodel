@@ -1840,7 +1840,7 @@
  ],
  "textures": [
   {
-   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\ctrcraft\\textures\\item\\shield.png",
+   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\craftteamracing\\textures\\item\\shield.png",
    "name": "shield.png",
    "folder": "",
    "namespace": "",
@@ -1856,7 +1856,7 @@
    "mode": "bitmap",
    "saved": true,
    "uuid": "3860656b-283d-4035-bfe0-22eff700990c",
-   "relative_path": "../../src/main/resources/assets/ctrcraft/textures/item/shield.png",
+   "relative_path": "../../src/main/resources/assets/craftteamracing/textures/item/shield.png",
    "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAWElEQVR4nGN8/fX1PgZUcAONr4FPnomBQsACY4hwiehCmTCa4c23N6sJGcBEDRfcQLcZzf94w4SJGi5A9y96qOMFTAxUcIHGgKYDpgE3gIVUP1M9HQy8AQDwQhNeH9dS6AAAAABJRU5ErkJggg=="
   }
  ],

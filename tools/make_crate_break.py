@@ -1,7 +1,7 @@
 """
 The jar's own crate break-up (a stand-in): 18 splinters of wood thrown out of the crate over 12 frames, as the data the client's CrateBreakParticle plays:
-  src/main/resources/assets/ctrcraft/textures/entity/crate_break.png   a small wood picture (orange planks with a dark grain)
-  src/main/resources/assets/ctrcraft/crate_break/crate_break.json      {frames, texture, triangles: [{uv: [6 numbers], pos: [[9 numbers] per frame]}]}, blocks, the crate's
+  src/main/resources/assets/craftteamracing/textures/entity/crate_break.png   a small wood picture (orange planks with a dark grain)
+  src/main/resources/assets/craftteamracing/crate_break/crate_break.json      {frames, texture, triangles: [{uv: [6 numbers], pos: [[9 numbers] per frame]}]}, blocks, the crate's
                                                                          middle at (0, 0.5, 0), its base on y = 0
 The original's 22 pieces (the shared pack's crate explosion) replace both in the local resource pack made by tools/extract_ctr_textures.py. Written once: delete a file to
 have it made again. Deterministic (a fixed seed). Needs numpy and Pillow.
@@ -14,7 +14,7 @@ import numpy as np
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ASSETS = os.path.join(ROOT, "src", "main", "resources", "assets", "ctrcraft")
+ASSETS = os.path.join(ROOT, "src", "main", "resources", "assets", "craftteamracing")
 TEX = os.path.join(ASSETS, "textures", "entity", "crate_break.png")
 DATA = os.path.join(ASSETS, "crate_break", "crate_break.json")
 FRAMES = 12
@@ -53,7 +53,7 @@ def data():
             pts = (base - base.mean(axis=0)) @ rot.T + p
             pos.append([round(float(c), 4) for q in pts for c in q])
         tris.append({"uv": [0.1, 0.1, 0.9, 0.1, 0.1, 0.9], "pos": pos})
-    return {"frames": FRAMES, "texture": "ctrcraft:textures/entity/crate_break.png", "triangles": tris}
+    return {"frames": FRAMES, "texture": "craftteamracing:textures/entity/crate_break.png", "triangles": tris}
 
 
 def main():

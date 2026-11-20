@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": {
+      "item": "minecraft:feather"
+    },
+    "E": {
+      "item": "minecraft:ender_pearl"
+    }
+  },
+  "pattern": [
+    " F ",
+    "FEF",
+    " F "
+  ],
+  "result": {
+    "id": "craftteamracing:low_gravity_module",
+    "count": 1
+  }
+}

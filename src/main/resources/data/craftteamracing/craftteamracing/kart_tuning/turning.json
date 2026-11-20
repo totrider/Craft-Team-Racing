@@ -1,0 +1,15 @@
+{
+  "name": "Turning",
+  "description": "The original's Turning class: sharp handling and drifts, the lowest top speed, and a light bump.",
+  "official": true,
+  "enabled": true,
+  "stats": {
+    "accel": 512,
+    "speed": 12950,
+    "turn_rate": 30,
+    "turn_decrease": 7252,
+    "turn_input_delay": 5500,
+    "drift_turn_base": 18,
+    "weight": 200
+  }
+}

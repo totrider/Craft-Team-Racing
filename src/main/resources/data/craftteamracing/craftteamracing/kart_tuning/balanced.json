@@ -1,0 +1,15 @@
+{
+  "name": "Balanced",
+  "description": "The original game's Balanced class: no strong points and no weak ones.",
+  "official": true,
+  "enabled": true,
+  "stats": {
+    "accel": 480,
+    "speed": 13140,
+    "turn_rate": 28,
+    "turn_decrease": 4080,
+    "turn_input_delay": 5000,
+    "drift_turn_base": 14,
+    "weight": 256
+  }
+}

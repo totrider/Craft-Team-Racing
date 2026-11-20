@@ -4,7 +4,7 @@ The kart's wheel: one TEXTURED model, drawn four times by the renderer (it spins
   python tools/make_kart_wheel.py
 
 blockbench/kart/kart_wheel.bbmodel is the source (written once from the shape below if it is missing, then it is yours; this script only reads it) and
-src/main/resources/assets/ctrcraft/models/item/kart_wheel.json is generated from it. The texture, textures/item/kart_wheel.png (64 x 64, written once if missing: yours to repaint),
+src/main/resources/assets/craftteamracing/models/item/kart_wheel.json is generated from it. The texture, textures/item/kart_wheel.png (64 x 64, written once if missing: yours to repaint),
 has two pictures: the wheel's FACE (a disc: tyre rim, wheel, hub and lug nuts, in the top left 32 x 32; the corners outside the octagon are see-through) and the TREAD (16 x 16,
 next to it). Both are painted by uv, so a finer texture works too: uv is 0-16 over the whole picture.
 

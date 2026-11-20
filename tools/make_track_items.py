@@ -12,9 +12,9 @@ import os
 from PIL import Image
 
 RES = os.path.join("src", "main", "resources")
-ASSETS = os.path.join(RES, "assets", "ctrcraft")
-DATA = os.path.join(RES, "data", "ctrcraft")
-NS = "ctrcraft"
+ASSETS = os.path.join(RES, "assets", "craftteamracing")
+DATA = os.path.join(RES, "data", "craftteamracing")
+NS = "craftteamracing"
 TEX = os.path.join(ASSETS, "textures", "item")
 
 
@@ -32,7 +32,7 @@ def ring(im, cx, cy, r, colour):
 
 
 def draw_tool():
-    """A wand: a brown handle running up to the right, a green node on its tip with a cyan link line off it."""
+    """A wand: a brown handle running up to the right and a green node on its tip."""
     im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
     for i in range(10):
         px(im, [(2 + i, 13 - i)], (120, 80, 40, 255))
@@ -42,9 +42,6 @@ def draw_tool():
             im.putpixel((x, y), (60, 230, 90, 255))
     px(im, [(9, 2), (13, 2), (9, 6), (13, 6)], (0, 0, 0, 0))
     px(im, [(10, 3), (11, 3)], (170, 255, 190, 255))
-    for x in range(1, 7):
-        im.putpixel((x, 2), (90, 230, 255, 255))
-    px(im, [(1, 1), (1, 3)], (90, 230, 255, 255))
     return im
 
 

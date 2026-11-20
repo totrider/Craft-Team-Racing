@@ -400,7 +400,7 @@
  ],
  "textures": [
   {
-   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\ctrcraft\\textures\\item\\rain_cloud.png",
+   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\craftteamracing\\textures\\item\\rain_cloud.png",
    "name": "cloud.png",
    "folder": "",
    "namespace": "",
@@ -416,7 +416,7 @@
    "mode": "bitmap",
    "saved": true,
    "uuid": "2e91fb37-4345-4469-b75f-de3578c52e47",
-   "relative_path": "../../src/main/resources/assets/ctrcraft/textures/item/rain_cloud.png",
+   "relative_path": "../../src/main/resources/assets/craftteamracing/textures/item/rain_cloud.png",
    "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFUlEQVR4nGN08wi5zsDAwMAEIkAYABoKAb0uE4iDAAAAAElFTkSuQmCC"
   }
  ],

@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "craftteamracing:fruit_crate_planked"
+  },
+  "result": {
+    "id": "craftteamracing:fruit_crate",
+    "count": 1
+  }
+}

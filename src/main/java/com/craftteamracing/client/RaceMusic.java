@@ -1,0 +1,286 @@
+package com.craftteamracing.client;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.craftteamracing.CraftTeamRacingMod;
+import com.craftteamracing.track.RaceClient;
+import com.craftteamracing.track.RacePayload;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+
+/**
+ * The race music, as the original plays it (HOWL_AudioState.c Audio_SetState, HOWL_Music.c): a jingle while the start lamps count down (AUDIO_RACE_INTRO), the level
+ * music from GO to the finish, a jingle on the last lap during which the music is turned down (Music_LowerVolume: to 90 of 190, then back up), and a jingle at the
+ * finish, a different one for first place and for the rest (AUDIO_RACE_END: XA 4 and 5).
+ *
+ * <p>On the last lap the original also speeds the level music up: once the jingle has played for a second it adds 20 beats per minute to the song's tempo
+ * (HOWL_AudioState.c, Audio_SetMaskSong(20)) for the rest of the race, while the jingle plays at its own speed over it. The level music is rendered audio here, so the speed
+ * can only be changed together with the pitch ({@link #FINAL_LAP_SPEED}, about +20 bpm at the usual 170 to 190 bpm of the songs).
+ *
+ * <p>Nothing is shipped: the mod only plays what a resource pack puts into these sound events (all in the craftteamracing namespace, in the music category of the sound
+ * options). Without any, nothing plays and nothing is logged. A pack adds its files to {@code assets/craftteamracing/sounds.json}; several sounds in one event are
+ * picked at random, again at every repeat of the race music. See docs/MUSIC.md.
+ * <pre>
+ *   music.race_intro        the lamps are counting down
+ *   music.race              from GO until the finish, repeated for as long as the race lasts
+ *   music.final_lap         the last lap begins (the race music is turned down while it plays)
+ *   music.race_end.first    the driver finished first
+ *   music.race_end.other    the driver finished, in any other place
+ * </pre>
+ * The sounds of the race music should be {@code "stream": true} in sounds.json; a streamed sound cannot loop in the sound engine, so it is started again when it ends
+ * (a short gap; a short non-streamed loop repeats without one).
+ */
+public final class RaceMusic {
+    private RaceMusic() {}
+
+    public static final String RACE_INTRO = "music.race_intro";
+    public static final String RACE = "music.race";
+    public static final String FINAL_LAP = "music.final_lap";
+    public static final String RACE_END_FIRST = "music.race_end.first";
+    public static final String RACE_END_OTHER = "music.race_end.other";
+    /** The mask songs (songs 1 and 2 of the level's pack): they replace the level music while the local kart has the Mask on. */
+    public static final String AKU_SONG = "music.aku_aku";
+    public static final String UKA_SONG = "music.uka_uka";
+
+    /** The music's level while a jingle plays over it: the original lowers it to 90 of its usual 190. */
+    private static final float DUCKED = 90.0F / 190.0F;
+
+    /** The speed (and pitch) of the level music on the last lap: the original's +20 bpm on songs of 150 to 230 bpm is 1.09 to 1.13. */
+    private static final float FINAL_LAP_SPEED = 1.11F;
+    /** The original raises the tempo when the jingle has played for a second: game ticks. */
+    private static final int FINAL_LAP_DELAY = 20;
+
+    private static final Map<String, SoundEvent> EVENTS = new HashMap<>();
+    private static float speed = 1.0F;
+    private static int speedDelay = -1;
+
+    private static int lastPhase = RacePayload.OFF;
+    private static int lastLap;
+    private static Instance loop;
+    private static Instance maskSong;
+    private static Instance jingle;
+    private static int loopAge;
+    private static int seenFinish;
+    private static Instance endJingle;
+    private static int endAge;
+    /** The finish jingle plays in full, then fades out once it has gone on this long (30 seconds): game ticks, and the fade's ease per tick. */
+    private static final int END_FADE_AFTER = 600;
+
+    /** The music's own sound instance: not positional, volume eased towards a target (the duck while a jingle plays). */
+    private static final class Instance extends AbstractTickableSoundInstance {
+        float target = 1.0F;
+        float targetPitch = 1.0F;
+        float ease = 0.25F;
+
+        Instance(SoundEvent event, boolean level) {
+            this(event, level, false);
+        }
+
+        /** {@code looped}: the sound engine repeats it itself (only a sound that is not streamed can be; a streamed one ends and {@link RaceMusic#tick} starts it again). */
+        Instance(SoundEvent event, boolean level, boolean looped) {
+            super(event, SoundSource.MUSIC, RandomSource.create());
+            this.looping = level || looped;
+            this.delay = 0;
+            this.relative = true;
+            this.attenuation = SoundInstance.Attenuation.NONE;
+            this.volume = 1.0F;
+            this.pitch = level ? speed : 1.0F;        // a jingle plays at its own speed
+            this.targetPitch = this.pitch;
+        }
+
+        @Override
+        public void tick() {
+            volume += (target - volume) * ease;
+            pitch += (targetPitch - pitch) * 0.15F;
+        }
+    }
+
+    private static SoundEvent event(String path) {
+        return EVENTS.computeIfAbsent(path, p -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(CraftTeamRacingMod.MODID, p)));
+    }
+
+    /** True when the loaded resource packs put at least one sound into the event. */
+    private static boolean hasSounds(Minecraft mc, SoundEvent event) {
+        var sounds = mc.getSoundManager().getSoundEvent(event.getLocation());
+        return sounds != null && sounds.getSound(RandomSource.create()) != SoundManager.EMPTY_SOUND;
+    }
+
+    private static boolean warned;
+
+    /** The sound event of the track's own music: the default one ({@link #RACE}), or the track's pick; null for none (a track set to no music), or when this client has no sound for the pick. */
+    private static String levelPath() {
+        String id = MusicTitles.raceMusic().id();
+        if (id.isEmpty()) return RACE;
+        if (id.equals(com.craftteamracing.MusicSheetData.NONE)) return null;
+        return id;
+    }
+
+    private static boolean isLevel(String path) {
+        return path.equals(RACE) || path.startsWith(com.craftteamracing.MusicSheetData.LEVEL_PREFIX);
+    }
+
+    /** The mod's own jingles, for when no pack brings the original's: the event of the original's jingle with no sound plays its stand-in instead. */
+    private static final Map<String, String> STAND_IN = Map.of(RACE_INTRO, "music.standin.race_intro", RACE_END_FIRST, "music.standin.race_win", RACE_END_OTHER, "music.standin.race_lose");
+
+    private static Instance play(Minecraft mc, String path) {
+        if (path == null) return null;
+        SoundEvent event = event(path);
+        if (!hasSounds(mc, event)) {
+            String stand = STAND_IN.get(path);
+            if (stand == null) return null;
+            event = event(stand);
+            if (!hasSounds(mc, event)) return null;
+            path = stand;
+        }
+        if (!warned && mc.options.getSoundSourceVolume(SoundSource.MUSIC) <= 0.0F && mc.player != null) {
+            warned = true;                                  // the Music slider is also the race music's: at 0 it plays nothing
+            mc.player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.craftteamracing.music.muted"), false);
+        }
+        Instance instance = new Instance(event, isLevel(path), path.equals(AKU_SONG) || path.equals(UKA_SONG));
+        mc.getSoundManager().play(instance);
+        return instance;
+    }
+
+    private static void stop(Minecraft mc, Instance instance) {
+        if (instance != null) mc.getSoundManager().stop(instance);
+    }
+
+    private static boolean active(Minecraft mc, Instance instance) {
+        return instance != null && mc.getSoundManager().isActive(instance);
+    }
+
+    private static boolean vanillaWasOut;
+
+    /** The local player takes part in a race that has reached the lamps (until it is over): the world's own music has no place in it. */
+    public static boolean keepsVanillaOut() {
+        int p = RaceClient.state().phase();
+        return p == RacePayload.LIGHTS || p == RacePayload.RACING || p == RacePayload.DONE;
+    }
+
+    /** Every client tick. */
+    public static void tick() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) {
+            stop(mc, loop);
+            stop(mc, jingle);
+            loop = null;
+            jingle = null;
+            lastPhase = RacePayload.OFF;
+            lastLap = 0;
+            warned = false;
+            endJingle = null;
+            seenFinish = RaceClient.finishSeq();
+            return;
+        }
+        RacePayload s = RaceClient.state();
+        int phase = s.phase();
+        // from the lamps to the end of the race the world's own music is cut off (what was playing stops now) and none starts (see VanillaMusicGate)
+        boolean out = keepsVanillaOut();
+        if (out && (!vanillaWasOut || mc.player.tickCount % 20 == 0)) mc.getMusicManager().stopPlaying();
+        vanillaWasOut = out;
+        // the driver finished: the win or the lose jingle (the state can already be OFF again by the time this looks, so it is counted in RaceClient)
+        if (RaceClient.finishSeq() != seenFinish) {
+            seenFinish = RaceClient.finishSeq();
+            stop(mc, loop);
+            stop(mc, jingle);
+            loop = null;
+            jingle = play(mc, RaceClient.finishPlace() == 1 ? RACE_END_FIRST : RACE_END_OTHER);
+            endJingle = jingle;
+            endAge = 0;
+        }
+        if (endJingle != null) {
+            if (!active(mc, endJingle)) {
+                endJingle = null;
+            } else if (++endAge > END_FADE_AFTER) {
+                endJingle.target = 0.0F;
+                endJingle.ease = 0.012F;
+                if (endJingle.getVolume() < 0.02F) {
+                    stop(mc, endJingle);
+                    endJingle = null;
+                }
+            }
+        }
+        if (phase != lastPhase) {
+            switch (phase) {
+                case RacePayload.GATHER -> {
+                    stop(mc, loop);                         // a new race is gathering: the last one's music is over
+                    stop(mc, jingle);
+                    loop = null;
+                    endJingle = null;
+                }
+                case RacePayload.LIGHTS -> {
+                    stop(mc, loop);
+                    stop(mc, jingle);
+                    loop = null;
+                    lastLap = 0;
+                    speed = 1.0F;
+                    speedDelay = -1;
+                    jingle = play(mc, RACE_INTRO);
+                }
+                case RacePayload.RACING -> {
+                    if (lastPhase == RacePayload.LIGHTS) {
+                        loop = play(mc, levelPath());
+                        loopAge = 0;
+                    }
+                }
+                case RacePayload.DONE -> { }          // the finish jingle is started above
+                case RacePayload.OFF -> {
+                    stop(mc, loop);                         // a finish jingle still plays out
+                    loop = null;
+                }
+                default -> { }
+            }
+            lastPhase = phase;
+        }
+
+        if (phase == RacePayload.RACING) {
+            if (s.laps() >= 2 && s.lap() == s.laps() && lastLap < s.laps()) {
+                stop(mc, jingle);
+                jingle = play(mc, FINAL_LAP);
+                speedDelay = FINAL_LAP_DELAY;
+            }
+            lastLap = Math.max(lastLap, s.lap());
+            // the race music goes round again when it has ended (a short grace after the start, while the engine takes the sound up)
+            loopAge++;
+            if (loopAge > 10 && loop != null && !active(mc, loop) && maskSong == null) {
+                loop = play(mc, levelPath());
+                loopAge = 0;
+            } else if (loop == null && maskSong == null && loopAge > 40 && levelPath() != null && hasSounds(mc, event(levelPath()))) {
+                loop = play(mc, levelPath());                      // a pack that was switched on during the race
+                loopAge = 0;
+            }
+        }
+        // the Mask: while the kart has it on the mask song plays in place of the level music (VehPickupItem_MaskUseWeapon sets AKU_SONG or UKA_SONG; HOWL_AudioState goes back to the level music
+        // when no driver has the mask any more); a pack with no mask song leaves the level music as it is
+        if (phase == RacePayload.RACING) {
+            int mask = mc.player.getVehicle() instanceof com.craftteamracing.kart.KartEntity k ? k.maskState() : 0;
+            if (mask != 0 && maskSong == null) {
+                Instance song = play(mc, (mask & 3) == 2 ? UKA_SONG : AKU_SONG);
+                if (song != null) maskSong = song;          // the level music keeps running underneath, faded out (see below), so it is where it was when the mask is gone
+            } else if (mask == 0 && maskSong != null) {
+                stop(mc, maskSong);
+                maskSong = null;
+            } else if (maskSong != null && !active(mc, maskSong)) {
+                maskSong = play(mc, (mask & 3) == 2 ? UKA_SONG : AKU_SONG);          // the song goes round again while the mask lasts
+            }
+        } else if (maskSong != null) {
+            stop(mc, maskSong);
+            maskSong = null;
+        }
+        if (speedDelay > 0 && --speedDelay == 0) speed = FINAL_LAP_SPEED;        // from here on, also for every repeat of the music
+        if (loop != null) {
+            loop.targetPitch = speed;
+            loop.target = maskSong != null ? 0.0F : active(mc, jingle) ? DUCKED : 1.0F;          // the mask song takes the level music's place for as long as it lasts
+            loop.ease = maskSong != null ? 0.12F : 0.06F;
+            if (loopAge % 20 == 0) mc.getMusicManager().stopPlaying();       // the world's own music stays out of the race
+        }
+    }
+}

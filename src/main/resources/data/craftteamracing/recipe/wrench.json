@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "P": {
+      "item": "craftteamracing:power_ingot"
+    }
+  },
+  "pattern": [
+    "IPI",
+    " I ",
+    " I "
+  ],
+  "result": {
+    "id": "craftteamracing:wrench",
+    "count": 1
+  }
+}

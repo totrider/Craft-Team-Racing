@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "craftteamracing:block/fruit_crate_planked_top",
+    "bottom": "craftteamracing:block/fruit_crate_planked_top",
+    "side": "craftteamracing:block/fruit_crate_planked_side"
+  }
+}

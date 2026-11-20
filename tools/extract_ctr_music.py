@@ -241,7 +241,7 @@ def _pitch_check(howl, hwl):
 
 
 def render_level_music(disc, pack_dir, jobs):
-    """Renders every level's song 0 and the mask songs into {pack_dir}/assets/ctrcraft/sounds/music; returns ({sound event: [sound names]}, report)."""
+    """Renders every level's song 0 and the mask songs into {pack_dir}/assets/craftteamracing/sounds/music; returns ({sound event: [sound names]}, report)."""
     lba, size = disc.find("SOUNDS/KART.HWL")
     hwl = disc.read(lba, size)
     howl = sounds.Howl(hwl)
@@ -261,7 +261,7 @@ def render_level_music(disc, pack_dir, jobs):
                 seen[key] = (base + lname, level, sid)
                 todo.append(seen[key])
     tmp = tempfile.mkdtemp(prefix="ctr-music-", dir=os.path.dirname(pack_dir.rstrip("\\/")))
-    sounds_dir = os.path.join(pack_dir, "assets", "ctrcraft", "sounds", "music")
+    sounds_dir = os.path.join(pack_dir, "assets", "craftteamracing", "sounds", "music")
     try:
         print("Rendering %d songs on %d processes ..." % (len(todo), jobs))
         with multiprocessing.Pool(jobs, initializer=_init_worker, initargs=(hwl,)) as pool:
@@ -289,17 +289,47 @@ def render_level_music(disc, pack_dir, jobs):
             ev = ("music.race", "music.aku_aku", "music.uka_uka")[sid]
             if sid == 0:
                 # a sound event of its own per level (the track music sheet picks one by name); music.race, the default, is Crash Cove's only
-                events.setdefault("music.level." + ctr_cseq.LEVELS[level], []).append("ctrcraft:music/" + name)
+                events.setdefault("music.level." + ctr_cseq.LEVELS[level], []).append("craftteamracing:music/" + name)
                 if ctr_cseq.LEVELS[level] != DEFAULT_LEVEL:
                     ev = None
             if ev:
-                events[ev].append("ctrcraft:music/" + name)
+                events[ev].append("craftteamracing:music/" + name)
             print("  %-34s %6.1f s (%.1f s from the ticks) %3d bpm  peak %.2f  rms %5.1f dBFS  %4d notes" % (name, entry["seconds"], exp_s, info["bpm"], entry["peak"], spec["rms_dbfs"], info["notes_total"]))
         report["pitch_check"] = _pitch_check(howl, hwl)
         print("Pitch check (one instrument at notes 57/60/69/72):", report["pitch_check"])
         return events, report
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
+
+
+LEVEL_NAMES = {
+    "music.craftteamracing.level.dingo_canyon": "Dingo Canyon",
+    "music.craftteamracing.level.dragon_mines": "Dragon Mines",
+    "music.craftteamracing.level.blizzard_bluff": "Blizzard Bluff",
+    "music.craftteamracing.level.crash_cove": "Crash Cove",
+    "music.craftteamracing.level.tiger_temple": "Tiger Temple",
+    "music.craftteamracing.level.papu_pyramid": "Papu's Pyramid",
+    "music.craftteamracing.level.roo_tubes": "Roo's Tubes",
+    "music.craftteamracing.level.hot_air_skyway": "Hot Air Skyway",
+    "music.craftteamracing.level.sewer_speedway": "Sewer Speedway",
+    "music.craftteamracing.level.mystery_caves": "Mystery Caves",
+    "music.craftteamracing.level.cortex_castle": "Cortex Castle",
+    "music.craftteamracing.level.n_gin_labs": "N. Gin Labs",
+    "music.craftteamracing.level.polar_pass": "Polar Pass",
+    "music.craftteamracing.level.oxide_station": "Oxide Station",
+    "music.craftteamracing.level.coco_park": "Coco Park",
+    "music.craftteamracing.level.tiny_arena": "Tiny Arena",
+    "music.craftteamracing.level.slide_coliseum": "Slide Coliseum",
+    "music.craftteamracing.level.turbo_track": "Turbo Track",
+    "music.craftteamracing.level.nitro_court": "Nitro Court",
+    "music.craftteamracing.level.rampage_ruins": "Rampage Ruins",
+    "music.craftteamracing.level.parking_lot": "Parking Lot",
+    "music.craftteamracing.level.skull_rock": "Skull Rock",
+    "music.craftteamracing.level.the_north_bowl": "The North Bowl",
+    "music.craftteamracing.level.rocky_road": "Rocky Road",
+    "music.craftteamracing.level.lab_basement": "Lab Basement"
+}
+# the original level names label the track music sheet's picker; the jar's lang file has none (the mod shows the id made readable)
 
 
 def main():
@@ -321,7 +351,7 @@ def main():
     if args.list:
         wanted = list(range(xnf_track(disc, 0, 0)[3]))
     pack = args.out
-    sounds_dir = os.path.join(pack, "assets", "ctrcraft", "sounds", "music")
+    sounds_dir = os.path.join(pack, "assets", "craftteamracing", "sounds", "music")
     if not args.list:
         if os.path.isdir(pack):
             shutil.rmtree(pack)
@@ -341,7 +371,7 @@ def main():
         return
     sj = {}
     for event, (tracks, _) in EVENTS.items():
-        sj[event] = {"sounds": [{"name": "ctrcraft:music/" + names[t], "stream": True} for t in tracks if t in names]}
+        sj[event] = {"sounds": [{"name": "craftteamracing:music/" + names[t], "stream": True} for t in tracks if t in names]}
     if not args.no_level_music:
         events, report = render_level_music(disc, pack, max(1, args.jobs))
         for event, files in events.items():
@@ -349,10 +379,13 @@ def main():
             sj[event] = {"sounds": [{"name": n, "stream": False} for n in sorted(files)]}
         with open(os.path.join(pack, "music-report.json"), "w", encoding="utf-8", newline="\n") as f:
             json.dump(report, f, indent=2)
-    with open(os.path.join(pack, "assets", "ctrcraft", "sounds.json"), "w", encoding="utf-8", newline="\n") as f:
+    with open(os.path.join(pack, "assets", "craftteamracing", "sounds.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump(sj, f, indent=2)
+    os.makedirs(os.path.join(pack, "assets", "craftteamracing", "lang"), exist_ok=True)
+    with open(os.path.join(pack, "assets", "craftteamracing", "lang", "en_us.json"), "w", encoding="utf-8", newline="\n") as f:
+        json.dump(LEVEL_NAMES, f, indent=2, ensure_ascii=False)
     with open(os.path.join(pack, "pack.mcmeta"), "w", encoding="utf-8", newline="\n") as f:
-        json.dump({"pack": {"pack_format": 34, "description": "Craft Team Racing: the original race jingles from your own disc (local use only, do not share)"}}, f, indent=2)
+        json.dump({"pack": {"pack_format": 34, "description": "CTR: Original Music (the race jingles from your own disc (local use only, do not share)"}}, f, indent=2)
     with open(os.path.join(pack, "README.txt"), "w", encoding="utf-8", newline="\n") as f:
         f.write("Made by tools/extract_ctr_music.py from the owner's own copy of Crash Team Racing.\n"
                 "The music belongs to Sony / Naughty Dog: keep this pack on this machine, do not share or upload it.\n"
@@ -360,7 +393,7 @@ def main():
                 "The race music is rendered offline from the game's sequenced songs (tools/ctr_cseq.py): music-report.json has the checks of each song.\n")
     print("Pack written to", pack)
     for target in args.install or []:
-        dst = os.path.join(target, "CTRCraft-OriginalMusic")
+        dst = os.path.join(target, "CTR-OriginalMusic")
         if os.path.isdir(dst):
             shutil.rmtree(dst)
         shutil.copytree(pack, dst)

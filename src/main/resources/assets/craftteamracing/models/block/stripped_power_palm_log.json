@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "craftteamracing:block/stripped_power_palm_log_top",
+    "side": "craftteamracing:block/stripped_power_palm_log"
+  }
+}

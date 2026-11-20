@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "item": "craftteamracing:power_nugget"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "N",
+    "R"
+  ],
+  "result": {
+    "id": "craftteamracing:checkpoint_node",
+    "count": 2
+  }
+}

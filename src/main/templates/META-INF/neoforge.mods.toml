@@ -35,6 +35,14 @@ config="${mod_id}.mixins.json"
     ordering="AFTER"
     side="BOTH"
 
+# Jade is optional: with it, its pop-up is hidden while the player takes part in a race (client/server config of the mod: hideJadeInRace).
+[[dependencies.${mod_id}]]
+    modId="jade"
+    type="optional"
+    versionRange="[15.0.0,)"
+    ordering="NONE"
+    side="CLIENT"
+
 # Fusion (connected textures) is optional: with it, boost blocks of the same state join up (fusion-overrides/ in the jar);
 # without it, the plain textures are used.
 [[dependencies.${mod_id}]]

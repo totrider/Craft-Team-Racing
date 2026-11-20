@@ -1,0 +1,74 @@
+{
+  "emitters": [
+    {
+      "particle": "minecraft:explosion",
+      "count": 2,
+      "pos": [
+        0,
+        0.4,
+        0
+      ],
+      "pos_spread": [
+        0.5,
+        0.2,
+        0.5
+      ],
+      "velocity": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "particle": "minecraft:cloud",
+      "ring": 22,
+      "ring_speed": 0.42,
+      "pos": [
+        0,
+        0.35,
+        0
+      ],
+      "count": 1,
+      "velocity": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "sparks": {
+        "count": 8,
+        "speed": 0.7,
+        "size": 2.2,
+        "life": 26,
+        "colors": [
+          "d02828",
+          "ff7a1a",
+          "ffd23c"
+        ],
+        "fade": [
+          "404040",
+          "d8d8d8"
+        ],
+        "trail": true,
+        "twinkle": false
+      },
+      "count": 1,
+      "pos": [
+        0,
+        0.5,
+        0
+      ],
+      "velocity": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "sound": "minecraft:entity.generic.explode",
+      "volume": 4.0,
+      "pitch": 1.0
+    }
+  ]
+}

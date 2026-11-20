@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "stage=0": {
+      "model": "craftteamracing:block/power_palm_sapling"
+    },
+    "stage=1": {
+      "model": "craftteamracing:block/power_palm_sapling"
+    }
+  }
+}

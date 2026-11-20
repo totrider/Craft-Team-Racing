@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bbmodel  # noqa: E402
 
 RES = os.path.join("src", "main", "resources")
-ASSETS = os.path.join(RES, "assets", "ctrcraft")
+ASSETS = os.path.join(RES, "assets", "craftteamracing")
 TEX = os.path.join(ASSETS, "textures", "item", "rain_cloud.png")
 BB = os.path.join("blockbench", "rain_cloud", "rain_cloud.bbmodel")
 
@@ -49,12 +49,12 @@ def main():
                       comment="Stand-in rain cloud: upright grey slabs. Texture slot 'cloud' is one translucent grey (see tools/make_rain_cloud_model.py).")
     model = bbmodel.read(BB)
     dump(os.path.join(ASSETS, "models", "item", "pickup_rain_cloud.json"), {
-        "textures": {"cloud": "ctrcraft:item/rain_cloud", "particle": "ctrcraft:item/rain_cloud"},
+        "textures": {"cloud": "craftteamracing:item/rain_cloud", "particle": "craftteamracing:item/rain_cloud"},
         "elements": bbmodel.elements(model),
         "display": model["display"] or display(),
     })
     for n in range(23):
-        dump(os.path.join(ASSETS, "models", "item", "pickup_rain_cloud_%d.json" % n), {"parent": "ctrcraft:item/pickup_rain_cloud"})
+        dump(os.path.join(ASSETS, "models", "item", "pickup_rain_cloud_%d.json" % n), {"parent": "craftteamracing:item/pickup_rain_cloud"})
         dump(os.path.join(ASSETS, "models", "item", "pickup_rain_cloud_sub_%d.json" % n), {"elements": []})          # the subtracted texels: the pack's original has them, the stand-in none
     print("rain cloud models written")
 

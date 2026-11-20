@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "O": {
+      "item": "minecraft:oak_planks"
+    },
+    "D": {
+      "item": "minecraft:dark_oak_planks"
+    },
+    "F": {
+      "item": "craftteamracing:power_fruit"
+    }
+  },
+  "pattern": [
+    "ODO",
+    "DFD",
+    "ODO"
+  ],
+  "result": {
+    "id": "craftteamracing:fruit_crate",
+    "count": 2
+  }
+}

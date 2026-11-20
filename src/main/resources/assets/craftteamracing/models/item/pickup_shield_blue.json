@@ -1,0 +1,37 @@
+{
+  "loader": "neoforge:obj",
+  "model": "craftteamracing:models/item/shield_blue.obj",
+  "flip_v": true,
+  "automatic_culling": false,
+  "shade_quads": false,
+  "textures": {
+    "atlas": "craftteamracing:item/slime_shield_blue",
+    "particle": "craftteamracing:item/slime_shield_blue"
+  },
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    "ground": {
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "craftteamracing:block/power_fruit_bag"
+    },
+    "facing=east": {
+      "model": "craftteamracing:block/power_fruit_bag",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "craftteamracing:block/power_fruit_bag",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "craftteamracing:block/power_fruit_bag",
+      "y": 270
+    }
+  }
+}

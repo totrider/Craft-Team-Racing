@@ -27,6 +27,11 @@ repositories {
             includeGroup("dev.ryanhcode.sable-companion")
         }
     }
+    // Jade's API, compile-only (src/main/java/com/craftteamracing/compat/JadeCompat.java): from Modrinth's maven.
+    exclusiveContent {
+        forRepository { maven { name = "Modrinth Maven"; url = "https://api.modrinth.com/maven" } }
+        filter { includeGroup("maven.modrinth") }
+    }
 }
 
 base {
@@ -84,8 +89,10 @@ configurations {
 
 dependencies {
     // Sable and Create are compile-only soft dependencies, added in milestone 4 (see docs/ROADMAP.md).
+    // Jade too: the mod loads without it (its plugin class is only ever loaded by Jade itself).
+    compileOnly 'maven.modrinth:jade:15.10.6+neoforge'
 
-    // Headless tests of the physics core (com.ctrcraft.physics has no Minecraft imports).
+    // Headless tests of the physics core (com.craftteamracing.physics has no Minecraft imports).
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2'
 }

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "craftteamracing:power_palm_logs"
+    }
+  ],
+  "result": {
+    "id": "craftteamracing:power_palm_planks",
+    "count": 4
+  }
+}

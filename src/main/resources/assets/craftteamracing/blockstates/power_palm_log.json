@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "craftteamracing:block/power_palm_log"
+    },
+    "axis=z": {
+      "model": "craftteamracing:block/power_palm_log",
+      "x": 90
+    },
+    "axis=x": {
+      "model": "craftteamracing:block/power_palm_log",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

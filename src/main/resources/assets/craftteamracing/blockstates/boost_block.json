@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "craftteamracing:block/boost_block"
+    },
+    "facing=east": {
+      "model": "craftteamracing:block/boost_block",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "craftteamracing:block/boost_block",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "craftteamracing:block/boost_block",
+      "y": 270
+    }
+  }
+}

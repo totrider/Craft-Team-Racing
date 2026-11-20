@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/door_bottom_right_open",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "top": "craftteamracing:block/power_palm_door_top",
+    "bottom": "craftteamracing:block/power_palm_door_bottom"
+  }
+}

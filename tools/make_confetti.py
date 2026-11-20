@@ -10,7 +10,7 @@ import os
 
 from PIL import Image
 
-ASSETS = os.path.join("src", "main", "resources", "assets", "ctrcraft")
+ASSETS = os.path.join("src", "main", "resources", "assets", "craftteamracing")
 
 
 def main():
@@ -31,7 +31,7 @@ def main():
     rib.save(os.path.join(ASSETS, "textures", "particle", "streamer.png"))
     for name in ("confetti", "streamer"):
         with open(os.path.join(ASSETS, "particles", name + ".json"), "w", encoding="utf-8", newline="\n") as f:
-            json.dump({"textures": ["ctrcraft:" + name]}, f, indent=2)
+            json.dump({"textures": ["craftteamracing:" + name]}, f, indent=2)
     print("confetti pictures written")
 
 

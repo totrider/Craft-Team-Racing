@@ -1,0 +1,66 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "craftteamracing:block/power_palm_leaves_1"
+      },
+      {
+        "model": "craftteamracing:block/power_palm_leaves_1",
+        "y": 90
+      },
+      {
+        "model": "craftteamracing:block/power_palm_leaves_1",
+        "y": 180
+      },
+      {
+        "model": "craftteamracing:block/power_palm_leaves_1",
+        "y": 270
+      },
+      {
+        "model": "craftteamracing:block/power_palm_leaves_2"
+      },
+      {
+        "model": "craftteamracing:block/power_palm_leaves_2",
+        "y": 90
+      },
+      {
+        "model": "craftteamracing:block/power_palm_leaves_2",
+        "y": 180
+      },
+      {
+        "model": "craftteamracing:block/power_palm_leaves_2",
+        "y": 270
+      },
+      {
+        "model": "craftteamracing:block/power_palm_leaves_3"
+      },
+      {
+        "model": "craftteamracing:block/power_palm_leaves_3",
+        "y": 90
+      },
+      {
+        "model": "craftteamracing:block/power_palm_leaves_3",
+        "y": 180
+      },
+      {
+        "model": "craftteamracing:block/power_palm_leaves_3",
+        "y": 270
+      },
+      {
+        "model": "craftteamracing:block/power_palm_leaves_4"
+      },
+      {
+        "model": "craftteamracing:block/power_palm_leaves_4",
+        "y": 90
+      },
+      {
+        "model": "craftteamracing:block/power_palm_leaves_4",
+        "y": 180
+      },
+      {
+        "model": "craftteamracing:block/power_palm_leaves_4",
+        "y": 270
+      }
+    ]
+  }
+}

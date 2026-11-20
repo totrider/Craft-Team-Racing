@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "craftteamracing:power_fruit"
+    },
+    {
+      "item": "craftteamracing:checkpoint_node"
+    }
+  ],
+  "result": {
+    "id": "craftteamracing:fruit_spot",
+    "count": 1
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "facing=north,wheels=1": {
+      "model": "craftteamracing:block/wheel_1"
+    },
+    "facing=north,wheels=2": {
+      "model": "craftteamracing:block/wheel_2"
+    },
+    "facing=north,wheels=3": {
+      "model": "craftteamracing:block/wheel_3"
+    },
+    "facing=north,wheels=4": {
+      "model": "craftteamracing:block/wheel_4"
+    },
+    "facing=east,wheels=1": {
+      "model": "craftteamracing:block/wheel_1",
+      "y": 90
+    },
+    "facing=east,wheels=2": {
+      "model": "craftteamracing:block/wheel_2",
+      "y": 90
+    },
+    "facing=east,wheels=3": {
+      "model": "craftteamracing:block/wheel_3",
+      "y": 90
+    },
+    "facing=east,wheels=4": {
+      "model": "craftteamracing:block/wheel_4",
+      "y": 90
+    },
+    "facing=south,wheels=1": {
+      "model": "craftteamracing:block/wheel_1",
+      "y": 180
+    },
+    "facing=south,wheels=2": {
+      "model": "craftteamracing:block/wheel_2",
+      "y": 180
+    },
+    "facing=south,wheels=3": {
+      "model": "craftteamracing:block/wheel_3",
+      "y": 180
+    },
+    "facing=south,wheels=4": {
+      "model": "craftteamracing:block/wheel_4",
+      "y": 180
+    },
+    "facing=west,wheels=1": {
+      "model": "craftteamracing:block/wheel_1",
+      "y": 270
+    },
+    "facing=west,wheels=2": {
+      "model": "craftteamracing:block/wheel_2",
+      "y": 270
+    },
+    "facing=west,wheels=3": {
+      "model": "craftteamracing:block/wheel_3",
+      "y": 270
+    },
+    "facing=west,wheels=4": {
+      "model": "craftteamracing:block/wheel_4",
+      "y": 270
+    }
+  }
+}

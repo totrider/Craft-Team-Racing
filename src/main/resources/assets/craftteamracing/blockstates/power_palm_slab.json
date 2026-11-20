@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "craftteamracing:block/power_palm_slab"
+    },
+    "type=top": {
+      "model": "craftteamracing:block/power_palm_slab_top"
+    },
+    "type=double": {
+      "model": "craftteamracing:block/power_palm_planks"
+    }
+  }
+}

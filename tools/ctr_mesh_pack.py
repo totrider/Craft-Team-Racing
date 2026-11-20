@@ -4,7 +4,7 @@ atlas texture, and the model JSON that ties them. Used by tools/extract_ctr_text
 
   files = mesh_pack_files(vram, model, "beaker_green", blocks_per_unit=1 / 108.8)
 
-returns {path under assets/ctrcraft: image, text or dict (JSON)}:
+returns {path under assets/craftteamracing: image, text or dict (JSON)}:
   textures/item/<name>_original.png   every triangle's picture (the texture layout it uses, texel 0x0000 transparent) in a cell of its own with the game's shading baked in
                                       (the colour table's grey / 128 per triangle, capped at full), one pixel of the edge repeated round each cell so no neighbour bleeds in
   models/item/<name>.obj, <name>.mtl  one material; the triangles wound outwards, all with the same normal (straight up, see below); units are blocks (the model's level units
@@ -188,7 +188,7 @@ def _gouraud_cell(colours, size=GOURAUD_CELL):
     return np.dstack([rgb, np.full((size, size), 255, dtype=np.uint8)])
 
 
-def mesh_pack_files(vram, model, name, blocks_per_unit, frame=0, up=UP, animated=True, honour_cull=False, exclude=(), pivot_ids=None, shade=None, translucent=True, kart_frame=False, pivot_point=None, additive=False, smooth=0, rim_zero=None, tri_override=None, gain=None, z_flip=False, weld_smooth=0.0, remap=None, tri_space=False, texel_select=None):
+def mesh_pack_files(vram, model, name, blocks_per_unit, frame=0, up=UP, animated=True, honour_cull=False, exclude=(), pivot_ids=None, shade=None, translucent=True, kart_frame=False, pivot_point=None, additive=False, smooth=0, rim_zero=None, tri_override=None, gain=None, z_flip=False, weld_smooth=0.0, remap=None, tri_space=False, texel_select=None, smooth_normals=False):
     """{up}: the coordinate the model's height is in (1: the shared pack's models, 2: the level files', Wumpa fruit and crates; then the horizontal pair is turned and x flipped so
     the left handed game frame becomes Minecraft's right handed one). {animated}: False takes one frame of the model whole (the fruit's spin is a turn the renderer does itself). {exclude}: triangle indices left out (the bomb's spark is a billboard). {pivot_ids}: when given, the model's origin is the middle of those triangles' vertices, put at (0.5, 0.5, 0.5) of the block (a thing that rolls: the bomb), not the base; {translucent}: False ignores the textures' semi-transparency bit (the bomb is solid); {shade}: True bakes the colour table's Gouraud shading (default SHADE_FROM_TABLE). {kart_frame}: the model is in the kart's frame (the game's +z forward becomes the mod's -z forward: taken as it is: the first guess, z flipped, drew the flame's wide end into the kart). {pivot_point}: a point of the model (before turning) that becomes the origin, at (0.5, 0.5, 0.5) of the block. {additive}: the game adds the model's picture to the screen (the boost flame): black is nothing, so the baked alpha is the brightness and the colour is brought up to full. {smooth}: a picture smaller than this many texels is blown up (nearest) to about this size before its vertex colours are baked, so a flat 4 texel picture can carry a smooth gradient (the flame's soft edge). {tri_override}: {triangle index: (texture number to use instead, [three corner colours, 0-255 scale of the game's 128 = 1])}: a triangle drawn with another triangle's picture and colours of its own (the flame's shell, to cover the gaps its own triangles leave). {z_flip}: with {kart_frame}, the length axis is turned the other way (the missile's nose to -z). {gain}: (triangle indices, factor): those triangles' vertex colours are multiplied by the factor (a brighter flame cone). {rim_zero}: (vertex indices, triangle indices): in those triangles those vertices' colours are black (a soft rim; the flame's outer ring). {weld_smooth}: 0..1, the vertices at one place are welded and each vertex's colour is blended toward the mean of its neighbours' by this much (the shield's sheen: smooth shading across its separate triangles). {remap}: with {kart_frame}, a function of a model point returning the point to use (the mask's beam: its axis is the model's z and its ring an ellipse; see extract_ctr_textures). {texel_select}: 'stp' bakes only the texels the game blends, 'opaque' only the ones it draws as they are (a model that is drawn in two blends: the rain cloud). {tri_space}: every textured triangle is baked in its own space (see _tri_cell), not only the ones whose uv has no area. {honour_cull}: the game's per-triangle "cull" flag is obeyed, a triangle without it is written both ways round."""
     nframes = ct.frame_count(model)
@@ -332,6 +332,27 @@ def mesh_pack_files(vram, model, name, blocks_per_unit, frame=0, up=UP, animated
 
     turned = _outward([tuple(tris[i][0]) for i in static_ids], pts)
     v_lines, vt_lines, vn_lines, f_lines = [], [], [], []
+    at = {}
+    face_n = {}
+    if smooth_normals:
+        # vertex normals from the geometry (the original's are flat): at each position the normals of the faces meeting there, within 60 degrees of this face's, averaged by area
+        for n, i in enumerate(static_ids):
+            p3 = [pts[k] for k in tris[i][0]]
+            o = [0, 2, 1] if turned[n] else [0, 1, 2]
+            cross = np.cross(p3[o[1]] - p3[o[0]], p3[o[2]] - p3[o[0]])
+            area = float(np.linalg.norm(cross))
+            face_n[n] = (cross / area if area > 1e-12 else np.array([0.0, 1.0, 0.0]), area)
+            for k in tris[i][0]:
+                at.setdefault(tuple(np.round(pts[k], 4)), []).append(n)
+
+        def vertex_normal(n, k):
+            mine = face_n[n][0]
+            acc = np.zeros(3)
+            for m in at[tuple(np.round(pts[k], 4))]:
+                if float(np.dot(mine, face_n[m][0])) >= 0.5:
+                    acc += face_n[m][0] * face_n[m][1]
+            length = float(np.linalg.norm(acc))
+            return acc / length if length > 1e-12 else mine
     for n, (i, (cell, c, f, h), (ox, oy)) in enumerate(zip(static_ids, cells, place)):
         corner = tris[i][0]
         p3 = [pts[k] for k in corner]
@@ -341,14 +362,21 @@ def mesh_pack_files(vram, model, name, blocks_per_unit, frame=0, up=UP, animated
         # a triangle the game draws from both sides (its "cull" flag is off: the fruit's leaves) is written twice, once each way round, so it is double sided whatever the renderer
         # culls (only with {honour_cull}: the beaker, a see-through tube, is drawn with culling); the others once, wound outwards. Every face gets the same normal, straight up (see the module's note).
         for ord_ in ([order, order[::-1]] if honour_cull and not tris[i][3].get("cull", True) else [order]):
-            vn_lines.append("vn 0 1 0")
+            if not smooth_normals:
+                vn_lines.append("vn 0 1 0")
             idx = []
+            nidx = []
+            flip = -1.0 if ord_ is not order else 1.0                   # the second copy of a double sided triangle faces the other way
             for k in ord_:
                 u, v = uv[k]
                 v_lines.append("v %.5f %.5f %.5f" % tuple(p3[k]))
                 vt_lines.append("vt %.5f %.5f" % ((ox + 1 + (u - umin + 0.5) * f) / width, 1.0 - (oy + 1 + (v - vmin + 0.5) * f) / height))
                 idx.append(len(v_lines))
-            f_lines.append("f %d/%d/%d %d/%d/%d %d/%d/%d" % (idx[0], idx[0], len(vn_lines), idx[1], idx[1], len(vn_lines), idx[2], idx[2], len(vn_lines)))
+                if smooth_normals:
+                    vn = vertex_normal(n, tris[i][0][k]) * flip
+                    vn_lines.append("vn %.4f %.4f %.4f" % tuple(vn))
+                nidx.append(len(vn_lines))
+            f_lines.append("f %d/%d/%d %d/%d/%d %d/%d/%d" % (idx[0], idx[0], nidx[0], idx[1], idx[1], nidx[1], idx[2], idx[2], nidx[2]))
     obj = ["# CTR %s from the owner's own disc (local use only)" % name, "mtllib %s.mtl" % name, "o %s" % name, "usemtl atlas"] + v_lines + vt_lines + vn_lines + f_lines
     mtl = ["newmtl atlas", "Ka 1 1 1", "Kd 1 1 1", "Ks 0 0 0", "d 1", "illum 1", "map_Kd #atlas", ""]
     files = {
@@ -357,11 +385,11 @@ def mesh_pack_files(vram, model, name, blocks_per_unit, frame=0, up=UP, animated
         "models/item/%s.mtl" % name: "\n".join(mtl),
         "models/item/pickup_%s.json" % name: {
             "loader": "neoforge:obj",
-            "model": "ctrcraft:models/item/%s.obj" % name,
+            "model": "craftteamracing:models/item/%s.obj" % name,
             "flip_v": True,
             "automatic_culling": False,
             "shade_quads": False,
-            "textures": {"atlas": "ctrcraft:item/%s_original" % name, "particle": "ctrcraft:item/%s_original" % name},
+            "textures": {"atlas": "craftteamracing:item/%s_original" % name, "particle": "craftteamracing:item/%s_original" % name},
             "display": {"gui": {"rotation": [30, 225, 0], "scale": [0.6, 0.6, 0.6]}, "ground": {"translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]}},
         },
     }
@@ -408,7 +436,7 @@ def _bubbles(vram, model, name, tris, ids, table, pts_all, tf):
                     "width": round(size[0], 5), "height": round(size[1], 5), "centres": [[round(v, 5) for v in c] for c in centres]})
     return {
         "textures/entity/%s_bubbles.png" % name: Image.fromarray(sheet, "RGBA"),
-        "beaker/%s_bubbles.json" % name: {"frames": len(pts_all), "texture": "ctrcraft:textures/entity/%s_bubbles.png" % name, "bubbles": out},
+        "beaker/%s_bubbles.json" % name: {"frames": len(pts_all), "texture": "craftteamracing:textures/entity/%s_bubbles.png" % name, "bubbles": out},
     }
 
 
@@ -467,5 +495,5 @@ def shard_files(vram, model, name, blocks_per_unit, up=2):
         out.append({"uv": uv, "pos": pos})
     return {
         "textures/entity/%s.png" % name: Image.fromarray(atlas, "RGBA"),
-        "%s/%s.json" % (name, name): {"frames": nframes, "texture": "ctrcraft:textures/entity/%s.png" % name, "triangles": out},
+        "%s/%s.json" % (name, name): {"frames": nframes, "texture": "craftteamracing:textures/entity/%s.png" % name, "triangles": out},
     }

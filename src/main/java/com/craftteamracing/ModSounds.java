@@ -1,0 +1,79 @@
+package com.craftteamracing;
+
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
+/** Sound events; the samples are original, synthesised by tools/make_sounds.py (CTR's recordings are not ours to ship). */
+public final class ModSounds {
+    public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, CraftTeamRacingMod.MODID);
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> ENGINE_LOOP = reg("engine_loop");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SKID_LOOP = reg("skid_loop");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TURBO_LOOP = reg("turbo_loop");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HOP = reg("hop");
+    public static final DeferredHolder<SoundEvent, SoundEvent> LAND = reg("land");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIFT_START = reg("drift_start");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BOOST = reg("boost");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BOOST_FAIL = reg("boost_fail");
+    public static final DeferredHolder<SoundEvent, SoundEvent> METER_RED = reg("meter_red");
+    public static final DeferredHolder<SoundEvent, SoundEvent> METER_FULL = reg("meter_full");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HANG_TIME = reg("hang_time");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WALL_HIT = reg("wall_hit");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SLAM = reg("slam");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SPIN_OUT = reg("spin_out");
+    public static final DeferredHolder<SoundEvent, SoundEvent> LIGHT_COUNT = reg("light_count");
+    public static final DeferredHolder<SoundEvent, SoundEvent> LIGHT_GREEN = reg("light_green");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FRUIT_PICKUP = reg("fruit_pickup");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FRUIT_ARRIVE = reg("fruit_arrive");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CLOCK = reg("clock");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BURN = reg("burn");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SQUISH = reg("squish");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SQUISH_RESTORE = reg("squish_restore");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WOBBLE_THUMP = reg("wobble_thump");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GLASS_SHATTER = reg("glass_shatter");
+    /** An event with no sound: what the vanilla explosion is given to play, so the explosion's own (always 0.7 of the pitch, with a random wobble) is not heard. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> SILENT = reg("silent");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MINE_DROP = reg("mine_drop");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TNT_HIT = reg("tnt_hit");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TNT_LAND = reg("tnt_land");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TNT_TICK = reg("tnt_tick");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TNT_EXPLODE = reg("tnt_explode");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRATE_BREAK = reg("crate_break");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BOMB_LAUNCH = reg("bomb_launch");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BOMB_ROLL = reg("bomb_roll");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BOMB_EXPLODE = reg("bomb_explode");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHIELD_ON = reg("shield_on");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHIELD_ROLL = reg("shield_roll");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHIELD_POP = reg("shield_pop");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_LAUNCH = reg("missile_launch");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_FLY = reg("missile_fly");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_EXPLODE = reg("missile_explode");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TRACKER_BEEP = reg("tracker_beep");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ITEM_ROLL = reg("item_roll");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ITEM_GET = reg("item_get");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MASK_AKU = reg("mask_aku");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WARP_LAUNCH = reg("warp_launch");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WARP_FLY = reg("warp_fly");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WARP_END = reg("warp_end");
+    public static final DeferredHolder<SoundEvent, SoundEvent> LAP = reg("lap");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MASK_UKA = reg("mask_uka");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ITEM_GET_CHARGED = reg("item_get_charged");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRASH_SOFT = reg("crash_soft");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRASH_MID = reg("crash_mid");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRASH_HARD = reg("crash_hard");
+
+    private ModSounds() {}
+
+    private static DeferredHolder<SoundEvent, SoundEvent> reg(String name) {
+        return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(
+                ResourceLocation.fromNamespaceAndPath(CraftTeamRacingMod.MODID, name)));
+    }
+
+    public static void register(IEventBus modEventBus) {
+        SOUNDS.register(modEventBus);
+    }
+}

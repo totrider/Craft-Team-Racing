@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "craftteamracing:item_crates"
+    },
+    {
+      "item": "craftteamracing:checkpoint_node"
+    },
+    {
+      "item": "minecraft:redstone_torch"
+    }
+  ],
+  "result": {
+    "id": "craftteamracing:trigger_crate_spot",
+    "count": 1
+  }
+}

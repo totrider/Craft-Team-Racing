@@ -1,0 +1,17 @@
+{
+  "animation": {
+    "frames": [
+      0
+    ],
+    "width": 80,
+    "height": 16
+  },
+  "fusion": {
+    "type": "connecting",
+    "layout": "pieced",
+    "connections": {
+      "type": "is_same_state"
+    },
+    "emissive": true
+  }
+}

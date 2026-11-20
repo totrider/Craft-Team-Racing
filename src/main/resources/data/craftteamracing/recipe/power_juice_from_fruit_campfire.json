@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:campfire_cooking",
+  "category": "misc",
+  "ingredient": {
+    "item": "craftteamracing:power_fruit"
+  },
+  "result": {
+    "id": "craftteamracing:power_juice"
+  },
+  "experience": 0.35,
+  "cookingtime": 600
+}

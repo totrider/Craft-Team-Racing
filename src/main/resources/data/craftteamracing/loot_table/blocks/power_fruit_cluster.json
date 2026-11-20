@@ -1,0 +1,97 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "craftteamracing:power_fruit",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "craftteamracing:power_fruit_cluster",
+              "properties": {
+                "fruits": "1"
+              }
+            }
+          ],
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": 1.0,
+              "add": false
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "craftteamracing:power_fruit",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "craftteamracing:power_fruit_cluster",
+              "properties": {
+                "fruits": "2"
+              }
+            }
+          ],
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": 2.0,
+              "add": false
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "craftteamracing:power_fruit",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "craftteamracing:power_fruit_cluster",
+              "properties": {
+                "fruits": "3"
+              }
+            }
+          ],
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": 3.0,
+              "add": false
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "craftteamracing:power_fruit",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "craftteamracing:power_fruit_cluster",
+              "properties": {
+                "fruits": "4"
+              }
+            }
+          ],
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": 4.0,
+              "add": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "random_sequence": "craftteamracing:blocks/power_fruit_cluster"
+}
