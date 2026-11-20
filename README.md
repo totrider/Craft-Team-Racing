@@ -47,9 +47,9 @@ Power Juice + Raw Iron --> 2 Raw Power Ore --smelt--> Power Ingot
 
 | Wheel (makes 4) | Kart |
 |:---:|:---:|
-| <img src="docs/img/recipes/wheel.png" width="380" alt="Wheel recipe"> | <img src="docs/img/recipes/kart.png" width="380" alt="Kart recipe"> |
+| <img src="docs/img/recipes/wheel.png" width="292" alt="Wheel recipe"> | <img src="docs/img/recipes/kart.png" width="292" alt="Kart recipe"> |
 | **Track Tool** | **Wrench** |
-| <img src="docs/img/recipes/track_tool.png" width="380" alt="Track Tool recipe"> | <img src="docs/img/recipes/wrench.png" width="380" alt="Wrench recipe"> |
+| <img src="docs/img/recipes/track_tool.png" width="292" alt="Track Tool recipe"> | <img src="docs/img/recipes/wrench.png" width="292" alt="Wrench recipe"> |
 
 Every recipe also shows in a recipe viewer such as JEI or REI, and all of them are drawn out in [docs/ITEMS.md](docs/ITEMS.md).
 

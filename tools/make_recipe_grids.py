@@ -28,7 +28,7 @@ RECIPES = ROOT / "src/main/resources/data/craftteamracing/recipe"
 OUT = ROOT / "docs/img/recipes"
 JAR = Path.home() / ".gradle/caches/neoformruntime/artifacts/minecraft_1.21.1_client.jar"
 
-S = 3            # GUI pixel scale
+S = 2            # GUI pixel scale (a recipe picture is 292 px wide; every picture has the same size)
 ICON = 16 * S    # an icon inside an 18 unit slot
 VANILLA_TAGS = {"minecraft:planks": "minecraft:oak_planks", "minecraft:logs": "minecraft:oak_log"}
 FLAT_PARENTS = ("item/generated", "item/handheld", "item/handheld_rod", "builtin/generated")
@@ -57,14 +57,14 @@ def read_asset(ns, kind, name):
 def load_model(ref):
     ns, path = split(ref)
     if path in FLAT_PARENTS:
-        return {"flat": True, "textures": {}, "elements": None}
+        return {"flat": True, "textures": {}, "elements": None, "display": {}}
     raw = read_asset(ns, "models", path + ".json")
     if raw is None:
-        return {"flat": False, "textures": {}, "elements": None}
+        return {"flat": False, "textures": {}, "elements": None, "display": {}}
     d = json.loads(raw)
-    base = load_model(d["parent"]) if "parent" in d else {"flat": False, "textures": {}, "elements": None}
+    base = load_model(d["parent"]) if "parent" in d else {"flat": False, "textures": {}, "elements": None, "display": {}}
     return {"flat": base["flat"], "textures": {**base["textures"], **d.get("textures", {})},
-            "elements": d.get("elements", base["elements"])}
+            "elements": d.get("elements", base["elements"]), "display": {**base["display"], **d.get("display", {})}}
 
 
 def resolve(textures, name):
@@ -86,22 +86,44 @@ def load_texture(ref):
     return img
 
 
-def project(x, y, z, k):
-    return (16 * k + (x - z) * 0.866 * k, 16 * k + ((x + z) * 0.5 - y) * k)
+def rot_xyz(v, rx, ry, rz):
+    """JOML rotationXYZ, which is what Minecraft's item transforms use: a vector is turned about z, then y, then x."""
+    x, y, z = v
+    c, s_ = math.cos(rz), math.sin(rz)
+    x, y = x * c - y * s_, x * s_ + y * c
+    c, s_ = math.cos(ry), math.sin(ry)
+    x, z = x * c + z * s_, -x * s_ + z * c
+    c, s_ = math.cos(rx), math.sin(rx)
+    y, z = y * c - z * s_, y * s_ + z * c
+    return (x, y, z)
 
 
-def draw_face(canvas, tex, uv, corner, k, shade):
-    """corner(su, sv) -> world point of the face at fraction (su, sv) of its u and v extent."""
+def rotate_axis(p, rot):
+    """An element's own rotation: about its origin, on one axis."""
+    o, ax, ang = rot["origin"], rot["axis"], math.radians(rot["angle"])
+    x, y, z = p[0] - o[0], p[1] - o[1], p[2] - o[2]
+    c, s_ = math.cos(ang), math.sin(ang)
+    if ax == "x":
+        y, z = y * c - z * s_, y * s_ + z * c
+    elif ax == "y":
+        x, z = x * c + z * s_, -x * s_ + z * c
+    else:
+        x, y = x * c - y * s_, x * s_ + y * c
+    return (x + o[0], y + o[1], z + o[2])
+
+
+def draw_face(canvas, tex, uv, o, u, v, shade):
+    """o, u, v: the screen points of the picture's top left, top right and bottom left corners."""
     w, h = tex.size
     u1, v1, u2, v2 = uv
-    flip_u, flip_v = u2 < u1, v2 < v1
     box = (min(u1, u2) / 16 * w, min(v1, v2) / 16 * h, max(u1, u2) / 16 * w, max(v1, v2) / 16 * h)
     crop = tex.crop(tuple(int(round(b)) for b in box))
     if crop.width == 0 or crop.height == 0:
         return
-    o = project(*corner(1 if flip_u else 0, 1 if flip_v else 0), k)
-    u = project(*corner(0 if flip_u else 1, 1 if flip_v else 0), k)
-    v = project(*corner(1 if flip_u else 0, 0 if flip_v else 1), k)
+    if u2 < u1:
+        crop = crop.transpose(Image.FLIP_LEFT_RIGHT)
+    if v2 < v1:
+        crop = crop.transpose(Image.FLIP_TOP_BOTTOM)
     cw, ch = crop.size
     a, c = (u[0] - o[0]) / cw, (u[1] - o[1]) / cw
     b, d = (v[0] - o[0]) / ch, (v[1] - o[1]) / ch
@@ -119,31 +141,55 @@ def draw_face(canvas, tex, uv, corner, k, shade):
 
 
 def iso(model):
-    k = 8
-    canvas = Image.new("RGBA", (32 * k, 32 * k), (0, 0, 0, 0))
-    elements = sorted(model["elements"], key=lambda e: e["to"][0] + e["to"][1] + e["to"][2])
-    for e in elements:
+    """The item drawn as the inventory draws it: the model's own display.gui (rotation, translation, scale), orthographic."""
+    gui = model["display"].get("gui", {"rotation": [30, 225, 0], "scale": [0.625, 0.625, 0.625]})
+    rx, ry, rz = (math.radians(a) for a in gui.get("rotation", [0, 0, 0]))
+    tr = gui.get("translation", [0, 0, 0])
+    sc = gui.get("scale", [1, 1, 1])
+    k = 16
+    canvas = Image.new("RGBA", (16 * k, 16 * k), (0, 0, 0, 0))
+
+    def view(p):
+        q = rot_xyz(((p[0] - 8) / 16 * sc[0], (p[1] - 8) / 16 * sc[1], (p[2] - 8) / 16 * sc[2]), rx, ry, rz)
+        q = (q[0] + tr[0] / 16, q[1] + tr[1] / 16, q[2] + tr[2] / 16)
+        return (8 * k + q[0] * 16 * k, 8 * k - q[1] * 16 * k, q[2])        # screen x, screen y (down), depth (towards the viewer)
+
+    faces = []
+    for e in model["elements"]:
         (x1, y1, z1), (x2, y2, z2) = e["from"], e["to"]
-        faces = e.get("faces", {})
-        specs = [  # name, default uv, corner(su, sv), shade
-            ("up", (x1, z1, x2, z2), lambda su, sv: (x1 + (x2 - x1) * su, y2, z1 + (z2 - z1) * sv), 1.0),
-            ("south", (x1, 16 - y2, x2, 16 - y1), lambda su, sv: (x1 + (x2 - x1) * su, y2 - (y2 - y1) * sv, z2), 0.8),
-            ("east", (16 - z2, 16 - y2, 16 - z1, 16 - y1), lambda su, sv: (x2, y2 - (y2 - y1) * sv, z2 - (z2 - z1) * su), 0.6),
-        ]
-        for name, default_uv, corner, shade in specs:
-            f = faces.get(name)
-            if not f:
+        # name: default uv, then the picture's top left, top right and bottom left corners (u runs along the face's "right", v down it), outward shade
+        geo = {
+            "up": ((x1, z1, x2, z2), (x1, y2, z1), (x2, y2, z1), (x1, y2, z2), 1.0),
+            "down": ((x1, 16 - z2, x2, 16 - z1), (x1, y1, z2), (x2, y1, z2), (x1, y1, z1), 0.5),
+            "north": ((16 - x2, 16 - y2, 16 - x1, 16 - y1), (x2, y2, z1), (x1, y2, z1), (x2, y1, z1), 0.8),
+            "south": ((x1, 16 - y2, x2, 16 - y1), (x1, y2, z2), (x2, y2, z2), (x1, y1, z2), 0.8),
+            "west": ((z1, 16 - y2, z2, 16 - y1), (x1, y2, z1), (x1, y2, z2), (x1, y1, z1), 0.6),
+            "east": ((16 - z2, 16 - y2, 16 - z1, 16 - y1), (x2, y2, z2), (x2, y2, z1), (x2, y1, z2), 0.6),
+        }
+        for name, f in e.get("faces", {}).items():
+            if name not in geo:
+                continue
+            default_uv, po, pu, pv, shade = geo[name]
+            pts = [rotate_axis(p, e["rotation"]) if e.get("rotation") else p for p in (po, pu, pv)]
+            o, u, v = (view(p) for p in pts)
+            ux, uy, uz = u[0] - o[0], u[1] - o[1], u[2] - o[2]
+            vx, vy, vz = v[0] - o[0], v[1] - o[1], v[2] - o[2]
+            # screen y points down, which mirrors the cross product's z: the face looks at the viewer when this is positive
+            if ux * vy - uy * vx <= 0:
                 continue
             ref = resolve(model["textures"], f.get("texture", ""))
             tex = load_texture(ref) if ref else None
             if tex is None:
                 continue
-            draw_face(canvas, tex, f.get("uv", default_uv), corner, k, shade)
-    box = canvas.getbbox()
-    if box and max(box[2] - box[0], box[3] - box[1]) < 0.55 * canvas.width:      # a small model (a wheel): enlarge it to read
+            depth = o[2] + (uz + vz) / 2
+            faces.append((depth, tex, f.get("uv", default_uv), o[:2], u[:2], v[:2], shade))
+    for _, tex, uv, o, u, v, shade in sorted(faces, key=lambda t: t[0]):
+        draw_face(canvas, tex, uv, o, u, v, shade)
+    box = canvas.getbbox()                      # fit the picture to the slot so a small model (the kart) can be read; the angle is the game's
+    if box:
         part = canvas.crop(box)
-        f = 0.75 * canvas.width / max(part.size)
-        part = part.resize((max(1, int(part.width * f)), max(1, int(part.height * f))), Image.LANCZOS)
+        f = 15.0 * k / max(part.size)
+        part = part.resize((max(1, round(part.width * f)), max(1, round(part.height * f))), Image.LANCZOS)
         canvas = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
         canvas.alpha_composite(part, ((canvas.width - part.width) // 2, (canvas.height - part.height) // 2))
     return canvas.resize((ICON, ICON), Image.LANCZOS)
@@ -239,7 +285,7 @@ def put(img, item, x, y, size):
 
 def render(grid, result, count, name):
     """grid: 3x3 list of item ids or None; None for a single input recipe uses grid = [[item]]."""
-    rows, cols = len(grid), len(grid[0])
+    rows, cols = 3, 3
     pad = 7 * S
     gw, gh = cols * 18 * S, rows * 18 * S
     height = max(gh, 26 * S) + 2 * pad
@@ -294,7 +340,7 @@ def make(recipe_file):
             grid[i // 3][i % 3] = it
         render(grid, d["result"]["id"], d["result"].get("count", 1), name)
     elif kind in ("smelting", "blasting", "smoking", "campfire_cooking", "stonecutting"):
-        render([[ingredient(d["ingredient"])]], d["result"]["id"], d["result"].get("count", 1), name)
+        render([[None] * 3, [None, ingredient(d["ingredient"]), None], [None] * 3], d["result"]["id"], d["result"].get("count", 1), name)
     else:
         return False
     return True

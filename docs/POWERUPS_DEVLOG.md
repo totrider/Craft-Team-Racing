@@ -203,7 +203,7 @@ Port of the `WEAPON_ID_SHIELD` branch of `VehPickupItem_ShootNow`, `RB_ShieldDar
 - **A hit pops it:** `ItemManager.applyEffect` stops the harmful effects (slow, blast, spin, the rain cloud's) while a shield is up, pops the shield (the 11 frame pop animation, 0x58) and gives a moment of immunity (`VEH_PICK_SHIELD_DAMAGE_INVINCIBLE_TIMER` 0x2a0 ms, 14 ticks).
 - **Thrown:** the use key with the bubble up throws it (after the bomb's detonate check, as `VehPhysProc` orders them): `ShieldBombEntity`, a `BombEntity` with no target, the owner spared 10 frames, blasting as a missile does (sound 0x4c, the plain blast), green or blue.
 - **Look:** the kart's bubble scales by the game's tables (`shieldGrowScale` 8 frames, `shieldPulseScale` 6, `shieldPopScale` 11, in 4096ths of the resting 1792); the jar's model is a translucent ball (`blockbench/pickups/shield.bbmodel`) tinted green or blue. The original is three layered models (`shield`/`shield_green` added, `shielddark` subtracted, `highlight` sweeping over it); they are not built into the pack yet.
-- **Not done:** the original models for the pack; the crash attack (a shielded kart that rams another pops its bubble and spins the other kart: `VehPhysCrash_Attack`, needs kart-to-kart contact); the bubble also popping when the race is finished or the kart is grabbed by a mask; the 0x59 loop of a thrown shield.
+- **Not done:** the original models for the pack; (the crash attack, a shielded kart that rams another, was built later: `ItemManager.crashAttack`); the bubble also popping when the race is finished or the kart is grabbed by a mask; the 0x59 loop of a thrown shield.
 - `/ctr debug spawn shield [charged]` stands a thrown shield on the ground to look at.
 
 ### Sounds (2026-11-14)

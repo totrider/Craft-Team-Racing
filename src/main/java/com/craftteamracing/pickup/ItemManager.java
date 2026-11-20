@@ -244,7 +244,8 @@ public final class ItemManager {
         for (KartEntity other : p.serverLevel().getEntitiesOfClass(KartEntity.class, kart.getBoundingBox().inflate(0.4))) {
             if (other == kart || !(other.getControllingPassenger() instanceof ServerPlayer victim) || victim == p) continue;
             State vs = other.items();
-            if (vs.shield != 0 || vs.immune > 0) continue;
+            // VehPhysCrash_Attack only runs against a kart that has neither a bubble nor the mask; a finished (ethereal) kart is not there
+            if (vs.shield != 0 || vs.immune > 0 || vs.maskTicks > 0 || ethereal(victim) || ethereal(p)) continue;
             popShield(p, s);
             applyEffect(victim, EFFECT_BLAST);
             return;
