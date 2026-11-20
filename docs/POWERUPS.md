@@ -13,17 +13,77 @@ What each power-up does in the mod today, and where that differs from the origin
 ## The power-ups
 The icon is what the HUD shows: the normal form, and beside it the charged one where it looks different (the Totem shows its light and dark looks, the Potion its green and red).
 
-| Icon | In the game | The original's name | What it does | Charged |
-|---|---|---|---|---|
-| <img src="img/powerups/turbo.png" width="120" alt="Redstone Surge"> | **Redstone Surge** | Turbo | A speed burst. | A bigger burst. |
-| <img src="img/powerups/bomb.png" width="120" alt="Bomb"> | **Bomb** | Bowling Bomb | Rolls along the ground in the kart's heading, or backwards at a slower speed when back is held while using it. Follows slopes, climbs a block, explodes on a wall, a kart, a placed weapon or after a long fall, or when you press use again. The blast spins out the karts it reaches (and costs them Power Fruit), and also hurts and throws other entities. Breaks crates it rolls into. | A bigger blast. |
-| <img src="img/powerups/missile.png" width="120" alt="Rocket"> | **Rocket** | Tracking Missile | Flies along the kart's nose and homes in on the nearest kart ahead of you. A warning shows behind a kart that is being chased. Explodes as the bomb does. It flies unguided with no target, and ends after 20 seconds (the mod's own limit). | Faster and turns sharper. |
-| <img src="img/powerups/tnt.png" width="120" alt="TNT"> | **TNT** | Explosive Crate | Dropped behind you. The first other kart to touch it gets it on its head and is blasted three seconds later; jumping repeatedly (about 8 to 10 times) throws it off. The one who dropped it is safe for a moment. Looks like a Minecraft TNT block, scaled down. | A **Creeper crate** (the original's Nitro crate): explodes at the first touch. |
-| <img src="img/powerups/potion.png" width="120" alt="Potion"> | **Potion** | N. Brio's Beaker | Dropped behind you, or thrown in an arc when forward is held. A kart that touches it spins out and **loses Power Fruit**. | A red potion that also puts a **rain cloud** over the kart for about 8 seconds: it **slows the kart down**, or swaps the power-up it is holding for a new one. A second red potion restarts the cloud. |
-| <img src="img/powerups/shield.png" width="120" alt="Slime Shield"> | **Slime Shield** | Power Shield | A bubble that takes one hit, lasts a few seconds, then pops. Use again to throw it forward like a bomb. **Ramming:** a kart with its bubble up that drives into a kart with no bubble and no Totem pops its bubble and blasts that kart, as the original's crash attack does. | Blue: it stays until it is hit. |
-| <img src="img/powerups/mask.png" width="120" alt="Totem"> | **Totem** | Aku Aku / Uka Uka Mask | About 8 seconds of invincibility and a big speed bonus that ignores terrain slowing. A kart you touch is blasted, and you drive through other karts. Which Totem (light or dark) is a setting on the kart (Wrench). | 12 seconds. |
-| <img src="img/powerups/warpball.png" width="120" alt="End Crystal"> | **End Crystal** | Warp Orb | Flies along the course to the kart in first place and blasts it. From first place it flies straight ahead. | Goes through every kart ahead of you. |
-| <img src="img/powerups/clock.png" width="120" alt="Clock"> | **Clock** | N. Tropy Clock | Every other kart spins out and is then slowed for about 8 seconds (the leader is slowed most). They cannot use power-ups meanwhile. Outside a race it reaches karts within 48 blocks. The screen blurs and flashes. | Lasts about 11.5 seconds. |
+### Redstone Surge (the original's Turbo)
+
+<img src="img/powerups/turbo.png" width="160" alt="Redstone Surge">
+
+A speed burst.
+
+**Charged:** A bigger burst.
+
+### Bomb (the original's Bowling Bomb)
+
+<img src="img/powerups/bomb.png" width="160" alt="Bomb">
+
+Rolls along the ground in the kart's heading, or backwards at a slower speed when back is held while using it. Follows slopes, climbs a block, explodes on a wall, a kart, a placed weapon or after a long fall, or when you press use again. The blast spins out the karts it reaches (and costs them Power Fruit), and also hurts and throws other entities. Breaks crates it rolls into.
+
+**Charged:** A bigger blast.
+
+### Rocket (the original's Tracking Missile)
+
+<img src="img/powerups/missile.png" width="160" alt="Rocket">
+
+Flies along the kart's nose and homes in on the nearest kart ahead of you. A warning shows behind a kart that is being chased. Explodes as the bomb does. It flies unguided with no target, and ends after 20 seconds (the mod's own limit).
+
+**Charged:** Faster and turns sharper.
+
+### TNT (the original's Explosive Crate)
+
+<img src="img/powerups/tnt.png" width="160" alt="TNT">
+
+Dropped behind you. The first other kart to touch it gets it on its head and is blasted three seconds later; jumping repeatedly (about 8 to 10 times) throws it off. The one who dropped it is safe for a moment. Looks like a Minecraft TNT block, scaled down.
+
+**Charged:** A **Creeper crate** (the original's Nitro crate): explodes at the first touch.
+
+### Potion (the original's N. Brio's Beaker)
+
+<img src="img/powerups/potion.png" width="160" alt="Potion">
+
+Dropped behind you, or thrown in an arc when forward is held. A kart that touches it spins out and **loses Power Fruit**.
+
+**Charged:** A red potion that also puts a **rain cloud** over the kart for about 8 seconds: it **slows the kart down**, or swaps the power-up it is holding for a new one. A second red potion restarts the cloud.
+
+### Slime Shield (the original's Power Shield)
+
+<img src="img/powerups/shield.png" width="160" alt="Slime Shield">
+
+A bubble that takes one hit, lasts a few seconds, then pops. Use again to throw it forward like a bomb. **Ramming:** a kart with its bubble up that drives into a kart with no bubble and no Totem pops its bubble and blasts that kart, as the original's crash attack does.
+
+**Charged:** Blue: it stays until it is hit.
+
+### Totem (the original's Aku Aku / Uka Uka Mask)
+
+<img src="img/powerups/mask.png" width="160" alt="Totem">
+
+About 8 seconds of invincibility and a big speed bonus that ignores terrain slowing. A kart you touch is blasted, and you drive through other karts. Which Totem (light or dark) is a setting on the kart (Wrench).
+
+**Charged:** 12 seconds.
+
+### End Crystal (the original's Warp Orb)
+
+<img src="img/powerups/warpball.png" width="160" alt="End Crystal">
+
+Flies along the course to the kart in first place and blasts it. From first place it flies straight ahead.
+
+**Charged:** Goes through every kart ahead of you.
+
+### Clock (the original's N. Tropy Clock)
+
+<img src="img/powerups/clock.png" width="160" alt="Clock">
+
+Every other kart spins out and is then slowed for about 8 seconds (the leader is slowed most). They cannot use power-ups meanwhile. Outside a race it reaches karts within 48 blocks. The screen blurs and flashes.
+
+**Charged:** Lasts about 11.5 seconds.
 
 Super Engine and Invisibility exist in the original's **battle mode** only and are not in the mod yet.
 
