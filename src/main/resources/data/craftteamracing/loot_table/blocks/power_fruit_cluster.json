@@ -18,7 +18,7 @@
               "condition": "minecraft:block_state_property",
               "block": "craftteamracing:power_fruit_cluster",
               "properties": {
-                "fruits": "1"
+                "age": "1"
               }
             }
           ],
@@ -38,7 +38,7 @@
               "condition": "minecraft:block_state_property",
               "block": "craftteamracing:power_fruit_cluster",
               "properties": {
-                "fruits": "2"
+                "age": "2"
               }
             }
           ],
@@ -58,7 +58,7 @@
               "condition": "minecraft:block_state_property",
               "block": "craftteamracing:power_fruit_cluster",
               "properties": {
-                "fruits": "3"
+                "age": "3"
               }
             }
           ],
@@ -78,7 +78,7 @@
               "condition": "minecraft:block_state_property",
               "block": "craftteamracing:power_fruit_cluster",
               "properties": {
-                "fruits": "4"
+                "age": "4"
               }
             }
           ],

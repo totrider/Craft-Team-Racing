@@ -800,7 +800,7 @@ def loot_tables():
         "type": "minecraft:block", "random_sequence": NS + ":blocks/power_palm_door",
         "pools": [{"rolls": 1.0, "bonus_rolls": 0.0, "conditions": [{"condition": "minecraft:survives_explosion"}], "entries": [
             {"type": "minecraft:item", "name": C + "power_palm_door", "conditions": [{"condition": "minecraft:block_state_property", "block": C + "power_palm_door", "properties": {"half": "lower"}}]}]}]})
-    loot("power_fruit_cluster", counted(C + "power_fruit", C + "power_fruit_cluster", "fruits", (1, 2, 3, 4)))
+    loot("power_fruit_cluster", counted(C + "power_fruit", C + "power_fruit_cluster", "age", (1, 2, 3, 4)))
     loot("wheel", counted(C + "wheel", C + "wheel", "wheels", (1, 2, 3, 4)))
     not_shears = {"condition": "minecraft:inverted", "term": SHEARS_OR_SILK}
     write_json(os.path.join(DATA, NS, "loot_table", "blocks", "power_palm_leaves.json"), {
@@ -1095,7 +1095,7 @@ def models():
     for n in range(1, 5):
         block_model("power_fruit_cluster_%d" % n, {"parent": "minecraft:block/block", "textures": {"pickups": NS + ":item/pickups", "particle": NS + ":item/pickups"},
                                                     "elements": bbmodel.elements(pods, "p%d" % n), "display": pods["display"] or {}})
-    state("power_fruit_cluster", {"variants": {"fruits=%d,pruned=%s" % (n, pr): {"model": "%s:block/power_fruit_cluster_%d" % (NS, n)} for n in range(1, 5) for pr in ("false", "true")}})
+    state("power_fruit_cluster", {"variants": {"age=%d,pruned=%s" % (n, pr): {"model": "%s:block/power_fruit_cluster_%d" % (NS, n)} for n in range(1, 5) for pr in ("false", "true")}})
     # ---- the wheel
     wheel = ensure_wheel_bbmodel()
     gui = {"gui": {"rotation": [30, 45, 0], "translation": [0, 11.5, 0], "scale": [2.0, 2.0, 2.0]}, "ground": {"translation": [0, 3, 0], "scale": [0.8, 0.8, 0.8]},

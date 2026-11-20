@@ -19,6 +19,7 @@ import sys
 import zipfile
 from pathlib import Path
 
+import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -140,13 +141,61 @@ def draw_face(canvas, tex, uv, o, u, v, shade):
     canvas.alpha_composite(face)
 
 
-def iso(model):
+def raster_face(color, zbuf, tex, uv, o, u, v, shade):
+    """Draws one textured face into an RGBA float buffer with a depth test. o, u, v: the face's top left, top right and bottom left corners as (screen x, screen y, depth)."""
+    h_, w_ = zbuf.shape
+    w, h = tex.size
+    u1, v1, u2, v2 = uv
+    box = (min(u1, u2) / 16 * w, min(v1, v2) / 16 * h, max(u1, u2) / 16 * w, max(v1, v2) / 16 * h)
+    crop = tex.crop(tuple(int(round(b)) for b in box))
+    if crop.width == 0 or crop.height == 0:
+        return
+    if u2 < u1:
+        crop = crop.transpose(Image.FLIP_LEFT_RIGHT)
+    if v2 < v1:
+        crop = crop.transpose(Image.FLIP_TOP_BOTTOM)
+    cw, ch = crop.size
+    a, c = (u[0] - o[0]) / cw, (u[1] - o[1]) / cw
+    b, d = (v[0] - o[0]) / ch, (v[1] - o[1]) / ch
+    det = a * d - b * c
+    if abs(det) < 1e-9:
+        return
+    xs = (o[0], u[0], v[0], u[0] + v[0] - o[0])
+    ys = (o[1], u[1], v[1], u[1] + v[1] - o[1])
+    x0, x1 = max(0, int(math.floor(min(xs)))), min(w_, int(math.ceil(max(xs))) + 1)
+    y0, y1 = max(0, int(math.floor(min(ys)))), min(h_, int(math.ceil(max(ys))) + 1)
+    if x1 <= x0 or y1 <= y0:
+        return
+    X, Y = np.meshgrid(np.arange(x0, x1) + 0.5, np.arange(y0, y1) + 0.5)
+    dx, dy = X - o[0], Y - o[1]
+    tu = (d * dx - b * dy) / det
+    tv = (-c * dx + a * dy) / det
+    inside = (tu >= 0) & (tu < cw) & (tv >= 0) & (tv < ch)
+    ti = np.clip(tu.astype(np.int32), 0, cw - 1)
+    tj = np.clip(tv.astype(np.int32), 0, ch - 1)
+    px = np.asarray(crop, dtype=np.float32)[tj, ti]
+    depth = o[2] + (u[2] - o[2]) * tu / cw + (v[2] - o[2]) * tv / ch
+    zreg = zbuf[y0:y1, x0:x1]
+    alpha = px[..., 3] / 255.0
+    # a later face wins a tie (the elements are in the model's own order); a see-through texel does not hide what is behind it
+    win = inside & (alpha > 0) & (depth >= zreg - 1e-5)
+    creg = color[y0:y1, x0:x1]
+    rgb = px[..., :3] * shade
+    old_a = creg[..., 3] / 255.0
+    out_a = alpha + old_a * (1 - alpha)
+    for i in range(3):
+        blended = np.where(out_a > 0, (rgb[..., i] * alpha + creg[..., i] * old_a * (1 - alpha)) / np.maximum(out_a, 1e-6), 0)
+        creg[..., i] = np.where(win, blended, creg[..., i])
+    creg[..., 3] = np.where(win, out_a * 255.0, creg[..., 3])
+    zreg[...] = np.where(win & (alpha >= 0.999), depth, zreg)
+
+
+def iso(model, k=16, tints=None, size=None, fit=15.0, info=None):
     """The item drawn as the inventory draws it: the model's own display.gui (rotation, translation, scale), orthographic."""
     gui = model["display"].get("gui", {"rotation": [30, 225, 0], "scale": [0.625, 0.625, 0.625]})
     rx, ry, rz = (math.radians(a) for a in gui.get("rotation", [0, 0, 0]))
     tr = gui.get("translation", [0, 0, 0])
     sc = gui.get("scale", [1, 1, 1])
-    k = 16
     canvas = Image.new("RGBA", (16 * k, 16 * k), (0, 0, 0, 0))
 
     def view(p):
@@ -181,18 +230,27 @@ def iso(model):
             tex = load_texture(ref) if ref else None
             if tex is None:
                 continue
-            depth = o[2] + (uz + vz) / 2
-            faces.append((depth, tex, f.get("uv", default_uv), o[:2], u[:2], v[:2], shade))
-    for _, tex, uv, o, u, v, shade in sorted(faces, key=lambda t: t[0]):
-        draw_face(canvas, tex, uv, o, u, v, shade)
+            tint = (tints or {}).get(f.get("tintindex"))
+            if tint:                                    # a tinted face (the kart's frame and seat): the colour multiplies the picture
+                r, g, b, a = tex.split()
+                tex = Image.merge("RGBA", [r.point(lambda p: p * tint[0] // 255), g.point(lambda p: p * tint[1] // 255), b.point(lambda p: p * tint[2] // 255), a])
+            faces.append((tex, f.get("uv", default_uv), o, u, v, shade))
+    # a depth buffer, not an order of faces: the kart's parts overlap in ways no single order of drawing gets right
+    color = np.zeros((canvas.height, canvas.width, 4), dtype=np.float32)
+    zbuf = np.full((canvas.height, canvas.width), -1e9, dtype=np.float32)
+    for tex, uv, o, u, v, shade in faces:
+        raster_face(color, zbuf, tex, uv, o, u, v, shade)
+    canvas = Image.fromarray(np.clip(color, 0, 255).astype(np.uint8), "RGBA")
     box = canvas.getbbox()                      # fit the picture to the slot so a small model (the kart) can be read; the angle is the game's
     if box:
         part = canvas.crop(box)
-        f = 15.0 * k / max(part.size)
+        f = fit * k / max(part.size)
         part = part.resize((max(1, round(part.width * f)), max(1, round(part.height * f))), Image.LANCZOS)
         canvas = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
         canvas.alpha_composite(part, ((canvas.width - part.width) // 2, (canvas.height - part.height) // 2))
-    return canvas.resize((ICON, ICON), Image.LANCZOS)
+        if info is not None:                    # where a model point ends up in the picture (tools/make_mod_icon.py lays a floor under the kart)
+            info.update(view=view, box=box, f=f, paste=((canvas.width - part.width) // 2, (canvas.height - part.height) // 2), side=canvas.width)
+    return canvas.resize((size or ICON, size or ICON), Image.LANCZOS)
 
 
 def flat(model):

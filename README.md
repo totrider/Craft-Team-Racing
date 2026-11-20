@@ -183,7 +183,7 @@ Each is applied by right-clicking the Start Node, as the track's default or for 
 
 ### Seeing what the race sees (debug)
 `/ctr debug rings` draws every checkpoint box (green passed, yellow the last one, orange the next, grey the rest) and `/ctr debug path` a line to the point on the course you are nearest to, with a line of text about your progress.
-Use them when a checkpoint does not count where you expect it to.
+Use them when a checkpoint does not count where you expect it to. All the commands, the tuning debug profile for operators and a list of common problems are in [docs/DEBUGGING.md](docs/DEBUGGING.md).
 
 ## Mod compatibility
 Craft Team Racing is a **standalone mod**: everything above works without any other mod. These are optional.
@@ -196,6 +196,7 @@ Craft Team Racing is a **standalone mod**: everything above works without any ot
 | **Jade** | Works | Its pop-up is hidden while you race (setting `hideJadeInRace`). |
 | **Farm & Charm** | Works | The Bag of Power Fruit uses its sack look (built-in resource pack). |
 | **Every Compat** | Works | The Power Palm is picked up as a wood type, so its furniture and wood-based blocks are generated. |
+| **Harvest with Ease** | Supported, untested | Fruit clusters use an `age` property (1 to 4) so it can harvest them. Add `craftteamracing:power_fruit_cluster` to the `crops` list in its config (`harvest_with_ease-common.toml`). Right-click harvesting of a full cluster also works without it. |
 | [**Sable**](https://github.com/ryanhcode/sable) | Planned | Karts driving on sub-levels. Declared optional; never required, never bundled. |
 | **Create Aeronautics** | Planned | Karts on and around airships and contraptions, through Sable. |
 | **Xaero's Minimap / World Map** | Planned | The track and the racers on the map. |

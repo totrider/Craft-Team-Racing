@@ -6,10 +6,13 @@ license="${mod_license}"
 modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
+logoFile="logo.png"
+logoBlur=false
 description='''
-Crash Team Racing kart physics in Minecraft: drivable karts on smoothed block terrain, built to work with Sable, Create and Create Aeronautics.
-'''
+Drive kart-racing-game karts through your Minecraft world. Build race tracks from ordinary blocks and a few nodes, race your friends with crates and power-ups, and play it all from a fresh survival world: craft a kart from a Power Palm's fruit.
 
+Optional: Fusion, Create, Copycats+, Jade, Farm & Charm and Every Compat. Unofficial fan project, not affiliated with Activision, Sony, Naughty Dog or Mojang; it ships no assets from the original game.
+'''
 [[mixins]]
 config="${mod_id}.mixins.json"
 

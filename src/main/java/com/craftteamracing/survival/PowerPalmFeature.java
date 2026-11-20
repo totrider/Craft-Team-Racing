@@ -132,7 +132,7 @@ public class PowerPalmFeature extends Feature<NoneFeatureConfiguration> {
             setBlock(level, p, leaf.setValue(LeavesBlock.DISTANCE, Math.max(1, Math.min(7, dist.get(p)))));
         }
         for (BlockPos b : bunches) {
-            if (free(level, b) && leaves.containsKey(b.above())) setBlock(level, b, ModSurvival.POWER_FRUIT_CLUSTER.get().defaultBlockState().setValue(PowerFruitClusterBlock.FRUITS, 1 + random.nextInt(2)));
+            if (free(level, b) && leaves.containsKey(b.above())) setBlock(level, b, ModSurvival.POWER_FRUIT_CLUSTER.get().defaultBlockState().setValue(PowerFruitClusterBlock.AGE, 1 + random.nextInt(2)));
         }
         return true;
     }

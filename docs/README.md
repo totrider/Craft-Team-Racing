@@ -14,6 +14,7 @@ The documents here come in two kinds, and the difference matters:
 | [POWERUPS.md](POWERUPS.md) | What each power-up does, its charged form, and the mod's differences from the original |
 | [UPGRADES.md](UPGRADES.md) | Kart upgrades, the kart's and the crate spot's screens, the kart as an item and its paint |
 | [KART_TUNING.md](KART_TUNING.md) | Tuning profiles as data pack entries |
+| [DEBUGGING.md](DEBUGGING.md) | Commands and tools for finding out why a track, a race or a kart misbehaves, and a list of common problems |
 | [DAMAGE.md](DAMAGE.md) | How Minecraft's damage reaches a kart and its driver, in the open world and in a race |
 | [TERRAIN.md](TERRAIN.md) | How blocks become smooth ground, and the surface tags |
 | [MUSIC.md](MUSIC.md) | Race music events and the local music pack |

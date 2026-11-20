@@ -1,27 +1,27 @@
 {
   "variants": {
-    "fruits=1,pruned=false": {
+    "age=1,pruned=false": {
       "model": "craftteamracing:block/power_fruit_cluster_1"
     },
-    "fruits=1,pruned=true": {
+    "age=1,pruned=true": {
       "model": "craftteamracing:block/power_fruit_cluster_1"
     },
-    "fruits=2,pruned=false": {
+    "age=2,pruned=false": {
       "model": "craftteamracing:block/power_fruit_cluster_2"
     },
-    "fruits=2,pruned=true": {
+    "age=2,pruned=true": {
       "model": "craftteamracing:block/power_fruit_cluster_2"
     },
-    "fruits=3,pruned=false": {
+    "age=3,pruned=false": {
       "model": "craftteamracing:block/power_fruit_cluster_3"
     },
-    "fruits=3,pruned=true": {
+    "age=3,pruned=true": {
       "model": "craftteamracing:block/power_fruit_cluster_3"
     },
-    "fruits=4,pruned=false": {
+    "age=4,pruned=false": {
       "model": "craftteamracing:block/power_fruit_cluster_4"
     },
-    "fruits=4,pruned=true": {
+    "age=4,pruned=true": {
       "model": "craftteamracing:block/power_fruit_cluster_4"
     }
   }
