@@ -14,6 +14,8 @@ Roadmap: `docs/ROADMAP.md`. Research: `docs/RESEARCH.md`.
   OBJ + model JSON (conventions in `blender/README.md`). Same rules: never hand-edit the exported OBJ/JSON.
 - Power-up sprites: drawn 16 x 16 WITHOUT an outline, then outlined in black (18 x 18 at most) and put into the original's 3 : 2 icon shape (96 x 64, the sprite stretched 4 x 3 so it shows square: a
   reference pixel is 0.7361 as wide as tall); `tools/sprite_outline.py`, `tools/make_power_sprites.py`. Minecraft's own sprites the mod borrows (totem, clock) are outlined at run time (`client/IconSprites`), never copied.
+- Recipe pictures (`docs/img/recipes/`, used by the README and `docs/ITEMS.md`) are generated from the recipe JSON and the models by `tools/make_recipe_grids.py`; rerun it after changing a recipe or an icon.
+- Docs: guides describe what is implemented (README, `docs/ITEMS.md`...); `DESIGN_*.md` and the devlog are history. The README refers only to implemented features.
 - Textures: layered Krita `.kra` in `art/` (not .ora); a build script exports PNGs. Never hand-edit generated PNGs.
 - When handing over an editable source file (bbmodel, kra, config), say up front anything non-obvious about its structure.
 - `.mcp.json` is local only (gitignored). The Blockbench MCP server is configured there (local path).

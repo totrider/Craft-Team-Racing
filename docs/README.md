@@ -1,22 +1,33 @@
 # Documentation
 
-Start with the [project README](../README.md) for what the mod does and how to play it. These documents are for people who want to know how and why.
-Most of them are **working documents written during development** and keep dated notes, including decisions that were later changed; where a section disagrees with a newer one, the newer one (usually marked) is current.
+Start with the [project README](../README.md) for what the mod does and how to play it.
 
-| Document | What it is | Status |
-|---|---|---|
-| [ROADMAP.md](ROADMAP.md) | Architecture decisions, what is built, what comes next | Current |
-| [SURVIVAL.md](SURVIVAL.md) | The Power Palm, Power Fruit chain, wood set, wheels, crates, the full recipe table | Current |
-| [UPGRADES.md](UPGRADES.md) | Kart upgrades, the kart's and the crate spot's screens, the kart as an item and its paint | Current |
-| [DESIGN_TRACKS.md](DESIGN_TRACKS.md) | Nodes, test drive, race runtime, podium. The "Race progress model" section is current where sections disagree | Built; older sections are history |
-| [DESIGN_ITEMS.md](DESIGN_ITEMS.md) | Power Fruit, crates, the roulette, rule sets, the Rulebook, Drop Table, trigger crates | Built |
-| [POWERUPS.md](POWERUPS.md) | Every power-up: the original's behaviour (from the decompilation), what the mod does, the original's names | Built, except the battle-only ones |
-| [DESIGN_KART_DATA.md](DESIGN_KART_DATA.md) | Kart tuning profiles as data pack entries; kart looks and parts | Tunings built, looks not built |
-| [DAMAGE.md](DAMAGE.md) | How Minecraft's damage reaches a kart and its driver | Built; the data-driven table and ruleset are planned |
-| [TERRAIN.md](TERRAIN.md) | How blocks become smooth ground | Built |
-| [MUSIC.md](MUSIC.md) | Race music events and the local music pack | Built |
-| [PHYSICS_PORT.md](PHYSICS_PORT.md) | Function-by-function map of the physics port, with what is verified | Current |
-| [RESEARCH.md](RESEARCH.md) | The first investigation of the sources. Some numbers were summarised, so re-verify before porting | Historical |
+The documents here come in two kinds, and the difference matters:
+- **Guides** describe what is **implemented** and how to use it. They are kept in step with the game.
+- **Design records** are notes written while planning and building: the reasoning, the dead ends, the original game's rules as read from the decompilation. They are kept for people who are curious about the project's direction and history, and they are **not** a promise of what the game does. Where one disagrees with a guide, the guide is right.
+
+## Guides (current)
+| Document | What it covers |
+|---|---|
+| [ITEMS.md](ITEMS.md) | Every item and block with its crafting recipe drawn as a crafting grid, grouped by purpose |
+| [SURVIVAL.md](SURVIVAL.md) | The Power Palm, the Power Fruit chain, the wood set, wheels and crates |
+| [POWERUPS.md](POWERUPS.md) | What each power-up does, its charged form, and the mod's differences from the original |
+| [UPGRADES.md](UPGRADES.md) | Kart upgrades, the kart's and the crate spot's screens, the kart as an item and its paint |
+| [KART_TUNING.md](KART_TUNING.md) | Tuning profiles as data pack entries |
+| [DAMAGE.md](DAMAGE.md) | How Minecraft's damage reaches a kart and its driver, in the open world and in a race |
+| [TERRAIN.md](TERRAIN.md) | How blocks become smooth ground, and the surface tags |
+| [MUSIC.md](MUSIC.md) | Race music events and the local music pack |
+| [PHYSICS_PORT.md](PHYSICS_PORT.md) | Function-by-function map of the physics port and what is verified |
+| [ROADMAP.md](ROADMAP.md) | What is built, what comes next, and the architecture decisions |
+
+## Design records and logs (history)
+| Document | What it is |
+|---|---|
+| [DESIGN_TRACKS.md](DESIGN_TRACKS.md) | How nodes, the test drive, the race runtime and the podium were designed. The "Race progress model" section is the current one where sections disagree |
+| [DESIGN_ITEMS.md](DESIGN_ITEMS.md) | The design of Power Fruit, crates, the roulette, rule sets and the rule items, with the original's rules |
+| [DESIGN_KART_DATA.md](DESIGN_KART_DATA.md) | Why tuning and looks are separate, and the plan for kart looks (not built) |
+| [POWERUPS_DEVLOG.md](POWERUPS_DEVLOG.md) | Chronological log of porting and tuning each power-up, with the decomp functions read |
+| [RESEARCH.md](RESEARCH.md) | The first investigation of the sources. Some numbers were summarised, so re-verify before porting |
 
 ## Naming
 The mod is **Craft Team Racing**, or **CTR** for short; its id is `craftteamracing`. In-game text uses Minecraft-themed or generic words. The original game's names appear only where a document is about the original's mechanics, and in the optional local resource packs.

@@ -29,9 +29,9 @@ Background and sources: [RESEARCH.md](RESEARCH.md).
 - **M0 Setup and research.** Gradle/NeoForge workspace, research in [RESEARCH.md](RESEARCH.md), test-instance install script.
 - **M1 Drive a kart.** The physics port (`KartSim`, tests, [PHYSICS_PORT.md](PHYSICS_PORT.md)), the kart entity and item, the 30 Hz client sim, the original's HUD meters, exhaust, sounds (own placeholders; the original's only as a local pack).
 - **M2 Smooth terrain.** Steps, slabs and stairs become ramps, surfaces from block tags, boost blocks (pad, block, slab, stairs), Fusion connected textures, copycat support, the kart leaning on the ground. See [TERRAIN.md](TERRAIN.md).
-- **M2.5 Pad families, Power Fruit, tunings.** The Super Boost family (opt-in), Power Fruit and its effects, kart tuning profiles as data pack entries ([DESIGN_KART_DATA.md](DESIGN_KART_DATA.md)).
-- **M2.6 Tracks and races.** Nodes and the Track Tool, test drive and validation, branches, gathering, grid, lamps, start rev, laps, positions, HUD, respawn, wrong-way and skipped-checkpoint warnings, the track bar, podium nodes and the ceremony, ethereal finished karts, race music. See [DESIGN_TRACKS.md](DESIGN_TRACKS.md).
-- **Crates and power-ups.** Power Fruit, fruit crates, power-up crates with the place-based roulette, trigger crates and the redstone linking node, every power-up the race roulette draws, the Rulebook, Drop Table and Track Music Sheet. See [DESIGN_ITEMS.md](DESIGN_ITEMS.md), [POWERUPS.md](POWERUPS.md).
+- **M2.5 Pad families, Power Fruit, tunings.** The Super Boost family (opt-in), Power Fruit and its effects, kart tuning profiles as data pack entries ([KART_TUNING.md](KART_TUNING.md)).
+- **M2.6 Tracks and races.** Nodes and the Track Tool, test drive and validation, branches, gathering, grid, lamps, start rev, laps, positions, HUD, respawn, wrong-way and skipped-checkpoint warnings, the track bar, podium nodes and the ceremony, ethereal finished karts, race music. See the README's track building steps; the design record is [DESIGN_TRACKS.md](DESIGN_TRACKS.md).
+- **Crates and power-ups.** Power Fruit, fruit crates, power-up crates with the place-based roulette, trigger crates and the redstone linking node, every power-up the race roulette draws, the Rulebook, Drop Table and Track Music Sheet. See [ITEMS.md](ITEMS.md), [POWERUPS.md](POWERUPS.md).
 - **M3 Survival.** The Power Palm and its wood set, Power Fruit, Juice, Ingot, wheels, crates, recipes for every item, the kart as an item with paint, upgrades (Offroad Tires, Soft Bumper, Floater family, Paddle, Jump Spring, Low Gravity Module), damage handling ([DAMAGE.md](DAMAGE.md)). See [SURVIVAL.md](SURVIVAL.md), [UPGRADES.md](UPGRADES.md).
 
 ### Next
@@ -48,10 +48,15 @@ Background and sources: [RESEARCH.md](RESEARCH.md).
 - **Xaero's Minimap / World Map:** the track and the racers on the map, instead of a map of the mod's own (decided 2026-11-12; how is still to be researched, including licences and APIs).
 - **Every Compat** works (the Power Palm is picked up as a wood type); Handcrafted and Chipped through it are untested.
 
+### Ideas for more survival depth, unscheduled
+- **Kart parts:** a Garage where the kart is built from chassis, engine, tires and body, so the three classes become something to build towards (no stats from looks).
+- **Power Cells:** a nugget-and-redstone battery that a boost pad takes for a bigger, longer boost.
+- **Palm country:** palm signs and boats, a hammock, beach villages with a fruit merchant.
+- **Juice by ripeness:** a cluster picked before it is full gives sour juice and less ore.
+- **Racing garages:** small generated tracks near beaches.
+
 ### Ideas, unscheduled
 AI karts, custom character skins, replays, more kart classes, a ground-tilt and chase-camera pass, interpolation for other players' karts (20 Hz now), a long-arrow boost pad look.
 
 ## Open decisions
-1. Licensing: GPL-3.0-or-later, decided 2026-11-12. `LICENSE` is in the repo root.
-2. Sable integration style for M4 (entity vs block assembly); revisit after M1/M2.
-3. Controls: default keys for drift/hop/brake/reverse; use vanilla movement keys for steer/accel.
+- **Sable integration style:** an entity on a sub-level, or the kart as a sub-level. Prototype before committing. (Licence and controls are settled: GPL-3.0-or-later, and vanilla movement keys plus a few of the mod's own.)

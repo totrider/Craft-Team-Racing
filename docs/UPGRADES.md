@@ -11,7 +11,7 @@ Built 2026-11-15.
 Two items, each **used on the kart** (right-click it): it is installed (the item is used up, creative keeps it) and its switch in the kart's screen unlocks. They are saved with the kart (`Upgrades`, bits in `KartEntity`) and synced to clients.
 - **Offroad Tires** (`craftteamracing:offroad_tires`): with the switch on, the kart ignores rough terrain: dirt, slow dirt (grass), snow and mud drive like asphalt (`KartDriver`, the terrain under the sim). Ice, sideslip and water are left as they are (water slows, as it should).
 - **Soft Bumper** (`craftteamracing:soft_bumper`): with the switch on, the kart does no collision damage to the entities it bumps into (`KartHitPayload`); it still bounces and throws them.
-- Recipes (placeholders to balance): Offroad Tires: black wool, slime balls and an iron ingot; Soft Bumper: three white wool over three slime balls (`data/craftteamracing/recipe`).
+- Recipes: see [ITEMS.md](ITEMS.md).
 
 ## More upgrades (2026-11-16)
 Used on the kart like the first two; **every upgrade starts switched on when installed** (the Low Gravity Module at 50 %). Bits in `KartEntity` (`UP_*`; the module's strength in bits 12-15).

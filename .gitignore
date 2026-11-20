@@ -63,3 +63,7 @@ asset-extractor/ctr/
 asset-extractor/output/
 asset-extractor/iso/*
 !asset-extractor/iso/README.txt
+
+# Python bytecode
+__pycache__/
+*.pyc

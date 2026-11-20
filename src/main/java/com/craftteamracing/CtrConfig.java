@@ -57,7 +57,7 @@ public final class CtrConfig {
                 .defineInRange("weaponSpeedScale", 1.0, 0.1, 2.0);
         DISABLED_TUNING = builder
                 .comment("Kart tuning profiles that cannot be picked (ids; craftteamracing ones may be written without the namespace, e.g. \"speed\"). Data packs can define more profiles and turn any off too",
-                        "(data/<namespace>/craftteamracing/kart_tuning/<name>.json, see docs/DESIGN_KART_DATA.md). A kart whose profile is off is tuned as Balanced; if every profile is off, as the original Balanced.")
+                        "(data/<namespace>/craftteamracing/kart_tuning/<name>.json, see docs/KART_TUNING.md). A kart whose profile is off is tuned as Balanced; if every profile is off, as the original Balanced.")
                 .defineListAllowEmpty("disabledTuningProfiles", java.util.List.of(), () -> "", o -> o instanceof String);
         builder.push("worldgen");
         POWER_PALMS = builder

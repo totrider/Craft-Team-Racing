@@ -21,7 +21,7 @@ public final class ModItems {
     public static final DeferredItem<com.craftteamracing.kart.WrenchItem> WRENCH = ITEMS.register("wrench",
             () -> new com.craftteamracing.kart.WrenchItem(new Item.Properties().stacksTo(1)));
 
-    /** Holds a rule set (see docs/DESIGN_ITEMS.md): right-click to set it, crouch and right-click a Start node to apply it. */
+    /** Holds a rule set (see docs/DESIGN_ITEMS.md): right-click to set it, right-click a Start node to apply it. */
     public static final DeferredItem<com.craftteamracing.track.RulebookItem> RULEBOOK = ITEMS.register("rulebook",
             () -> new com.craftteamracing.track.RulebookItem(new Item.Properties().stacksTo(1)));
 
@@ -46,7 +46,7 @@ public final class ModItems {
     /** Used on a kart: a jump of its own on a key of its own (the spring's high jump). */
     public static final DeferredItem<Item> JUMP_SPRING = ITEMS.register("jump_spring", () -> new Item(new Item.Properties().stacksTo(16)));
 
-    /** Holds a drop table (see docs/DESIGN_ITEMS.md): right-click to set it, crouch and right-click a Start node to apply it. */
+    /** Holds a drop table (see docs/DESIGN_ITEMS.md): right-click to set it, right-click a Start node to apply it. */
     public static final DeferredItem<com.craftteamracing.track.DropTableItem> DROP_TABLE = ITEMS.register("drop_table",
             () -> new com.craftteamracing.track.DropTableItem(new Item.Properties().stacksTo(1)));
 

@@ -2,7 +2,7 @@ package com.craftteamracing.physics;
 
 /**
  * A kart's tuning: the numbers a profile sets (the MetaPhys class stats of NTSC-U CTR, zGlobal_DATA.c:7122-7189, plus the collision weight, :7240). The four engine classes of
- * {@link KartClass} are the official ones; a datapack can define more (docs/DESIGN_KART_DATA.md). No Minecraft imports.
+ * {@link KartClass} are the official ones; a datapack can define more (docs/KART_TUNING.md). No Minecraft imports.
  *
  * @param accel          Accel_ClassStat: engine push per frame
  * @param speed          Speed_ClassStat: top speed

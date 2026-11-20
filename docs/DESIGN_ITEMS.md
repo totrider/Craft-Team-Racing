@@ -1,8 +1,8 @@
 # Fruit, crates, power-ups and rule sets - design
 
-Status: design agreed in outline 2026-11-12. Built: the pure core (`com.craftteamracing.items`: `HeldItem`, `ItemTables`, `PowerupTable`, `RuleSet`), the three
-pickup spot blocks with their pickup entities, the power fruit count, the roulette, the held-item HUD and the use key (`com.craftteamracing.pickup`), and the
-Turbo power-up. Since then every power-up the race roulette draws has been built (see POWERUPS.md), and the rulebook, drop table and track music sheet items. Fidelity policy: the original's behaviour is the default rule set; everything else is a rule set choice.
+> **Design record.** This note was written while planning and building, and is kept for the reasoning. It is **not the manual**: for what is implemented and how to use it, see the [README](../README.md) and [ITEMS.md](ITEMS.md) and [POWERUPS.md](POWERUPS.md). Where it disagrees with the game, the game and those guides are right.
+
+Everything described here is built unless a line says otherwise. Fidelity policy: the original's behaviour is the default rule set; everything else is a rule set choice.
 
 ## What CTR does (ctr-native, read in the source)
 
@@ -20,10 +20,10 @@ Not in the decomp as read: how the weapons themselves behave (bomb, missile, mas
 One placeable item per kind, so that a builder carries exactly what they need and the hotbar stays a choice:
 
 - **Fruit spot**, **Fruit crate spot**, **Power-up crate spot** (the name "weapon crate" is CTR's; in this mod they give power-ups).
-- Later, without changing the design: **Time crate spot** for time trials, and anything an extension adds.
+- Not built: a **Time crate spot** for time trials.
 
 A spot is a block (so it can float in the air or sit against a block) that is **only visible while a track item is in hand**, like the track
-nodes, and **does nothing outside a race**. When a race starts the mod spawns the pickups at the spots as rotating, collidable entities; they are
+nodes, and **does nothing outside a race**. When a race starts the mod spawns the pickups at the spots as spinning, collidable entities (the original's crates keep a fixed orientation; spinning is a deliberate choice that suits free placement in a Minecraft world); they are
 gone when it ends. Spots are not part of the route graph: they belong to a track by being near it (within a configurable distance of one of the
 track's nodes; open decision below).
 
@@ -32,10 +32,9 @@ use (`KartBump`-style: the kart's sphere against the pickup's), done on the driv
 state (taken, respawn timers). Crates respawn as in CTR; fruit does not come back during a race.
 
 ## Sizes
-The stand-ins keep the original's proportions, normalised so a crate is exactly one block (the unit Minecraft works in; the kart, which already feels
-right, is the other reference): a cube with a bevelled frame. A loose Power Fruit is 54.8 x 60.6 x 67.5 level units against the crate's 108.8, about
-0.5 x 0.56 x 0.62 blocks (all measured from the models on the disc). Icons are 32 x 48, the Power Fruit sprite and the lamps 48 x 32, as the original's. The pickup's
-reach for a kart is its own size plus the kart's half width.
+The stand-ins are scaled for Minecraft, not copied at the original's size. The original's crates are huge next to its karts, so the crate here is **one block** (the unit Minecraft works in) and keeps the original's look: a cube with a bevelled frame.
+The pickups are sized against that crate, from the proportions of the models on the disc: a loose Power Fruit is 54.8 x 60.6 x 67.5 level units against the crate's 108.8, about 0.5 x 0.56 x 0.62 blocks. The **kart has its own scale**, chosen to feel right next to Minecraft's blocks and entities, so
+the crate and kart sizes are not the original's ratio. Icons are 32 x 48, the Power Fruit sprite and the lamps 48 x 32, as the original's. The pickup's reach for a kart is its own size plus the kart's half width.
 
 ## Original art
 `tools/extract_ctr_textures.py` builds local resource packs from the player's own disc with the original crate faces, power-up icons, Power Fruit
@@ -55,7 +54,7 @@ percent (0 = none). **The default is `RuleSet.CTR`**, the original game: place-b
   point when a builder switches to custom.
 
 ## Extending the power-ups with data packs
-Goal: as little friction as possible, with real flexibility. Proposal, to be built after the built-in items exist:
+Goal: as little friction as possible, with real flexibility. **Not built.** The proposal:
 
 1. A power-up is a **data pack entry** (`data/<ns>/craftteamracing_powerup/<name>.json`): id, icon, name, how many uses, and an **effect**.
 2. An effect is a **list of built-in actions** (boost for N frames, shield, fire a projectile of a chosen kind, drop a hazard, hit the kart in
@@ -66,18 +65,10 @@ Goal: as little friction as possible, with real flexibility. Proposal, to be bui
 
 Each built-in power-up is then also expressible this way, which keeps the built-in and extension paths the same.
 
-## Build order
-1. **Pure core** - done (item ids, CTR's tables and place rules, `PowerupTable`, `RuleSet`).
-2. **Fruit spot + fruit crate spot**: blocks, items, ghost display, race-time spawning, collision, the power fruit count in the HUD and its top-speed effect.
-3. **Power-up crate spot**: the roulette (90 frames, the HUD slot) and a first few items (turbo and shield are the simplest, then the potion and TNT hazards).
-4. **Rulebook item and its screen**, applied to a Start; temporary vs default; permissions.
-5. The remaining items one at a time (bomb, missile, mask, warp orb, clock ...), then the data pack format.
-6. **Time trial** with time crates, as a rule set / placeable extension.
-
-## Open decisions
-- How a spot belongs to a track: **within N blocks of one of the track's nodes** (built: `pickupTrackRadius`, default 96) or an explicit link from a node. The distance is taken to the **lines between linked nodes**, not to the nodes themselves, so a crate beside a long straight is as near as one beside a node. Spots are outlined green (within range of a track) or red (not) while a track item is in hand.
-- Crate **respawn time** and whether the **fruit stays gone** are CTR's by default; both could be rule set options later.
-- ~~Whether a rulebook is a new item or the Wrench with a mode.~~ Decided: **its own item**, whose settings travel with the item when it is copied, like a map or a Create schematic.
+## Decisions
+- **How a spot belongs to a track:** within N blocks of the track (`pickupTrackRadius`, default 96). The distance is taken to the **lines between linked nodes**, not to the nodes themselves, so a crate beside a long straight is as near as one beside a node. Spots are outlined green (within range of a track) or red (not) while a track item is in hand.
+- **Respawn and fruit:** the original's respawn times, and fruit stays gone during a race.
+- **The Rulebook is its own item**, whose settings travel with the item when it is copied, like a map.
 
 ## Extensions decided along the way
 - A **power-up crate spot can be set to one particular power-up** (Wrench, right-click): good for testing, and for builds that want a fixed power-up.

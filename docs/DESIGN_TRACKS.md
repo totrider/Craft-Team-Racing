@@ -1,5 +1,7 @@
 # Tracks and races: a node graph you build, then test-drive
 
+> **Design record.** This note was written while planning and building, and is kept for the reasoning. It is **not the manual**: for what is implemented and how to use it, see the [README](../README.md) and the building steps in the README. Where it disagrees with the game, the game and those guides are right.
+
 Status: **steps 1-3 built (2026-11-12): nodes, tool, linking, test drive with validity; race runtime (gather, grid, lights, start boost, laps, positions, HUD).** Step 4 (polish) has been built piece by piece: respawn, wrong-way and skipped-checkpoint warnings, the track bar, podium nodes with the ceremony, a debug view; see the sections at the end. Time trials and the ready UI are not built. **Where an older section below disagrees with the "Race progress model" section, that one is current.**
 Opt-in by nature (nothing here changes how a kart drives).
 
@@ -127,18 +129,13 @@ progress (lap, node index, distance to the next node). Respawn and wrong-way han
 - Start boost: PS1 has it (`KS_ENGINE_REVVING`, `VehStuckProc_RevEngine`); the world-of-kartcraft port has it in `rev.rs`. The rev meter, the two boost sizes and the
   "over-rev" fail are in the decomp; port them from `reference/ctr-native` / `reference/wok/rev.rs` when we get there (not read yet).
 
-## Build order (each step playable on its own)
-1. **Nodes and the tool:** node blocks, ghost rendering, the tool, linking, `TrackData`, saving. (You can build and see a graph; nothing drives.)
-2. **Test drive and validation:** rings, main path, branches, the valid flag, feedback.
-3. **Race runtime:** lobby area, countdown, teleport to slots, signal lights, start boost, laps, positions, HUD (lap, position, time).
-4. **Polish:** respawn / out of bounds, wrong-way, time trials, ready UI, track export as a datapack.
-
-## Open questions
-- **Who can edit tracks?** Proposed: creative / operators only by default (a config flag opens it to everyone with the tool).
-- **Radius and ring size:** per node, adjustable with the tool (scroll or sneak-scroll)? Proposed yes, default 6 blocks.
-- **Lap count and settings:** set on the Start node via the tool (a small screen), default 3.
-- **Several tracks in one world:** yes (each Start node starts a track; nodes belong to the track they are linked into).
-- **A branch ring that should also count for the lap:** the main path decides what counts; branches are alternative routes between two main nodes, so passing either counts.
+## Settled questions
+- **Who can edit tracks:** creative players and operators by default; the server setting `trackEditing` opens it (`TrackPermissions` is where a claims mod would hook in).
+- **Node size:** each node is a box, resized with the Track Tool (the ring of the first design was dropped).
+- **Laps:** set in the Start Node's menu, default 3.
+- **Several tracks per world:** yes; a Start Node starts a track and nodes belong to the track they are linked into.
+- **Branches:** the main path decides what counts; a branch is an alternative between two main-path nodes, so passing either counts.
+- **Not built:** time trials, the ready check, track export as a data pack. See the [roadmap](ROADMAP.md).
 
 ## Podium nodes and finished racers
 
