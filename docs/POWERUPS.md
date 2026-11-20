@@ -94,8 +94,8 @@ Defaults follow the original; these are the deliberate differences.
 - **Open world:** outside a race there is no field and no order, so the End Crystal and Rocket go after the nearest driven kart, and global effects reach 48 blocks around the user.
 - **Minecraft entities** are hurt and thrown by explosions, as set by the `entities` server config.
 - **Aiming:** the Rocket and Bomb choose a target in a cone ahead (the original tests the screen's rectangle).
-- **The Totem** lets its user drive through other karts.
+- **The Totem and the Slime Shield** pass through other karts with no bounce, for as long as the Totem lasts or the bubble is up. In the original the touch also bounces the two karts apart once, on the frame they meet, and then blasts the other kart, so in play it feels much like passing through; the mod skips the bounce. Only the protected kart gets this: every other kart, mob and boat keeps colliding. When the bubble pops or the Totem ends, the kart it just hit is still being launched and does not collide with it for about 0.8 seconds.
 - **Config:** `weaponSpeedScale` scales the speed of thrown weapons.
 
 ## Not built
-The battle-mode items, and the animation of some original effects (the Totem mouth, parts of the Clock's wobble); see the devlog for the detail.
+The battle-mode items; the Clock's timer in the HUD; the Totem's echo on its voice and the faster mask song on the last lap; and the animation of the original's Totem beam when a local original-art pack is used (the pack shows its first frame; the mouth animation only exists in the original's Adventure-mode hint masks, not in the power-up). The devlog has the detail.

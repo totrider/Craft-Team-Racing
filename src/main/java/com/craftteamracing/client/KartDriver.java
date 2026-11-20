@@ -285,11 +285,26 @@ public final class KartDriver {
     private static List<KartBump.Other> nearbyKarts(Minecraft mc, KartEntity self) {
         double reach = KartScale.toBlocks(2.0 * KartBump.HIT_RADIUS) + 1.0;
         boolean entities = contactOn();
-        // a kart with the mask on drives through the others, and they through it (it hurts what it touches, see maskContacts): no kart is a body to it, nor it to them
-        boolean ghost = self.maskState() != 0 || self.ethereal();          // a finished kart is as good as not there, to the others and to itself
+        // A kart with the mask on, or its Slime Shield up, drives through the other karts and they through it (it hurts what it touches, see maskContacts and ItemManager.crashAttack); nothing
+        // else gets this: every other kart, and every mob and boat, keeps colliding. The original bounces the two once on the frame they meet and the blast then throws the other kart up and
+        // away, so it feels like passing through. For a moment after the protection ends (the bubble pops on the hit) the one that was hit is still being launched, and the two do not collide yet.
+        long nowMs = System.currentTimeMillis();
+        boolean ghost = ghosting(self, nowMs) || self.ethereal();          // a finished kart is as good as not there, to the others and to itself
+        boolean selfRecent = recentGhost(self, nowMs);
+        double touch = KartScale.toBlocks(2.0 * KartBump.HIT_RADIUS) + 0.3;
         List<Entity> near = mc.level.getEntitiesOfClass(Entity.class, self.getBoundingBox().inflate(reach),
-                e -> e != self && !e.isRemoved() && !e.isSpectator() && !self.hasPassenger(e)
-                        && (e instanceof KartEntity k ? !ghost && k.maskState() == 0 && !k.ethereal() : entities && bumpable(e)));
+                e -> {
+                    if (e == self || e.isRemoved() || e.isSpectator() || self.hasPassenger(e)) return false;
+                    if (!(e instanceof KartEntity k)) return entities && bumpable(e);
+                    boolean kGhost = ghosting(k, nowMs);
+                    if (ghost || kGhost) {
+                        if (e.distanceTo(self) < touch) TOUCHED.put(k.getId(), nowMs);           // who the protected kart is in touch with, for the grace below
+                        return false;
+                    }
+                    if (k.ethereal()) return false;
+                    Long t = TOUCHED.get(k.getId());
+                    return !((selfRecent || recentGhost(k, nowMs)) && t != null && nowMs - t < GHOST_GRACE_MS);
+                });
         if (near.isEmpty()) {
             return List.of();
         }
@@ -305,6 +320,28 @@ public final class KartDriver {
             }
         }
         return out;
+    }
+
+    /** The grace after a kart's protection (the mask or the bubble) in which the kart it hit, still being launched, does not collide with it. */
+    private static final long GHOST_GRACE_MS = 800L;
+    private static final java.util.Map<Integer, Long> GHOST_SEEN = new java.util.HashMap<>();
+    private static final java.util.Map<Integer, Long> TOUCHED = new java.util.HashMap<>();
+
+    /** Whether the kart is protected from, and through, other karts: the mask is on, or the Slime Shield is up (not while it pops). Remembers when it last was. */
+    private static boolean ghosting(KartEntity k, long now) {
+        int shield = k.shield();
+        boolean on = k.maskState() != 0 || shield > 0 || shield == -1;
+        if (on) GHOST_SEEN.put(k.getId(), now);
+        else if (GHOST_SEEN.size() > 64) {
+            GHOST_SEEN.values().removeIf(t -> now - t > 10_000L);
+            TOUCHED.values().removeIf(t -> now - t > 10_000L);
+        }
+        return on;
+    }
+
+    private static boolean recentGhost(KartEntity k, long now) {
+        Long t = GHOST_SEEN.get(k.getId());
+        return t != null && now - t < GHOST_GRACE_MS;
     }
 
     /** What a kart runs into besides other karts: living things (mobs, players on foot) and vehicles (boats, minecarts) that are not riding. */
