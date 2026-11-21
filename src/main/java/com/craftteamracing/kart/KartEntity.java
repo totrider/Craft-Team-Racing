@@ -78,6 +78,9 @@ public class KartEntity extends Entity {
     /** Paddle: a floating kart drives at full speed on the water instead of at the water's slowdown (as the Offroad Tires do for rough ground). */
     public static final int UP_PADDLE_UNLOCKED = 1024;
     public static final int UP_PADDLE_ON = 2048;
+    /** Snow Skis: the kart drives on top of powder snow instead of sinking into it. */
+    public static final int UP_SKIS_UNLOCKED = 1 << 20;
+    public static final int UP_SKIS_ON = 1 << 21;
     public static final int UP_GRAVITY_DEFAULT = 5 << UP_GRAVITY_SHIFT;
     private static final EntityDataAccessor<Integer> DATA_SHIELD = SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_TILT =
@@ -405,6 +408,10 @@ public class KartEntity extends Entity {
         return !floaterOn() ? 0 : (upgrades() & UP_OBSIDIAN) != 0 ? 2 : 1;
     }
 
+    public boolean skisOn() {
+        return (upgrades() & (UP_SKIS_UNLOCKED | UP_SKIS_ON)) == (UP_SKIS_UNLOCKED | UP_SKIS_ON);
+    }
+
     public boolean paddleOn() {
         return (upgrades() & (UP_PADDLE_UNLOCKED | UP_PADDLE_ON)) == (UP_PADDLE_UNLOCKED | UP_PADDLE_ON);
     }
@@ -447,6 +454,7 @@ public class KartEntity extends Entity {
             check = UP_OBSIDIAN;
         }
         else if (held.is(ModItems.PADDLE.get())) { unlock = UP_PADDLE_UNLOCKED; defaults = UP_PADDLE_ON; }
+        else if (held.is(ModItems.SNOW_SKIS.get())) { unlock = UP_SKIS_UNLOCKED; defaults = UP_SKIS_ON; }
         else if (held.is(ModItems.JUMP_SPRING.get())) { unlock = UP_SPRING_UNLOCKED; defaults = UP_SPRING_DEFAULT; }
         else if (held.is(ModItems.LOW_GRAVITY_MODULE.get())) { unlock = UP_GRAVITY_UNLOCKED; defaults = UP_GRAVITY_DEFAULT; }
         if (unlock != 0) {

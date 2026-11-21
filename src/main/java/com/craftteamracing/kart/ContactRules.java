@@ -12,7 +12,7 @@ public final class ContactRules {
     private ContactRules() {}
 
     /** The speed (blocks/s) below which a kart's touch does no damage: bumping around at a walk is harmless. */
-    /** The scale the damage numbers were tuned at (a Balanced kart at top speed is 31 of their blocks a second); the kart physics' own scale is KartScale.LU_PER_BLOCK. */
+    /** The scale the damage numbers were tuned at (a Balanced kart at top speed is 31 of their blocks a second); the kart physics' own scale is KartScale.BASE_LU_PER_BLOCK. */
     public static final double DAMAGE_LU_PER_BLOCK = 50.0;
     public static final double HARMLESS_BELOW = 6.0;
     /** Damage in half-hearts per block/s over {@link #HARMLESS_BELOW}: at the Balanced top speed (about 31 blocks/s) 12 hp, a zombie in two hits. */
@@ -31,7 +31,7 @@ public final class ContactRules {
 
     /** The centre distance (lu) at which a kart touches an entity of this width: the kart's own sphere plus the entity's half width. */
     public static double reach(double width) {
-        return KartSim.SPHERE_RADIUS + width / 2.0 * KartScale.LU_PER_BLOCK;
+        return KartSim.sphereRadius() + width / 2.0 * KartScale.luPerBlock();
     }
 
     /** A bump's strength (velocity units: lu/256 per frame) as a speed in blocks per second (30 frames a second). The damage numbers were tuned with a kart's top speed at 31 of these; they keep their meaning in terms of the kart's speed, not the world's blocks, so this stays at the old 50 lu a block ({@link #DAMAGE_LU_PER_BLOCK}) when the kart physics' scale changed. */

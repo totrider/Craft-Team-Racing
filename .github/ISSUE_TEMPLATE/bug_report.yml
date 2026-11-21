@@ -1,0 +1,65 @@
+name: Bug report
+description: Something does not work as it should, or the game crashes.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. The more of the fields below you can fill in, the faster it can be fixed. For track, checkpoint or race problems, the debugging guide (`docs/DEBUGGING.md` in this repository) lists views (`/ctr debug rings`, `/ctr debug path`) that show what the race sees.
+  - type: input
+    id: version
+    attributes:
+      label: Craft Team Racing version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: neoforge
+    attributes:
+      label: Minecraft and NeoForge version
+      placeholder: "Minecraft 1.21.1, NeoForge 21.1.265"
+    validations:
+      required: true
+  - type: dropdown
+    id: side
+    attributes:
+      label: Where does it happen?
+      options:
+        - Singleplayer
+        - Multiplayer, as a player
+        - Multiplayer, dedicated server (server side problem or crash)
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+      description: Describe the problem. Screenshots or a short video help a lot.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Place a Start Node...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: mods
+    attributes:
+      label: Other mods
+      description: The other mods and resource packs you use, especially Create, Fusion, Copycats+, Jade, Farm & Charm, Every Compat, Harvest with Ease, shader packs, or any resource pack that changes the kart, sounds or textures.
+  - type: textarea
+    id: debug
+    attributes:
+      label: Debug output (for track and race problems)
+      description: The text line shown by `/ctr debug path` while the problem happens, and what `/ctr debug rings` shows.
+  - type: textarea
+    id: log
+    attributes:
+      label: Log or crash report
+      description: For a crash, the crash report; otherwise `logs/latest.log`. Paste it, or upload it to a paste site and link it. Please do not paste personal information.
+      render: text

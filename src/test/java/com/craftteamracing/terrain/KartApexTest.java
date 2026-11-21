@@ -29,7 +29,7 @@ class KartApexTest {
 
     /** Full gas from {@code runUp} blocks before the ramp: {furthest z in blocks, frames spent against a wall}. */
     static double[] drive(List<double[]> extra, double runUp, int frames) {
-        double lu = KartScale.LU_PER_BLOCK;
+        double lu = KartScale.luPerBlock();
         TerrainCollider collider = new TerrainCollider(new TerrainField(BombRollTest.world(extra)), lu);
         KartSim k = new KartSim(KartClass.BALANCED, new V3(6.5 * lu, 0, -runUp * lu), 0);
         KartInput gas = new KartInput(0, true, false, false, false, false);

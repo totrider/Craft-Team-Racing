@@ -59,6 +59,12 @@ public final class KartDriver {
 
     private static KartSim sim;
     private static TerrainCollider world;
+    private static double lastLuPerBlock = 0.0;
+
+    /** The terrain field the driven kart's physics uses, as last prepared (null while not driving): the terrain debug view draws it. */
+    public static TerrainField terrainField() {
+        return world == null ? null : world.field();
+    }
     private static int simEntityId = -1;
     private static double lastFluidY = Double.NEGATIVE_INFINITY;
     private static int lastFluidKind;
@@ -135,9 +141,20 @@ public final class KartDriver {
         // a jump press (either jump key) while in the air is the Jump Spring's double jump
         springLatch |= o.keyJump.consumeClick() | CraftTeamRacingClient.KEY_HOP2.consumeClick();
         if (world == null || worldLevel != mc.level) {
-            world = new TerrainCollider(new TerrainField(new McBlockSource(mc.level, kart)), KartScale.LU_PER_BLOCK);
+            world = new TerrainCollider(new TerrainField(new McBlockSource(mc.level, kart)), KartScale.luPerBlock());
             worldLevel = mc.level;
         }
+        // the speed scale changed (an operator, the config): a lu is another part of a block now, so the kart's position is stretched to stay where it is in the world
+        com.craftteamracing.physics.WorldScale.setTrack(RaceClient.active() ? RaceClient.rules().speedPercent() : 0);          // a race's rulebook pace replaces the server's for its participants
+        double lpb = KartScale.luPerBlock();
+        if (lastLuPerBlock != lpb) {
+            if (lastLuPerBlock > 0.0) {
+                sim.rescalePosition(lpb / lastLuPerBlock);
+                snapshot(true);
+            }
+            lastLuPerBlock = lpb;
+        }
+        world.setLuPerBlock(lpb);
         // the server put us on the race grid: stand there
         RacePayload slot = RaceClient.takePlacement();
         if (slot != null) {
@@ -178,6 +195,8 @@ public final class KartDriver {
             boolean floating = floaterMode >= 1;
             McBlockSource.floaterMode = floaterMode;
             McBlockSource.paddleActive = race ? RaceClient.rules().paddle() : kart.paddleOn();
+            McBlockSource.skisActive = race ? RaceClient.rules().skis() : kart.skisOn();
+            McBlockSource.barriersActive = race;              // the Kart Barriers are walls to a kart in a race, and nothing at all otherwise
             double feetY = KartScale.toBlocks(sim.position().y);
             McBlockSource.floaterFeetY = feetY;
             // under the surface with the Floater: lifted to it (the water is not a floor down there, see McBlockSource)
@@ -258,7 +277,6 @@ public final class KartDriver {
             }
             sim.tntOnHead = System.currentTimeMillis() < tntUntilMs;
             sim.springLocked = System.currentTimeMillis() < tntUntilMs + 600L;
-            sim.speedCapPercent = com.craftteamracing.track.RaceClient.rules().maxSpeedPercent();
             sim.tick(world, input);
             sendHits(mc, kart, sim.drainBumps());
             maskContacts(mc, kart);
@@ -283,7 +301,7 @@ public final class KartDriver {
      * moved with over the last game tick, in lu/256 per sim frame.
      */
     private static List<KartBump.Other> nearbyKarts(Minecraft mc, KartEntity self) {
-        double reach = KartScale.toBlocks(2.0 * KartBump.HIT_RADIUS) + 1.0;
+        double reach = KartScale.toBlocks(2.0 * KartBump.hitRadius()) + 1.0;
         boolean entities = contactOn();
         // A kart with the mask on, or its Slime Shield up, drives through the other karts and they through it (it hurts what it touches, see maskContacts and ItemManager.crashAttack); nothing
         // else gets this: every other kart, and every mob and boat, keeps colliding. The original bounces the two once on the frame they meet and the blast then throws the other kart up and
@@ -291,7 +309,7 @@ public final class KartDriver {
         long nowMs = System.currentTimeMillis();
         boolean ghost = ghosting(self, nowMs) || self.ethereal();          // a finished kart is as good as not there, to the others and to itself
         boolean selfRecent = recentGhost(self, nowMs);
-        double touch = KartScale.toBlocks(2.0 * KartBump.HIT_RADIUS) + 0.3;
+        double touch = KartScale.toBlocks(2.0 * KartBump.hitRadius()) + 0.3;
         List<Entity> near = mc.level.getEntitiesOfClass(Entity.class, self.getBoundingBox().inflate(reach),
                 e -> {
                     if (e == self || e.isRemoved() || e.isSpectator() || self.hasPassenger(e)) return false;
@@ -308,7 +326,7 @@ public final class KartDriver {
         if (near.isEmpty()) {
             return List.of();
         }
-        double perFrame = KartScale.LU_PER_BLOCK * 20.0 / 30.0 * 256.0; // blocks per game tick -> lu/256 per sim frame
+        double perFrame = KartScale.luPerBlock() * 20.0 / 30.0 * 256.0; // blocks per game tick -> lu/256 per sim frame
         List<KartBump.Other> out = new ArrayList<>(near.size());
         for (Entity k : near) {
             V3 v = new V3((k.getX() - k.xo) * perFrame, (k.getY() - k.yo) * perFrame, (k.getZ() - k.zo) * perFrame);
@@ -364,7 +382,7 @@ public final class KartDriver {
             if (b.id() < 0 && b.impact() > 0xA00 && sim.turboItem() && now - lastSquishSent > 1000L) {
                 // VehPhysCrash_Attack: an impact over 0xa00 by a kart under a turbo item boost squashes the kart it ran into (the server checks the rest)
                 KartEntity hit = null;
-                double best = KartScale.toBlocks(2.0 * KartBump.HIT_RADIUS) + 1.0;
+                double best = KartScale.toBlocks(2.0 * KartBump.hitRadius()) + 1.0;
                 for (KartEntity other : mc.level.getEntitiesOfClass(KartEntity.class, kart.getBoundingBox().inflate(best), e -> e != kart && !e.isRemoved())) {
                     double d = other.distanceTo(kart);
                     if (d < best) {
@@ -404,7 +422,7 @@ public final class KartDriver {
     private static void maskContacts(Minecraft mc, KartEntity kart) {
         if (!sim.maskActive() || kart.ethereal()) return;
         long now = System.currentTimeMillis();
-        double reach = KartScale.toBlocks(2.0 * KartBump.HIT_RADIUS) + 0.3;
+        double reach = KartScale.toBlocks(2.0 * KartBump.hitRadius()) + 0.3;
         for (KartEntity other : mc.level.getEntitiesOfClass(KartEntity.class, kart.getBoundingBox().inflate(reach), e -> e != kart && !e.isRemoved() && !e.ethereal() && e.getControllingPassenger() != null)) {
             if (other.distanceTo(kart) > reach) continue;
             Long last = MASK_SENT.get(other.getId());
@@ -468,7 +486,7 @@ public final class KartDriver {
         kart.setYRot(yaw);
         kart.yRotO = yaw;
         V3 v = sim.velocity();
-        double perTick = 30.0 / 20.0 / KartScale.LU_PER_BLOCK / 256.0; // lu/256 per sim frame -> blocks per game tick
+        double perTick = 30.0 / 20.0 / KartScale.luPerBlock() / 256.0; // lu/256 per sim frame -> blocks per game tick
         kart.setDeltaMovement(v.x * perTick, v.y * perTick, v.z * perTick);
         kart.setOnGround(sim.grounded());
         kart.setDrawnYawAngle(drawn);

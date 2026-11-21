@@ -6,10 +6,15 @@ import com.craftteamracing.physics.V3;
 /** The physics' {@link Collider} over a {@link TerrainField}: the field works in blocks, the physics in level units. */
 public final class TerrainCollider implements Collider {
     private final TerrainField field;
-    private final double luPerBlock;
+    private double luPerBlock;
 
     public TerrainCollider(TerrainField field, double luPerBlock) {
         this.field = field;
+        this.luPerBlock = luPerBlock;
+    }
+
+    /** The speed scale changed: the units to the block, as the kart's world has them now. */
+    public void setLuPerBlock(double luPerBlock) {
         this.luPerBlock = luPerBlock;
     }
 

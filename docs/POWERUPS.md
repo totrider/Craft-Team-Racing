@@ -7,7 +7,7 @@ What each power-up does in the mod today, and where that differs from the origin
 - **Quantity:** how many shots a power-up gives is not fixed. The original's table has "stack of three" entries for the Bomb and the Rocket and the default table keeps them. A crate spot can give any power-up in any quantity from 1 to 10, or a random number in a range. Every use takes one shot off the stack, with a short cooldown between shots, and the HUD shows how many are left.
 - **Charged:** at **10 Power Fruit** the kart is charged: the effect is stronger, as listed below, and a shining burst sits behind the held power-up in the HUD.
 - **Using:** the use key (`V`). Hold forward or back for the throw direction where a power-up has one.
-- **Placed weapons** (TNT crate, Potion) share a pool of 10 per race, cleared when the race ends; a new one when the pool is full bursts the oldest. Outside a race each player has a pool of 10, and one nobody touches goes away after five minutes.
+- **Placed weapons** (TNT crate, Potion) share a pool of 10 per race, cleared when the race ends, and before the lights every bomb, missile, potion, TNT crate and warp orb within the pickup radius of the track is removed, whoever threw it (a driver outside the race too); a new one when the pool is full bursts the oldest. Outside a race each player has a pool of 10, and one nobody touches goes away after five minutes.
 - **Shields and the Totem:** a Slime Shield or a Totem takes any hostile power-up effect. Damage from the rain cloud, a blast, a spin and the Clock is stopped.
 
 ## The power-ups

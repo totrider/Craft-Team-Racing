@@ -11,7 +11,7 @@ Power Juice + Raw Iron (crafting)  -->  2 Raw Power Ore  --furnace or blast furn
 Power Ingot  <-->  9 Power Nuggets            9 Power Ingots  <-->  Block of Power            9 Power Fruit  <-->  Bag of Power Fruit
 ```
 
-- **Power Palm** grows on beaches (`#minecraft:is_beach`, on sand) and from its **sapling** (which also takes root in dirt). The trunk is four or five logs tall, never taller than an oak's.
+- **Power Palm** grows on beaches (`#minecraft:is_beach`, on sand), on desert sand within five blocks of water (deserts only, `#c:is_desert`: a river's bank in a forest gets none), on the banks of jungles within five blocks of water (`#minecraft:is_jungle`, on sand or soil), in desert **oases**, and from its **sapling** (which also takes root in dirt). The trunk is four or five logs tall, never taller than an oak's.
   The crown is four drooping fronds with tufts between them, nowhere farther than five blocks along the leaves from a log, so it never decays. With the optional fluffy pack the fronds are **fluffy**: a cube and crossed
   planes that stick out of it, four variants turned at random (`blockbench/survival/power_palm_leaves.bbmodel`; in the manner of the Better Leaves resource pack, MIT licence).
 - **Fruit**: fronds drop a Power Fruit (10 %, up to 40 % with Fortune III) and a sapling (6 %); shears and silk touch take the fronds themselves. Power Fruit is **food** (3 hunger, no effects).
@@ -28,6 +28,7 @@ Power Ingot  <-->  9 Power Nuggets            9 Power Ingots  <-->  Block of Pow
 - **Shears** on a fruit cluster stop its growth (shears again start it): the `pruned` state. New trees come with two clusters of one or two fruit.
 - **Food**: a Power Fruit feeds as an apple does (4, saturation 2.4); Power Juice 5 (saturation 3.0), between an apple and bread. Juice is cooked from fruit as raw beef is: furnace, smoker
   (twice as fast) or campfire.
+- **Oases:** a feature placed into desert biomes (not a structure, not a biome): a pond two blocks deep and two to three blocks across, a rim of grass and dirt, sugar cane at the water's edge and two to four palms, on nearly flat sand only. About one in `oasisRarity` desert chunks (default 40); `oases` turns them off.
 - **World generation** (server config, `[worldgen]`): `powerPalms` turns palms off in newly generated chunks, `powerPalmsPerChunk` (0 to 8, default 1) is how many are tried per beach chunk.
   Saplings are not affected. (The placed feature tries eight times a chunk; `PowerPalmWildFeature` keeps each try with the chance that gives the average.)
 - **Handcrafted and Chipped**: not coded here. The wood set follows the naming convention Moonlight Lib (which Every Compat is built on) looks for (`power_palm_planks`, `power_palm_log`,

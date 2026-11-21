@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#c:is_desert",
+  "features": "craftteamracing:oasis",
+  "step": "vegetal_decoration"
+}

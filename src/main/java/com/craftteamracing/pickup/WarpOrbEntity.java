@@ -35,9 +35,11 @@ import net.minecraft.world.phys.Vec3;
 public class WarpOrbEntity extends Entity {
     private static final EntityDataAccessor<Boolean> DATA_POWERED = SynchedEntityData.defineId(WarpOrbEntity.class, EntityDataSerializers.BOOLEAN);
     /** 112 lu a frame, 1.5 frames to a tick, in blocks. */
-    private static final double SPEED = 112.0 / KartScale.LU_PER_BLOCK * 1.5;
+    private static double speed() {
+        return 112.0 / KartScale.luPerBlock() * 1.5;
+    }
     /** 0x9000 as a squared distance: 192 lu. */
-    private static final double HIT_RADIUS = 192.0 / KartScale.LU_PER_BLOCK;
+    private static final double HIT_RADIUS = 192.0 / KartScale.BASE_LU_PER_BLOCK;
     /** WARPBALL_PARENT_SAFETY_FRAMES 10 frames. */
     private static final int SAFETY_TICKS = 7;
     /** 0x78 frames. */
@@ -113,10 +115,10 @@ public class WarpOrbEntity extends Entity {
                 Vec3 eased = heading.scale(1.0 - k).add(want.scale(k));
                 heading = eased.lengthSqr() > 1.0E-6 ? eased.normalize() : want;
             }
-            setPos(here.add(heading.scale(Math.min(SPEED, dist))));
+            setPos(here.add(heading.scale(Math.min(speed(), dist))));
             noTargetTicks = 0;
         } else {
-            Vec3 next = here.add(heading.scale(SPEED));
+            Vec3 next = here.add(heading.scale(speed()));
             net.minecraft.core.BlockPos bp = net.minecraft.core.BlockPos.containing(next);
             if (noTarget && !level().getBlockState(bp).getCollisionShape(level(), bp).isEmpty()) {
                 end();                         // a wall: it is gone

@@ -32,6 +32,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.FLOATER.get());
                         output.accept(ModItems.OBSIDIAN_FLOATER.get());
                         output.accept(ModItems.PADDLE.get());
+                        output.accept(ModItems.SNOW_SKIS.get());
                         output.accept(ModItems.LOW_GRAVITY_MODULE.get());
                         output.accept(ModItems.JUMP_SPRING.get());
                         output.accept(ModItems.TRACK_TOOL.get());
@@ -40,6 +41,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.MUSIC_SHEET.get());
                         output.accept(ModBlocks.START_NODE_ITEM.get());
                         output.accept(ModBlocks.CHECKPOINT_NODE_ITEM.get());
+                        output.accept(ModBlocks.RACE_BARRIER_ITEM.get());
                         output.accept(ModBlocks.PODIUM_1_NODE_ITEM.get());
                         output.accept(ModBlocks.PODIUM_2_NODE_ITEM.get());
                         output.accept(ModBlocks.PODIUM_3_NODE_ITEM.get());

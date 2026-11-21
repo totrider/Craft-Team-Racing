@@ -20,6 +20,10 @@ public final class McBlockSource implements BlockSource {
     public static volatile int floaterMode;
     /** The kart has the Paddle (or the race's rules give it): a floating kart is not slowed by the water. */
     public static volatile boolean paddleActive;
+    /** The kart has the Snow Skis (or the race's rules give them): powder snow is a floor of full block height instead of a hole. */
+    public static volatile boolean skisActive;
+    /** The driven kart is in a race: the Kart Barriers are solid to it. */
+    public static volatile boolean barriersActive;
     /** The driven kart's feet, in blocks (set by KartDriver): a kart far under the surface has no slab to rest on. */
     public static volatile double floaterFeetY;
 
@@ -38,6 +42,20 @@ public final class McBlockSource implements BlockSource {
         AABB region = new AABB(x0 + 1e-4, y0, z0 + 1e-4, x1 - 1e-4, y1, z1 - 1e-4);
         for (VoxelShape shape : level.getBlockCollisions(context, region)) {
             shape.forAllBoxes(visitor::box);
+        }
+        if (skisActive || barriersActive) {
+            // blocks that are solid to a kart only: powder snow under the Snow Skis (it has no collision to stand on), and the Kart Barriers during a race (they have none for anything)
+            BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
+            for (int bx = (int) Math.floor(x0); bx <= (int) Math.floor(x1 - 1e-4); bx++) {
+                for (int by = (int) Math.floor(y0); by <= (int) Math.floor(y1 - 1e-4); by++) {
+                    for (int bz = (int) Math.floor(z0); bz <= (int) Math.floor(z1 - 1e-4); bz++) {
+                        BlockState state = level.getBlockState(at.set(bx, by, bz));
+                        if ((skisActive && state.is(net.minecraft.world.level.block.Blocks.POWDER_SNOW)) || (barriersActive && state.is(com.craftteamracing.ModBlocks.RACE_BARRIER.get()))) {
+                            visitor.box(bx, by, bz, bx + 1, by + 1, bz + 1);
+                        }
+                    }
+                }
+            }
         }
         if (floaterMode > 0) {
             // the surface is a floor for a floating kart: a slab, half a block thick, whose top is FloatSurface.SINK under the fluid's surface, in the cell at the top of each column. A kart that

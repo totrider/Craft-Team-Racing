@@ -101,7 +101,18 @@ public final class KartSim {
     private static final int SUPER_PAD_FIRE = 0x800;
     private static final int ICE_EXIT_MS = -320;
     /** The kart's collision sphere: radius and centre height above the origin (lu). */
-    public static final double SPHERE_RADIUS = 25.0;
+    /** The collision sphere at full speed scale, lu. */
+    public static final double BASE_SPHERE_RADIUS = 25.0;
+
+    /** The collision sphere's radius now: fixed in blocks (the kart is drawn the same size), so in lu it is the base over the speed scale. */
+    public static double sphereRadius() {
+        return BASE_SPHERE_RADIUS / WorldScale.speed();
+    }
+
+    /** The speed scale changed: a lu is now a different part of a block, so the position is stretched to stay in the same place in the world. */
+    public void rescalePosition(double factor) {
+        pos = pos.mul(factor);
+    }
     private static final int SPIN_MS = 0x3C0;
     private static final int REVERSE_SPIN_MS = 0x780;
     private static final int SLAM_MS = 640;
@@ -1138,8 +1149,6 @@ public final class KartSim {
         if (squishMs > 0 || burnMs > 0 || (cloudMs > 0 && cloudEffect == CLOUD_SLOW)) subtract = DAMAGED_SPEED;
         if (clockMs > 0) subtract = Math.max(subtract, (DAMAGED_SPEED * (0x14 - clockRank)) >> 4);        // VEH_BASE_SPEED_CLOCK_RANK_BASE 0x14, _DAMAGE_SHIFT 4
         int top = Math.min(b + bonus - subtract, MAX_BASE_SPEED);
-        // RuleSet.maxSpeedPercent: a cap on the top speed as a percentage of the engine class's (0: none)
-        if (speedCapPercent > 0) top = Math.min(top, stats.speed() * speedCapPercent / 100);
         return top;
     }
 
@@ -1151,9 +1160,6 @@ public final class KartSim {
         clockRank = rank;
         clockMs = ms;
     }
-
-    /** The race's top speed cap, percent of the class's (0: none): set by the host each frame. */
-    public int speedCapPercent;
 
     /** MetaPhys DAMAGED_SPEED_OFFSET: the same 4096 for the four engine classes (zGlobal_DATA.c). */
     private static final int DAMAGED_SPEED = 4096;
@@ -1364,7 +1370,7 @@ public final class KartSim {
         V3 l = moving.mulTransposed(vel);
         V3 l0 = l;
         boolean airborne = (flagsPrev & TOUCH_GROUND) == 0;
-        double gs = airborne ? gravityScale : 1.0;
+        double gs = airborne ? gravityScale * WorldScale.hopFactor() : 1.0;
         if (fluid == 1) gs *= WATER_GRAVITY;          // in water the kart is buoyant: a fall and a sink are soft, as with the Low Gravity Module
         else if (fluid == 2) gs *= LAVA_GRAVITY;
         V3 g = moving.mulTransposed(new V3(0, -GRAVITY * gs, 0));
@@ -1457,9 +1463,21 @@ public final class KartSim {
 
     // ---- COLL_MOVED (COLL.c:2246-2662, spec 9.1, 9.2) ----
 
+    /** The last wall the kart pressed into (for the terrain debug view): where and which way, and when. */
+    private Collider.Contact wallContact;
+    private long wallContactMillis;
+
+    public Collider.Contact lastWallContact() {
+        return wallContact;
+    }
+
+    public long lastWallContactMillis() {
+        return wallContactMillis;
+    }
+
     private void sweep(Collider world) {
         flags &= ~TOUCH_GROUND;
-        double r = SPHERE_RADIUS;
+        double r = sphereRadius();
         V3 lift = facing.y.mul(r);
         V3 centre = pos.add(lift);
         V3 delta = vel.div(256.0);
@@ -1484,6 +1502,8 @@ public final class KartSim {
                 }
                 if (dot >= 0) continue;
                 flags |= DRIVING_AGAINST_WALL;
+                wallContact = contact;
+                wallContactMillis = System.currentTimeMillis();
                 reserves = 0;
                 turboOutside = 0;
                 if (wallRub == 0) events.add(KartEvent.of(KartEvent.Type.WALL_RUB));
@@ -1647,7 +1667,7 @@ public final class KartSim {
         double a = slopeVelY(n4, mv);
         double b = slopeVelY(grounded() ? n1 : n2, mv);
         double best = Math.abs(a) >= Math.abs(b) ? a : b;
-        double j = jumpVel;
+        double j = jumpVel * WorldScale.hopFactor();
         double vy = Math.sqrt(best * best + j * j) - best;
         double ny = Math.max(mv.y, Math.min(vy, JUMP_VERTICAL_CAP));
         return new V3(mv.x, ny, mv.z);

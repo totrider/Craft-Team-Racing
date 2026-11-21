@@ -75,14 +75,14 @@ public final class MaskHead {
         BakedModel model = Minecraft.getInstance().getModelManager().getModel((state & 3) == 2 ? UKA : AKU);
         double t = kart.tickCount + partialTick;
         double angle = -t * 1.5 * HEAD_TURN * (2.0 * Math.PI / 16.0);          // rot.y -= 0x100 of 0x1000 a game frame: 30 frames a second is 1.5 frames a tick, so a turn takes 16 frames, about half a second
-        double radius = KartScale.toBlocks(64.0) * HEAD_RADIUS;
+        double radius = KartScale.visualBlocks(64.0) * HEAD_RADIUS;
         // RB_MaskWeapon_ThTick: the head's height is 0x40 plus RB_MASK_POSITION[the beam's frame], so it dips and rises with the ribbon (24 entries, down to -32 at frame 12)
         int frame = (int) (t * 1.5) % BEAM_FRAMES;
-        double height = KartScale.toBlocks(64.0 + HEAD_DIP[frame]);
+        double height = KartScale.visualBlocks(64.0 + HEAD_DIP[frame]);
         // the beam: round the kart at the head's height, turning with the head
         BakedModel beamModel = Minecraft.getInstance().getModelManager().getModel(((state & 3) == 2 ? BEAM_UKA : BEAM_AKU)[frame]);
         pose.pushPose();
-        pose.translate(0.0, KartScale.toBlocks(64.0), 0.0);
+        pose.translate(0.0, KartScale.visualBlocks(64.0), 0.0);
         pose.mulPose(Axis.YP.rotation((float) angle));
         pose.scale(scale, scale, scale);
         pose.translate(-0.5, -0.5, -0.5);

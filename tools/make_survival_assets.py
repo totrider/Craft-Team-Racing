@@ -747,6 +747,7 @@ def recipes():
     shaped("kart", ["WLW", "PMP", "WRW"], {"W": C + "wheel", "L": "minecraft:leather", "P": C + "power_ingot", "M": "minecraft:minecart", "R": "minecraft:redstone"}, C + "kart")
     shaped("offroad_tires", ["WSW", "SIS", "WSW"], {"W": C + "wheel", "S": "minecraft:slime_ball", "I": "minecraft:iron_ingot"}, C + "offroad_tires")
     shaped("paddle", ["IPI", "PWP", "IPI"], {"I": "minecraft:iron_ingot", "P": "#minecraft:planks", "W": C + "power_ingot"}, C + "paddle")
+    shaped("snow_skis", ["PIP", "PIP"], {"P": "minecraft:packed_ice", "I": "minecraft:iron_ingot"}, C + "snow_skis")
     shaped("wrench", ["IPI", " I ", " I "], {"I": "minecraft:iron_ingot", "P": C + "power_ingot"}, C + "wrench")
     shaped("track_tool", ["  P", " S ", "S  "], {"P": C + "power_ingot", "S": "minecraft:stick"}, C + "track_tool")
     shapeless("rulebook", ["minecraft:book", C + "power_nugget", "minecraft:redstone"], C + "rulebook")
@@ -762,6 +763,7 @@ def recipes():
     shapeless("powerup_crate_spot", ["#" + NS + ":item_crates", C + "checkpoint_node"], C + "powerup_crate_spot")
     shapeless("trigger_crate_spot", ["#" + NS + ":item_crates", C + "checkpoint_node", "minecraft:redstone_torch"], C + "trigger_crate_spot")
     shapeless("redstone_link_node", [C + "checkpoint_node", "minecraft:redstone", "minecraft:quartz"], C + "redstone_link_node")
+    shaped("race_barrier", ["NNN", "N N", "NNN"], {"N": C + "power_nugget"}, C + "race_barrier", 16)
 
 
 # ======================================================================== loot tables, tags, world generation
@@ -788,7 +790,7 @@ SHEARS_OR_SILK = {"condition": "minecraft:any_of", "terms": [
 
 SELF_DROPS = ("power_palm_log", "power_palm_wood", "stripped_power_palm_log", "stripped_power_palm_wood", "power_palm_planks", "power_palm_stairs", "power_palm_fence",
               "power_palm_fence_gate", "power_palm_trapdoor", "power_palm_button", "power_palm_pressure_plate", "power_palm_sapling", "power_block", "item_crate", "fruit_crate",
-              "item_crate_planked", "fruit_crate_planked", "item_crate_random", "power_fruit_bag")
+              "item_crate_planked", "fruit_crate_planked", "item_crate_random", "power_fruit_bag", "race_barrier")
 
 
 def loot_tables():
@@ -854,7 +856,7 @@ def tags():
                                                                     "power_palm_trapdoor", "power_palm_button", "power_palm_pressure_plate", "item_crate", "fruit_crate", "item_crate_random",
                                                                     "item_crate_planked", "fruit_crate_planked", "power_fruit_bag")])
     tag("minecraft/tags/block/mineable/hoe", [n("power_palm_leaves"), n("power_fruit_cluster")])
-    tag("minecraft/tags/block/mineable/pickaxe", [n("power_block")])
+    tag("minecraft/tags/block/mineable/pickaxe", [n("power_block"), n("race_barrier")])
     tag("minecraft/tags/block/needs_stone_tool", [n("power_block")])
     tag(NS + "/tags/item/item_crates", [n("item_crate"), n("item_crate_planked"), n("item_crate_random")])
     tag(NS + "/tags/item/fruit_crates", [n("fruit_crate"), n("fruit_crate_planked")])

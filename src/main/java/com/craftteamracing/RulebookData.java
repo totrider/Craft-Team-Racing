@@ -19,7 +19,7 @@ import net.minecraft.network.codec.StreamCodec;
 public record RulebookData(RuleSet rules, boolean asDefault) {
     public static final RulebookData DEFAULT = new RulebookData(RuleSet.CTR, false);
 
-    private record Raw(Map<String, Integer> table, boolean fruit, boolean fruitCrates, boolean powerupCrates, boolean boostPads, int maxSpeed, boolean driverDamage, boolean hunger, boolean offroad, boolean softBumper, int floater, int spring, int lowGravity, boolean paddle) {}
+    private record Raw(Map<String, Integer> table, boolean fruit, boolean fruitCrates, boolean powerupCrates, boolean boostPads, int speed, boolean driverDamage, boolean hunger, boolean offroad, boolean softBumper, int floater, int spring, int lowGravity, boolean paddle, boolean skis) {}
 
     /** The spring rule is a strength; a rulebook saved when it was a switch (a boolean) loads as 50 % or off. */
     private static final Codec<Integer> SPRING_CODEC = Codec.either(Codec.INT, Codec.BOOL).xmap(e -> e.map(i -> i, b -> b ? 5 : 0), com.mojang.datafixers.util.Either::left);
@@ -30,7 +30,7 @@ public record RulebookData(RuleSet rules, boolean asDefault) {
             Codec.BOOL.optionalFieldOf("fruit_crates", true).forGetter(Raw::fruitCrates),
             Codec.BOOL.optionalFieldOf("powerup_crates", true).forGetter(Raw::powerupCrates),
             Codec.BOOL.optionalFieldOf("boost_pads", true).forGetter(Raw::boostPads),
-            Codec.INT.optionalFieldOf("max_speed", 0).forGetter(Raw::maxSpeed),
+            Codec.INT.optionalFieldOf("speed_percent", 0).forGetter(Raw::speed),
             Codec.BOOL.optionalFieldOf("driver_damage", false).forGetter(Raw::driverDamage),
             Codec.BOOL.optionalFieldOf("hunger", false).forGetter(Raw::hunger),
             Codec.BOOL.optionalFieldOf("offroad", false).forGetter(Raw::offroad),
@@ -38,7 +38,8 @@ public record RulebookData(RuleSet rules, boolean asDefault) {
             Codec.INT.optionalFieldOf("floater", 0).forGetter(Raw::floater),
             SPRING_CODEC.optionalFieldOf("spring", 0).forGetter(Raw::spring),
             Codec.INT.optionalFieldOf("low_gravity", 0).forGetter(Raw::lowGravity),
-            Codec.BOOL.optionalFieldOf("paddle", false).forGetter(Raw::paddle)).apply(i, Raw::new));
+            Codec.BOOL.optionalFieldOf("paddle", false).forGetter(Raw::paddle),
+            Codec.BOOL.optionalFieldOf("skis", false).forGetter(Raw::skis)).apply(i, Raw::new));
 
     /** A rule set as data: the power-up table is CTR's (no "table" entry) or a flat list of item ids and weights. */
     public static final Codec<RuleSet> RULESET_CODEC = RAW.flatXmap(raw -> {
@@ -46,11 +47,11 @@ public record RulebookData(RuleSet rules, boolean asDefault) {
             Map<String, Integer> weights = raw.table().entrySet().stream().filter(e -> e.getValue() > 0)
                     .collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, java.util.LinkedHashMap::new));
             PowerupTable table = weights.isEmpty() ? PowerupTable.ctr() : PowerupTable.custom(weights);
-            return DataResult.success(new RuleSet(table, raw.fruit(), raw.fruitCrates(), raw.powerupCrates(), raw.boostPads(), raw.maxSpeed(), raw.driverDamage(), raw.hunger(), raw.offroad(), raw.softBumper(), raw.floater(), raw.spring(), raw.lowGravity(), raw.paddle()));
+            return DataResult.success(new RuleSet(table, raw.fruit(), raw.fruitCrates(), raw.powerupCrates(), raw.boostPads(), raw.speed(), raw.driverDamage(), raw.hunger(), raw.offroad(), raw.softBumper(), raw.floater(), raw.spring(), raw.lowGravity(), raw.paddle(), raw.skis()));
         } catch (IllegalArgumentException e) {
             return DataResult.error(e::getMessage);
         }
-    }, rs -> DataResult.success(new Raw(rs.powerups().weights(), rs.fruit(), rs.fruitCrates(), rs.powerupCrates(), rs.boostPads(), rs.maxSpeedPercent(), rs.driverDamage(), rs.hunger(), rs.offroad(), rs.softBumper(), rs.floater(), rs.spring(), rs.lowGravity(), rs.paddle())));
+    }, rs -> DataResult.success(new Raw(rs.powerups().weights(), rs.fruit(), rs.fruitCrates(), rs.powerupCrates(), rs.boostPads(), rs.speedPercent(), rs.driverDamage(), rs.hunger(), rs.offroad(), rs.softBumper(), rs.floater(), rs.spring(), rs.lowGravity(), rs.paddle(), rs.skis())));
 
     public static final Codec<RulebookData> CODEC = RecordCodecBuilder.create(i -> i.group(
             RULESET_CODEC.fieldOf("rules").forGetter(RulebookData::rules),

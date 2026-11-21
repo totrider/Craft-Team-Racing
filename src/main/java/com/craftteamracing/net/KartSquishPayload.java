@@ -38,7 +38,7 @@ public record KartSquishPayload(int kartId, int victimKartId) implements CustomP
             Entity e = driver.level().getEntity(p.victimKartId());
             if (!(e instanceof KartEntity other) || other == kart || other.isRemoved()) return;
             if (!(other.getControllingPassenger() instanceof ServerPlayer victim)) return;
-            if (kart.distanceTo(other) > KartScale.toBlocks(2.0 * KartBump.HIT_RADIUS) + 1.5) return;
+            if (kart.distanceTo(other) > KartScale.toBlocks(2.0 * KartBump.hitRadius()) + 1.5) return;
             com.craftteamracing.pickup.ItemManager.contact(driver, victim, other);
         });
     }

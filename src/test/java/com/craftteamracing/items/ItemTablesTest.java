@@ -114,7 +114,7 @@ class ItemTablesTest {
         assertTrue(RuleSet.CTR.isCtr());
         assertTrue(RuleSet.CTR.powerups().isCtr());
         assertTrue(RuleSet.CTR.fruit() && RuleSet.CTR.fruitCrates() && RuleSet.CTR.powerupCrates() && RuleSet.CTR.boostPads());
-        assertEquals(0, RuleSet.CTR.maxSpeedPercent());
+        assertEquals(0, RuleSet.CTR.speedPercent());
         assertFalse(RuleSet.CTR.withFruit(false).isCtr());
     }
 
@@ -130,7 +130,7 @@ class ItemTablesTest {
         }
         assertTrue(banana > 2800 && banana < 3200, "banana " + banana);
         assertThrows(IllegalArgumentException.class, () -> PowerupTable.custom(Map.of("a:b", 0)));
-        assertThrows(IllegalArgumentException.class, () -> RuleSet.CTR.withMaxSpeedPercent(150));
+        assertThrows(IllegalArgumentException.class, () -> RuleSet.CTR.withSpeedPercent(150));
     }
 
     @Test

@@ -66,6 +66,11 @@ public final class ModBlocks {
     public static final DeferredItem<BlockItem> CHECKPOINT_NODE_ITEM = ModItems.ITEMS.register("checkpoint_node",
             () -> new com.craftteamracing.track.TrackNodeItem(CHECKPOINT_NODE.get(), new Item.Properties()));
 
+    /** The Kart Barrier: invisible and not solid for anything on foot; the driven kart treats it as a wall, but only while it takes part in a race. Seen only with a track building item in hand. */
+    public static final DeferredBlock<com.craftteamracing.track.RaceBarrierBlock> RACE_BARRIER = BLOCKS.register("race_barrier",
+            () -> new com.craftteamracing.track.RaceBarrierBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(0.5F).noCollission().noOcclusion()));
+    public static final DeferredItem<BlockItem> RACE_BARRIER_ITEM = item("race_barrier", RACE_BARRIER);
+
     /** Pickup spots: a fruit, a fruit crate or a power-up crate appears here while a race is on nearby (or the spot has a redstone signal). */
     public static final DeferredBlock<com.craftteamracing.pickup.PickupSpotBlock> FRUIT_SPOT = BLOCKS.register("fruit_spot",
             () -> new com.craftteamracing.pickup.PickupSpotBlock(spotProps(), com.craftteamracing.pickup.PickupKind.FRUIT));

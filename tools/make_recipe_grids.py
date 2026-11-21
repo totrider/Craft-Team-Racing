@@ -241,8 +241,10 @@ def iso(model, k=16, tints=None, size=None, fit=15.0, info=None):
     for tex, uv, o, u, v, shade in faces:
         raster_face(color, zbuf, tex, uv, o, u, v, shade)
     canvas = Image.fromarray(np.clip(color, 0, 255).astype(np.uint8), "RGBA")
+    if info is not None:
+        info.setdefault("view", view)
     box = canvas.getbbox()                      # fit the picture to the slot so a small model (the kart) can be read; the angle is the game's
-    if box:
+    if box and fit is not None:                 # fit=None leaves the picture at the game's own scale (two passes laid over each other)
         part = canvas.crop(box)
         f = fit * k / max(part.size)
         part = part.resize((max(1, round(part.width * f)), max(1, round(part.height * f))), Image.LANCZOS)

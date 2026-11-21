@@ -33,7 +33,7 @@ public class PowerPalmFeature extends Feature<NoneFeatureConfiguration> {
         return level.isStateAtPosition(pos, s -> s.isAir() || s.is(BlockTags.REPLACEABLE_BY_TREES) || s.is(BlockTags.LEAVES));
     }
 
-    /** One frond: out from the top log in {@code d} (and {@code d2} for a diagonal), up a block in the middle, its tip hanging (not when it is long: it would be too far from a log). */
+    /** One frond: out from the top log in {@code d} (and {@code d2} for a diagonal), up a block in the middle, its tip hanging (not when it is long: it would be too far from a log). No frond is longer than 4. */
     private static void arm(Map<BlockPos, Integer> leaves, BlockPos top, Direction d, Direction d2, int len, RandomSource random) {
         for (int i = 1; i <= len; i++) {
             int dy = i == 1 ? 0 : i <= len - 2 ? 1 : i == len - 1 ? 0 : (len >= 5 ? 0 : -1);
@@ -58,13 +58,19 @@ public class PowerPalmFeature extends Feature<NoneFeatureConfiguration> {
         int height = style == 2 ? 5 : 4 + random.nextInt(2);
         Direction lean = style == 3 ? Direction.Plane.HORIZONTAL.getRandomDirection(random) : random.nextInt(3) == 0 ? Direction.Plane.HORIZONTAL.getRandomDirection(random) : null;
         List<BlockPos> logs = new ArrayList<>();
+        int previousShift = 0;
         for (int i = 0; i < height; i++) {
-            BlockPos p = origin.above(i);
+            int shift = 0;
             if (lean != null) {
-                int shift = style == 3 ? Math.max(0, i - 1) / 2 + (i >= height - 1 ? 1 : 0) : (i >= height - 2 ? 1 : 0);
-                p = p.relative(lean, Math.min(shift, 2));
+                shift = style == 3 ? Math.max(0, i - 1) / 2 + (i >= height - 1 ? 1 : 0) : (i >= height - 2 ? 1 : 0);
+                shift = Math.min(shift, 2);
             }
-            logs.add(p);
+            // a bend is made of logs that touch face to face: the trunk goes up, and across at the same height where it steps sideways (two logs meeting only at a corner leave a gap)
+            if (lean != null) {
+                for (int step = previousShift; step < shift; step++) logs.add(origin.above(i).relative(lean, step));        // every column it crosses, so a jump of two is not left with a gap
+            }
+            logs.add(lean != null ? origin.above(i).relative(lean, shift) : origin.above(i));
+            previousShift = shift;
         }
         for (BlockPos p : logs) {
             if (!free(level, p)) return false;
@@ -79,8 +85,8 @@ public class PowerPalmFeature extends Feature<NoneFeatureConfiguration> {
         for (Direction d : Direction.Plane.HORIZONTAL) {
             int len = switch (style) {
                 case 1 -> 3;
-                case 2 -> 4 + random.nextInt(2);
-                case 3 -> d == lean ? 5 : d == lean.getOpposite() ? 2 : 3 + random.nextInt(2);
+                case 2 -> 4;
+                case 3 -> d == lean ? 4 : d == lean.getOpposite() ? 2 : 3 + random.nextInt(2);
                 default -> 3 + random.nextInt(2);
             };
             arm(leaves, top, d, null, len, random);

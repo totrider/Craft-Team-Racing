@@ -85,7 +85,7 @@ public class PickupEntity extends Entity {
             return;
         }
         // the mechanics' size in lu: the pickup's own width (a crate is 108.8 lu, the picture is one block) plus the kart's collision sphere, over the mechanics' scale
-        double half = (kind().width * com.craftteamracing.kart.KartScale.CRATE_LU / 2.0 + com.craftteamracing.physics.KartSim.SPHERE_RADIUS) / com.craftteamracing.kart.KartScale.LU_PER_BLOCK;
+        double half = (kind().width * com.craftteamracing.kart.KartScale.CRATE_LU / 2.0 + com.craftteamracing.physics.KartSim.BASE_SPHERE_RADIUS) / com.craftteamracing.kart.KartScale.BASE_LU_PER_BLOCK;
         AABB reach = new AABB(getX() - half, getY() - 0.4, getZ() - half, getX() + half, getY() + kind().height + 0.2, getZ() + half);
         for (KartEntity kart : level.getEntitiesOfClass(KartEntity.class, reach)) {
             if (kart.getControllingPassenger() instanceof ServerPlayer driver && !kart.ethereal() && ItemManager.collect(this, be, driver)) {

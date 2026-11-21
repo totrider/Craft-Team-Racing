@@ -143,6 +143,27 @@ def spring():
     return img
 
 
+def snow_skis():
+    """A pair of skis set side by side, seen from above at a slant: light blue boards with upturned tips, dark bindings and a white rim of snow."""
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for off in (0, 5):
+        for t in range(14):                                   # along the board, from the tail (bottom left) to the tip (top right)
+            x = 1 + t + off // 2
+            y = 14 - t + off // 2 - (1 if t > 11 else 0)      # the tip turns up
+            for w in range(-1, 2):
+                xx, yy = x + (w if t % 2 == 0 else 0), y + (0 if t % 2 == 0 else w)
+                if 0 <= xx < 16 and 0 <= yy < 16:
+                    px[xx, yy] = (120, 185, 225, 255) if w == 0 else (70, 130, 185, 255)
+            if 0 <= x < 16 and 0 <= y - 1 < 16:
+                px[x, y - 1] = (235, 245, 255, 255)               # the snow on top
+        bx, by = 7 + off // 2, 8 + off // 2
+        for dx, dy in ((0, 0), (1, 0), (0, 1), (1, 1)):          # the binding
+            if 0 <= bx + dx < 16 and 0 <= by + dy < 16:
+                px[bx + dx, by + dy] = (45, 40, 50, 255)
+    return img
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     tires().save(os.path.join(OUT, "offroad_tires.png"))
@@ -152,6 +173,7 @@ def main():
     obsidian_floater().save(os.path.join(OUT, "obsidian_floater.png"))
     gravity().save(os.path.join(OUT, "low_gravity_module.png"))
     spring().save(os.path.join(OUT, "jump_spring.png"))
+    snow_skis().save(os.path.join(OUT, "snow_skis.png"))
     print("written")
 
 

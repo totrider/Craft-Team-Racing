@@ -38,7 +38,7 @@ public record KartSettingsPayload(int kartId, boolean canStartRaces, boolean dar
             kart.setDarkMask(p.darkMask());
             int bits = kart.upgrades();
             int[][] pairs = { { KartEntity.UP_OFFROAD_UNLOCKED, KartEntity.UP_OFFROAD_ON }, { KartEntity.UP_BUMPER_UNLOCKED, KartEntity.UP_BUMPER_ON },
-                    { KartEntity.UP_FLOATER_UNLOCKED, KartEntity.UP_FLOATER_ON }, { KartEntity.UP_PADDLE_UNLOCKED, KartEntity.UP_PADDLE_ON } };
+                    { KartEntity.UP_FLOATER_UNLOCKED, KartEntity.UP_FLOATER_ON }, { KartEntity.UP_PADDLE_UNLOCKED, KartEntity.UP_PADDLE_ON }, { KartEntity.UP_SKIS_UNLOCKED, KartEntity.UP_SKIS_ON } };
             for (int[] pair : pairs) {
                 if ((bits & pair[0]) != 0) bits = (p.switches() & pair[1]) != 0 ? bits | pair[1] : bits & ~pair[1];
             }

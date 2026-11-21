@@ -39,6 +39,7 @@ public class CraftTeamRacingMod {
 
     private static void registerPayloads(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar("1");
+        registrar.playToClient(com.craftteamracing.net.SpeedScalePayload.TYPE, com.craftteamracing.net.SpeedScalePayload.STREAM_CODEC, com.craftteamracing.net.SpeedScalePayload::handle);
         registrar.playToServer(KartStatePayload.TYPE, KartStatePayload.STREAM_CODEC, KartStatePayload::handle);
         registrar.playToServer(KartDismountPayload.TYPE, KartDismountPayload.STREAM_CODEC, KartDismountPayload::handle);
         registrar.playToClient(com.craftteamracing.pickup.ItemStatePayload.TYPE, com.craftteamracing.pickup.ItemStatePayload.STREAM_CODEC,

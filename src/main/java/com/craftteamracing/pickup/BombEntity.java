@@ -55,7 +55,12 @@ public class BombEntity extends Entity {
     private static final double GRAVITY = 4.0;
     private static final double TERMINAL = -96.0;
     private static final double FRAMES_PER_TICK = 1.5;
-    private static final double LU = com.craftteamracing.kart.KartScale.LU_PER_BLOCK;
+    /** Lu to the block at full speed scale: the sizes (hit and blast radii) are fixed in blocks. The movement uses {@link #lu()}, which follows the world's speed scale. */
+    private static final double LU = com.craftteamracing.kart.KartScale.BASE_LU_PER_BLOCK;
+
+    private static double lu() {
+        return com.craftteamracing.kart.KartScale.luPerBlock();
+    }
     /** Small steps (0.29 block at full speed): a stair or slope is climbed one riser at a time (the one-block step-up only copes with one rise per move), and a kart cannot be skipped. */
     private static final int SUBSTEPS = 10;
     private static final double SUB = FRAMES_PER_TICK / SUBSTEPS;
@@ -81,7 +86,9 @@ public class BombEntity extends Entity {
         return isMissile();
     }
     /** No ground for 0x900 lu below: it explodes. */
-    private static final double MAX_FALL = 0x900 / LU;
+    private static double maxFall() {
+        return 0x900 / lu();
+    }
     private static final int LIFETIME_TICKS = 400;
     /** ACTIVE_MISSILE_LIMIT: no more than twelve bombs and missiles at once. */
     public static final int ACTIVE_LIMIT = 12;
@@ -302,7 +309,7 @@ public class BombEntity extends Entity {
                 heading += Math.abs(diff) < turn ? diff : Math.copySign(step, diff);
             }
             // a bomb thrown backwards (TRACKER_FLAG_BOMB_BACKWARD) travels the OPPOSITE way along its heading, at 0.3 of the speed: its velocity is negated (RB_MovingExplosive_ThTick)
-            double step = speed * SUB / LU * (backward() ? -1.0 : 1.0);
+            double step = speed * SUB / lu() * (backward() ? -1.0 : 1.0);
             double nx = getX() - Math.sin(heading) * step;
             double nz = getZ() + Math.cos(heading) * step;
             double y = getY();
@@ -324,7 +331,7 @@ public class BombEntity extends Entity {
             } else {
                 grounded = false;
                 vy = Math.max(TERMINAL, vy - gravity() * SUB);
-                double ny = y + vy * SUB / LU;
+                double ny = y + vy * SUB / lu();
                 fell += Math.max(0.0, y - ny);
                 if (!Double.isNaN(ground) && ny <= ground) {
                     ny = ground;
@@ -359,7 +366,7 @@ public class BombEntity extends Entity {
                 if (packed != entityData.get(DATA_TILT)) entityData.set(DATA_TILT, packed);
             }
             breakCrates(level);
-            if (fell > MAX_FALL || getY() < level.getMinBuildHeight() - 8) {
+            if (fell > maxFall() || getY() < level.getMinBuildHeight() - 8) {
                 explode(level, String.format("no ground below: fell %.1f blocks, at %.2f %.2f %.2f", fell, getX(), getY(), getZ()));              // 0x900 lu
                 return;
             }

@@ -38,7 +38,7 @@ public class PotionEntity extends Entity implements MinePool.Mine {
     private static final double TERMINAL = -96.0;
     /** A game tick is 1.5 frames of the original. */
     private static final double FRAMES_PER_TICK = 1.5;
-    private static final double LU = com.craftteamracing.kart.KartScale.LU_PER_BLOCK;
+    private static final double LU = com.craftteamracing.kart.KartScale.BASE_LU_PER_BLOCK;
     private static final double HIT_RADIUS = 80.0 / LU;      // sqrt(0x1900) = 80 lu
     private static final int OWNER_SPARED_TICKS = 7;        // MINE_PARENT_SAFETY_FRAMES
 
@@ -105,7 +105,8 @@ public class PotionEntity extends Entity implements MinePool.Mine {
         }
         if (thrown) {
             airTicks++;
-            Vec3 mv = new Vec3(vx * FRAMES_PER_TICK / LU, vy * FRAMES_PER_TICK / LU, vz * FRAMES_PER_TICK / LU);
+            double lu = com.craftteamracing.kart.KartScale.luPerBlock();
+            Vec3 mv = new Vec3(vx * FRAMES_PER_TICK / lu, vy * FRAMES_PER_TICK / lu, vz * FRAMES_PER_TICK / lu);
             vy = Math.max(TERMINAL, vy - GRAVITY * FRAMES_PER_TICK);
             move(MoverType.SELF, mv);
             if (horizontalCollision || airTicks > 200) {

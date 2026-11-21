@@ -342,6 +342,29 @@ public final class RaceManager {
         }
     }
 
+    /**
+     * The track is cleared of weapons before the lights: every bomb, missile, potion, TNT crate and warp orb lying or flying within the pickup radius of the track's line goes, whoever
+     * threw it (a driver who is not in the race included), so the race starts on a clean track. A kart's shield stays with its driver.
+     */
+    private static void clearTrack(ServerLevel level, Race r) {
+        double radius = CtrConfig.PICKUP_TRACK_RADIUS.get();
+        double sq = radius * radius;
+        TrackGraph graph = TrackData.get(level).graph();
+        List<net.minecraft.world.entity.Entity> found = new ArrayList<>();
+        for (net.minecraft.world.entity.Entity e : level.getAllEntities()) {
+            boolean weapon = (e instanceof com.craftteamracing.pickup.BombEntity && !(e instanceof com.craftteamracing.pickup.ShieldBombEntity))
+                    || e instanceof com.craftteamracing.pickup.PotionEntity || e instanceof com.craftteamracing.pickup.TntEntity || e instanceof com.craftteamracing.pickup.WarpOrbEntity;
+            if (weapon && graph.distSqToTrack(r.key.start(), e.getX(), e.getY(), e.getZ()) <= sq) found.add(e);
+        }
+        for (net.minecraft.world.entity.Entity e : found) {
+            if (e instanceof com.craftteamracing.pickup.MinePool.Mine m) {
+                if (!m.isGone()) m.vanish(level);
+            } else {
+                e.discard();
+            }
+        }
+    }
+
     /** The gathering is over: everybody who was shown its countdown and is not racing is told it is gone (the racers get the race's own state). */
     private static void clearBystanders(ServerLevel level, Race r) {
         for (UUID id : r.bystanders) {
@@ -401,14 +424,16 @@ public final class RaceManager {
             rc.slot = RaceGrid.slot(r.key.start(), startNode.rotation, i);
             rc.placeSeq = ++placeCounter;
             r.racers.put(p.getUUID(), rc);
+            com.craftteamracing.physics.WorldScale.setTrack(r.rules.speedPercent());          // the race's pace, for the weapons the server moves (one race at a time sets it)
             BY_PLAYER.put(p.getUUID(), r);
             com.craftteamracing.pickup.ItemManager.reset(p);
             if (p.getVehicle() instanceof KartEntity ek) ek.setEthereal(false);          // a new race starts with nothing in the kart
-            PacketDistributor.sendToPlayer(p, new RulesPayload(r.rules));        // the rules the client's own sim needs (boost pads, the top speed cap)
+            PacketDistributor.sendToPlayer(p, new RulesPayload(r.rules));        // the rules the client's own sim needs (boost pads, the pace)
             PacketDistributor.sendToPlayer(p, new MusicPayload(r.music));        // the track's music (its name shows even where the sound is missing)
             put(level, p, rc);
         }
         clearBystanders(level, r);
+        clearTrack(level, r);
         r.phase = RacePayload.LIGHTS;
         setPower(level, r.key.start(), true);
         r.ticks = RaceGrid.INTRO_TICKS + RaceGrid.LIGHTS_TICKS + 20;       // the intro (jingle and camera pan), then a second to settle on the grid before the first light
@@ -814,6 +839,7 @@ public final class RaceManager {
 
     private static void end(MinecraftServer server, Race r, String reasonKey, boolean results) {
         RACES.remove(r.key);
+        if (RACES.isEmpty()) com.craftteamracing.physics.WorldScale.setTrack(0);
         ServerLevel level = server.getLevel(r.key.dimension());
         if (level != null) {
             powerAll(level, r, false);

@@ -6,7 +6,7 @@ import java.util.List;
  * Kart against kart: the CTR sphere bump. A port of {@code VehPhysForce_CollideDrivers} (VehPhysForce.c:1045-1072, the search) and
  * {@code VehPhysCrash_AnyTwoCars} / {@code VehPhysCrash_BounceSelf} (ctr-native game/Vehicle/VehPhysCrash.c). No Minecraft imports.
  *
- * <p>Every kart is a sphere of {@link #HIT_RADIUS} lu (THREAD_DRIVER_HIT_RADIUS = 0x40, namespace_Proc.h). The nearest other kart
+ * <p>Every kart is a sphere of {@link #BASE_HIT_RADIUS} lu (THREAD_DRIVER_HIT_RADIUS = 0x40, namespace_Proc.h). The nearest other kart
  * whose centre is closer than the radii's sum bumps this one. CTR changes both karts' velocities in one call; here each side
  * works out its own half from the other's position and velocity, which is the same arithmetic (the weighted velocity and the
  * contact normal are shared, mirrored for the other side).
@@ -17,7 +17,12 @@ public final class KartBump {
     private KartBump() {}
 
     /** THREAD_DRIVER_HIT_RADIUS (namespace_Proc.h:79). */
-    public static final int HIT_RADIUS = 0x40;
+    public static final int BASE_HIT_RADIUS = 0x40;
+
+    /** The bump radius now: fixed in blocks, so in lu it is the base over the speed scale. */
+    public static double hitRadius() {
+        return BASE_HIT_RADIUS / WorldScale.speed();
+    }
     /** VEH_PHYS_CRASH_BOUNCE_DOT_DIVISOR: the bounce takes dot * 0x1000 / 0xC00 of the closing speed off, a third of it back as bounce. */
     private static final double BOUNCE = 4096.0 / 0xC00;
     /** VEH_PHYS_CRASH_BOUNCE_Y_CLAMP: a bounce may not throw a kart upwards past this. */
@@ -49,7 +54,7 @@ public final class KartBump {
      */
     public record Other(V3 pos, V3 vel, int weight, double reach, int id) {
         public Other(V3 pos, V3 vel, int weight) {
-            this(pos, vel, weight, 2.0 * HIT_RADIUS, -1);
+            this(pos, vel, weight, 2.0 * hitRadius(), -1);
         }
     }
 

@@ -22,6 +22,7 @@ public class KartSettingsScreen extends Screen {
     private boolean darkMask;
     private boolean floater;
     private boolean paddle;
+    private boolean skis;
     private int spring;                  // tenths, 0 to 10
     private int gravity;                 // tenths, 0 to 10
     private String tuning;
@@ -39,6 +40,7 @@ public class KartSettingsScreen extends Screen {
         this.darkMask = p.darkMask();
         this.floater = (p.upgrades() & KartEntity.UP_FLOATER_ON) != 0;
         this.paddle = (p.upgrades() & KartEntity.UP_PADDLE_ON) != 0;
+        this.skis = (p.upgrades() & KartEntity.UP_SKIS_ON) != 0;
         this.spring = (p.upgrades() & KartEntity.UP_SPRING_UNLOCKED) == 0 ? 0 : ((p.upgrades() >> KartEntity.UP_SPRING_SHIFT) & 15) == 0 && (p.upgrades() & KartEntity.UP_SPRING_ON) != 0 ? 5 : (p.upgrades() >> KartEntity.UP_SPRING_SHIFT) & 15;
         this.gravity = (p.upgrades() >> KartEntity.UP_GRAVITY_SHIFT) & 15;
         this.offroad = (p.upgrades() & KartEntity.UP_OFFROAD_ON) != 0;
@@ -65,6 +67,7 @@ public class KartSettingsScreen extends Screen {
         upgradeButton(x, y += 24, "screen.craftteamracing.kart.soft_bumper", KartEntity.UP_BUMPER_UNLOCKED, () -> softBumper, v -> softBumper = v, "screen.craftteamracing.kart.bumper_hint");
         upgradeButton(x, y += 24, "screen.craftteamracing.kart.floater", KartEntity.UP_FLOATER_UNLOCKED, () -> floater, v -> floater = v, "screen.craftteamracing.kart.floater_hint");
         upgradeButton(x, y += 24, "screen.craftteamracing.kart.paddle", KartEntity.UP_PADDLE_UNLOCKED, () -> paddle, v -> paddle = v, "screen.craftteamracing.kart.paddle_hint");
+        upgradeButton(x, y += 24, "screen.craftteamracing.kart.skis", KartEntity.UP_SKIS_UNLOCKED, () -> skis, v -> skis = v, "screen.craftteamracing.kart.skis_hint");
         boolean hasSpring = (upgrades & KartEntity.UP_SPRING_UNLOCKED) != 0;
         StrengthSlider springSlider = new StrengthSlider(x, y += 24, 200, 20, hasSpring, "screen.craftteamracing.kart.spring", () -> spring, v -> spring = v);
         springSlider.setTooltip(Tooltip.create(Component.translatable(hasSpring ? "screen.craftteamracing.kart.spring_hint" : "screen.craftteamracing.kart.locked_hint")));
@@ -127,7 +130,7 @@ public class KartSettingsScreen extends Screen {
     }
 
     private void save() {
-        PacketDistributor.sendToServer(new KartSettingsPayload(kartId, canStart, darkMask, (offroad ? KartEntity.UP_OFFROAD_ON : 0) | (softBumper ? KartEntity.UP_BUMPER_ON : 0) | (floater ? KartEntity.UP_FLOATER_ON : 0) | (paddle ? KartEntity.UP_PADDLE_ON : 0), gravity, spring));
+        PacketDistributor.sendToServer(new KartSettingsPayload(kartId, canStart, darkMask, (offroad ? KartEntity.UP_OFFROAD_ON : 0) | (softBumper ? KartEntity.UP_BUMPER_ON : 0) | (floater ? KartEntity.UP_FLOATER_ON : 0) | (paddle ? KartEntity.UP_PADDLE_ON : 0) | (skis ? KartEntity.UP_SKIS_ON : 0), gravity, spring));
         onClose();
     }
 

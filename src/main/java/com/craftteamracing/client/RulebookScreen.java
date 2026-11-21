@@ -13,11 +13,11 @@ import net.minecraft.world.InteractionHand;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * The rulebook's screen: the toggles of a RuleSet, a cycle for the top speed cap, and whether applying it sets the track's default or only the next race. The drop table (which power-ups
+ * The rulebook's screen: the toggles of a RuleSet, a cycle for the race's pace (the server's speed scale by default), and whether applying it sets the track's default or only the next race. The drop table (which power-ups
  * crates give) is not here: it has an item of its own, so it can be swapped without touching the rules. Saving sends the rules to the server, which writes them on the rulebook in that hand.
  */
 public class RulebookScreen extends Screen {
-    private static final int[] SPEEDS = { 0, 100, 90, 80, 70, 60, 50 };
+    private static final int[] SPEEDS = { 0, 100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50 };
 
     private final InteractionHand hand;
     /** The power-up table the book came with, kept as it is (an older rulebook may hold one). */
@@ -34,6 +34,7 @@ public class RulebookScreen extends Screen {
     private int spring;
     private int lowGravity;
     private boolean paddle;
+    private boolean skis;
     private boolean asDefault;
     private int maxSpeed;
 
@@ -54,7 +55,8 @@ public class RulebookScreen extends Screen {
         spring = r.spring();
         lowGravity = r.lowGravity();
         paddle = r.paddle();
-        maxSpeed = r.maxSpeedPercent();
+        skis = r.skis();
+        maxSpeed = r.speedPercent();
         asDefault = data.asDefault();
     }
 
@@ -99,12 +101,13 @@ public class RulebookScreen extends Screen {
             for (int i = 0; i < SPEEDS.length; i++) if (SPEEDS[i] == maxSpeed) at = i;
             maxSpeed = SPEEDS[(at + 1) % SPEEDS.length];
             b.setMessage(speedLabel());
-        }).bounds(left, 168, 145, 20).build());
+        }).bounds(right, 168, 145, 20).build());
+        toggle(left, 168, "screen.craftteamracing.rulebook.skis", () -> skis, v -> skis = v);
         addRenderableWidget(Button.builder(defaultLabel(), b -> {
             asDefault = !asDefault;
             b.setMessage(defaultLabel());
-        }).bounds(right, 168, 145, 20).build());
-        int bottom = Math.max(height - 28, 196);
+        }).bounds(left, 192, 145, 20).build());
+        int bottom = Math.max(height - 28, 220);
         addRenderableWidget(Button.builder(Component.translatable("screen.craftteamracing.rulebook.done"), b -> save()).bounds(left, bottom, 145, 20).build());
         addRenderableWidget(Button.builder(Component.translatable("screen.craftteamracing.rulebook.cancel"), b -> onClose()).bounds(right, bottom, 145, 20).build());
     }
@@ -122,7 +125,8 @@ public class RulebookScreen extends Screen {
     }
 
     private Component speedLabel() {
-        return Component.translatable("screen.craftteamracing.rulebook.speed_cap", maxSpeed == 0 ? Component.translatable("screen.craftteamracing.rulebook.none") : Component.literal(maxSpeed + "%"));
+        int now = (int) Math.round(com.craftteamracing.physics.WorldScale.effective(com.craftteamracing.physics.WorldScale.global(), maxSpeed) * 100.0);
+        return Component.translatable("screen.craftteamracing.rulebook.speed_cap", maxSpeed == 0 ? Component.translatable("screen.craftteamracing.rulebook.server_default") : Component.literal(""), Component.literal(now + "%"));
     }
 
     private Component defaultLabel() {
@@ -130,7 +134,7 @@ public class RulebookScreen extends Screen {
     }
 
     private void save() {
-        RuleSet rules = new RuleSet(table, fruit, fruitCrates, powerupCrates, boostPads, maxSpeed, driverDamage, hunger, offroad, softBumper, floater, spring, lowGravity, paddle);
+        RuleSet rules = new RuleSet(table, fruit, fruitCrates, powerupCrates, boostPads, maxSpeed, driverDamage, hunger, offroad, softBumper, floater, spring, lowGravity, paddle, skis);
         PacketDistributor.sendToServer(new RulebookSavePayload(hand.ordinal(), new RulebookData(rules, asDefault)));
         onClose();
     }

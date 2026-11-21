@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "item": "minecraft:packed_ice"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    "PIP",
+    "PIP"
+  ],
+  "result": {
+    "id": "craftteamracing:snow_skis",
+    "count": 1
+  }
+}

@@ -117,7 +117,8 @@
   "screen.craftteamracing.rulebook.boost_pads": "Boost pads: %s",
   "screen.craftteamracing.rulebook.driver_damage": "Driver damage: %s",
   "screen.craftteamracing.rulebook.hunger": "Driver hunger: %s",
-  "screen.craftteamracing.rulebook.speed_cap": "Top speed cap: %s",
+  "screen.craftteamracing.rulebook.speed_cap": "Race pace: %2$s%1$s",
+  "screen.craftteamracing.rulebook.server_default": " (server's)",
   "screen.craftteamracing.rulebook.apply_as": "Applies as: %s",
   "screen.craftteamracing.rulebook.as_default": "track default",
   "screen.craftteamracing.rulebook.as_temporary": "next race only",
@@ -321,5 +322,14 @@
   "screen.craftteamracing.spot.range_off": "Random range: off",
   "screen.craftteamracing.spot.range_on": "Range: on",
   "screen.craftteamracing.spot.range_hint": "On: the crate gives a random number from the minimum to the maximum.",
-  "craftteamracing.configuration.shieldDarkLayer": "Shield Dark Layer"
+  "craftteamracing.configuration.shieldDarkLayer": "Shield Dark Layer",
+  "craftteamracing.configuration.oases": "Oases",
+  "craftteamracing.configuration.oasisRarity": "Oasis Rarity",
+  "item.craftteamracing.snow_skis": "Snow Skis",
+  "block.craftteamracing.race_barrier": "Kart Barrier",
+  "screen.craftteamracing.kart.skis": "Snow Skis: %s",
+  "screen.craftteamracing.kart.skis_hint": "Drives on top of powder snow instead of sinking into it. It does not help on ice or other slippery ground. Not used in a race.",
+  "screen.craftteamracing.rulebook.skis": "Snow Skis for all: %s",
+  "craftteamracing.configuration.speedScale": "Speed Scale",
+  "craftteamracing.configuration.shrinkJumps": "Shrink Jumps"
 }

@@ -38,6 +38,12 @@ public final class TerrainField {
      * is a wall. Prepare the window around {@code ride + RIDE_LAG} and look for walls above {@code ride + RIDE_LAG + STEP_UP}.
      */
     public static final double RIDE_LAG = 0.5;
+    /** How many steps further up than the kart's own step the field follows a staircase (each round is one more step of {@link #STEP_UP}). */
+    private static final int EXTEND_ROUNDS = 3;
+    /** How far (blocks) the kart's feet can be under the top of the ground it stands on and still count as standing on it (see {@link #prepare}). */
+    private static final double RIDE_SLACK = 0.6;
+    /** How much ({@link #raise}) a cell of the cone surface may be lifted to meet its neighbours: enough to close the steps the gating leaves (about half a block), not to grow ramps of its own. */
+    private static final double MAX_FILL = 0.75;
     /** Steepest ramp: 1 up per 1 across (45 degrees). */
     private static final double SLOPE = 1.0;
     private static final double GRADIENT_STEP = 0.25;
@@ -50,6 +56,10 @@ public final class TerrainField {
     /** The blur only mixes cells whose surfaces differ by no more than this (a cliff's foot must not be lifted). */
     private static final double SMOOTH_RANGE = STEP_UP;
 
+    /** Which version of the terrain rules this is, shown by /ctr debug terrain so a screenshot says which build it came from. */
+    public static final String REVISION = "4: follows staircases up by steps, step counted from the ground under the kart, tall columns keep their top, the surface is continuous, ground never steeper than 45 degrees";
+
+    private double[] scratch = new double[64];
     private final BlockSource src;
     private final int columns = 2 * RADIUS + 1;
     private final int cells = 2 * columns;
@@ -84,7 +94,7 @@ public final class TerrainField {
         bz0 = (int) Math.floor(cz) - RADIUS;
         ref = cy + Math.max(vy, 0.0);
         double yMin = ref - DROP - 1.0;
-        double yMax = ref + STEP_UP + HEADROOM + 2.0;
+        double yMax = ref + STEP_UP + HEADROOM + 2.0 + EXTEND_ROUNDS * STEP_UP + RIDE_SLACK;
         for (int i = 0; i < columns; i++) {
             for (int j = 0; j < columns; j++) {
                 List<double[]> list = boxesByColumn[i * columns + j];
@@ -94,41 +104,108 @@ public final class TerrainField {
                 src.boxes(bx, yMin, bz, bx + 1, yMax, bz + 1, (x0, y0, z0, x1, y1, z1) -> list.add(new double[] { x0, y0, z0, x1, y1, z1 }));
             }
         }
-        double[] at = new double[16];
+        // The kart rides a hair into the ground it drives on (the smoothing lets it sit up to 0.18 under the surface, and a wall or a steep ramp can press it further): its feet can be well
+        // under the top of the ground it stands on. The step above it is counted from that ground, not from the sunken feet, or the first step of a staircase is already out of reach.
+        int ki = (int) Math.floor((cx - bx0) / CELL);
+        int kj = (int) Math.floor((cz - bz0) / CELL);
+        if (ki >= 0 && kj >= 0 && ki < cells && kj < cells) {
+            double own = columnTop(ki, kj, cy + RIDE_SLACK);
+            if (!Double.isNaN(own) && own > ref) {
+                ref = own;
+            }
+        }
         for (int i = 0; i < cells; i++) {
             for (int j = 0; j < cells; j++) {
-                double x = bx0 + (i + 0.5) * CELL;
-                double z = bz0 + (j + 0.5) * CELL;
-                List<double[]> list = boxesByColumn[(i / 2) * columns + (j / 2)];
-                double best = Double.NaN;
-                int n = 0;
-                for (double[] b : list) {
-                    if (x >= b[0] && x <= b[3] && z >= b[2] && z <= b[5] && n + 1 < at.length) {
-                        at[n++] = b[1];
-                        at[n++] = b[4];
-                    }
-                }
-                for (int a = 0; a < n; a += 2) {
-                    double top = at[a + 1];
-                    if (top > ref + STEP_UP + 1e-6 || top < ref - DROP || (!Double.isNaN(best) && top <= best)) {
+                height[i * cells + j] = columnTop(i, j, ref + STEP_UP);
+            }
+        }
+        // Ground further up a slope: a step or stair that starts more than a step above the kart is still ground when it can be reached from ground the kart can already see, by steps
+        // of no more than a step each (a staircase of full blocks, however long). Without this the field only sees one step above the kart's own height, so each next tread of a steep
+        // staircase stays a wall until the kart has driven a block up. A real wall (two blocks or more above its neighbour) is not reached by a step and stays one.
+        double[] seen = new double[cells * cells];
+        for (int round = 0; round < EXTEND_ROUNDS; round++) {
+            System.arraycopy(height, 0, seen, 0, height.length);
+            boolean grew = false;
+            for (int i = 0; i < cells; i++) {
+                for (int j = 0; j < cells; j++) {
+                    if (!Double.isNaN(seen[i * cells + j])) {
                         continue;
                     }
-                    boolean free = true;
-                    for (int o = 0; o < n; o += 2) {
-                        if (o != a && at[o] < top + HEADROOM - 1e-6 && at[o + 1] > top + 1e-6) {
-                            free = false;
-                            break;
+                    double near = Double.NaN;
+                    for (int di = -1; di <= 1; di++) {
+                        for (int dj = -1; dj <= 1; dj++) {
+                            int ni = i + di;
+                            int nj = j + dj;
+                            if ((di == 0 && dj == 0) || ni < 0 || nj < 0 || ni >= cells || nj >= cells) {
+                                continue;
+                            }
+                            double v = seen[ni * cells + nj];
+                            if (!Double.isNaN(v) && (Double.isNaN(near) || v > near)) {
+                                near = v;
+                            }
                         }
                     }
-                    if (free) {
-                        best = top;
+                    if (Double.isNaN(near)) {
+                        continue;
+                    }
+                    double top = columnTop(i, j, near + STEP_UP);
+                    if (!Double.isNaN(top) && top > ref + STEP_UP + 1e-6) {
+                        height[i * cells + j] = top;
+                        grew = true;
                     }
                 }
-                height[i * cells + j] = best;
+            }
+            if (!grew) {
+                break;
+            }
+        }
+        for (int i = 0; i < cells; i++) {
+            for (int j = 0; j < cells; j++) {
+                double best = height[i * cells + j];
+                double x = bx0 + (i + 0.5) * CELL;
+                double z = bz0 + (j + 0.5) * CELL;
                 kind[i * cells + j] = Double.isNaN(best) ? 0 : src.surface((int) Math.floor(x), (int) Math.floor(best - 1e-4), (int) Math.floor(z));
             }
         }
         buildSmooth();
+    }
+
+    /** The top of the highest collision box of the cell's column that the kart could stand on with the free headroom, no higher than {@code max} and no lower than {@link #DROP} below the kart; NaN if none. */
+    private double columnTop(int i, int j, double max) {
+        double x = bx0 + (i + 0.5) * CELL;
+        double z = bz0 + (j + 0.5) * CELL;
+        List<double[]> list = boxesByColumn[(i / 2) * columns + (j / 2)];
+        // a column holds one box per block of ground and build in the window's height (a plain column of ground alone is seven), so the scratch space is sized to the list: a fixed small
+        // array dropped the boxes past its end, which were the top ones, and a stack taller than a block or two lost its top
+        if (scratch.length < list.size() * 2) {
+            scratch = new double[list.size() * 2];
+        }
+        double[] at = scratch;
+        int n = 0;
+        for (double[] b : list) {
+            if (x >= b[0] && x <= b[3] && z >= b[2] && z <= b[5]) {
+                at[n++] = b[1];
+                at[n++] = b[4];
+            }
+        }
+        double best = Double.NaN;
+        for (int a = 0; a < n; a += 2) {
+            double top = at[a + 1];
+            if (top > max + 1e-6 || top < ref - DROP || (!Double.isNaN(best) && top <= best)) {
+                continue;
+            }
+            boolean free = true;
+            for (int o = 0; o < n; o += 2) {
+                if (o != a && at[o] < top + HEADROOM - 1e-6 && at[o + 1] > top + 1e-6) {
+                    free = false;
+                    break;
+                }
+            }
+            if (free) {
+                best = top;
+            }
+        }
+        return best;
     }
 
     /** The cone surface at every cell centre, blurred twice (separably) over the cells it may be mixed with. */
@@ -139,12 +216,55 @@ public final class TerrainField {
                 a[i * cells + j] = envelope(bx0 + (i + 0.5) * CELL, bz0 + (j + 0.5) * CELL);
             }
         }
+        raise(a);
         double[] b = new double[cells * cells];
         for (int pass = 0; pass < 2; pass++) {
             blur(a, b, true);
             blur(b, a, false);
         }
         System.arraycopy(a, 0, smooth, 0, a.length);
+    }
+
+    /**
+     * Makes the cone surface continuous where its gating left it a step: a cell may not sit more than 45 degrees under a neighbour within a step of it (two sweeps over the cells, forward
+     * and back, the cone dilation again but over the surface instead of the raw heights). Where the rule that decides which cells a cell sees changes from one cell to the next, the surface
+     * used to jump by up to half a block across a block edge, which the kart feels as a sharp bump on a staircase; now that jump is a 45 degree ramp.
+     */
+    private void raise(double[] a) {
+        double side = CELL * SLOPE;
+        double diagonal = CELL * Math.sqrt(2.0) * SLOPE;
+        double[] before = a.clone();                  // which cells may lift which is decided on the surface as it was, so a lifted cell does not shut its neighbours out
+        for (int sweep = 0; sweep < 2; sweep++) {
+            boolean forward = sweep == 0;
+            for (int ii = 0; ii < cells; ii++) {
+                int i = forward ? ii : cells - 1 - ii;
+                for (int jj = 0; jj < cells; jj++) {
+                    int j = forward ? jj : cells - 1 - jj;
+                    double own = a[i * cells + j];
+                    if (Double.isNaN(own)) {
+                        continue;
+                    }
+                    for (int d = 0; d < 4; d++) {
+                        int di = forward ? (d == 3 ? 0 : -1) : (d == 3 ? 0 : 1);
+                        int dj = forward ? (d == 0 ? -1 : d == 1 ? 0 : d == 2 ? 1 : -1) : (d == 0 ? 1 : d == 1 ? 0 : d == 2 ? -1 : 1);
+                        int ni = i + di;
+                        int nj = j + dj;
+                        if (ni < 0 || nj < 0 || ni >= cells || nj >= cells) {
+                            continue;
+                        }
+                        double v = a[ni * cells + nj];
+                        if (Double.isNaN(v) || before[ni * cells + nj] - before[i * cells + j] > STEP_UP) {
+                            continue;
+                        }
+                        double lifted = Math.min(v - (di != 0 && dj != 0 ? diagonal : side), before[i * cells + j] + MAX_FILL);
+                        if (lifted > own) {
+                            own = lifted;
+                        }
+                    }
+                    a[i * cells + j] = own;
+                }
+            }
+        }
     }
 
     /** One [1 2 1] / 4 pass along x (or z) of {@code in} into {@code out}, over valid cells within {@link #SMOOTH_RANGE}. */
@@ -182,6 +302,81 @@ public final class TerrainField {
             return -1;
         }
         return i * cells + j;
+    }
+
+    /** How many boxes {@link #forEachWallBox} reports (for tests). */
+    public int forEachWallBoxCount(double kx, double kz, double range) {
+        int[] n = { 0 };
+        forEachWallBox(kx, kz, range, b -> n[0]++);
+        return n[0];
+    }
+
+    /** The window's picture for the debug log: one line per block row (z), one character per block (x), the accepted ground height above {@code base} (a digit, + past 9), or . for none. */
+    public String heightGrid(double cx, double cz, int radius, double base) {
+        StringBuilder sb = new StringBuilder();
+        int x0 = (int) Math.floor(cx) - radius;
+        int z0 = (int) Math.floor(cz) - radius;
+        for (int z = z0; z <= (int) Math.floor(cz) + radius; z++) {
+            for (int x = x0; x <= (int) Math.floor(cx) + radius; x++) {
+                double h = cellHeight(x + 0.25, z + 0.25);
+                sb.append(Double.isNaN(h) ? '.' : (h - base > 9.4 ? '+' : (char) ('0' + (int) Math.max(0, Math.min(9, Math.round(h - base))))));
+            }
+            sb.append('/');
+        }
+        return sb.toString();
+    }
+
+    /** How many collision boxes the prepared window holds in the block column at (bx, bz), -1 outside it. */
+    public int columnBoxCount(int bx, int bz) {
+        int i = bx - bx0;
+        int j = bz - bz0;
+        return i < 0 || j < 0 || i >= columns || j >= columns ? -1 : boxesByColumn[i * columns + j].size();
+    }
+
+    /** The reference height the last {@link #prepare} counted steps from. */
+    public double ref() {
+        return ref;
+    }
+
+    /** The raw height (top of the ground the kart could stand on) of the half-block cell at (x, z), NaN where none: for the debug log. */
+    public double cellHeight(double x, double z) {
+        int c = cellIndex(x, z);
+        return c < 0 ? Double.NaN : height[c];
+    }
+
+    /** The window's west edge in blocks (block x of its first column): the debug view reads the field as the kart sees it. */
+    public double windowX0() {
+        return bx0;
+    }
+
+    /** The window's north edge in blocks. */
+    public double windowZ0() {
+        return bz0;
+    }
+
+    /** Cells along one side of the window (half a block each). */
+    public int cellCount() {
+        return cells;
+    }
+
+    /**
+     * The collision boxes of the prepared window that the kart at (kx, kz) would meet as walls, as {@link #deepestWall} counts them: a box standing more than {@link #WALL_RISE} above
+     * the ground surface at its point closest to the kart, or one with no ground at all beside it. Each is {x0, y0, z0, x1, y1, z1}; only boxes within {@code range} blocks of the kart.
+     */
+    public void forEachWallBox(double kx, double kz, double range, java.util.function.Consumer<double[]> out) {
+        for (List<double[]> column : boxesByColumn) {
+            for (double[] b : column) {
+                double px = clamp(kx, b[0], b[3]);
+                double pz = clamp(kz, b[2], b[5]);
+                if ((px - kx) * (px - kx) + (pz - kz) * (pz - kz) > range * range) {
+                    continue;
+                }
+                double s = surface(px, pz);
+                if (Double.isNaN(s) || b[4] > s + WALL_RISE) {
+                    out.accept(b);
+                }
+            }
+        }
     }
 
     /** The surface kind ({@link Surface} code) under (x, z), or -1 where there is no ground. */
@@ -280,6 +475,14 @@ public final class TerrainField {
         double zm = pick(surface(x, z - GRADIENT_STEP), s);
         double gx = (xp - xm) / (2 * GRADIENT_STEP);
         double gz = (zp - zm) / (2 * GRADIENT_STEP);
+        // The surface is never meant to be steeper than 45 degrees (SLOPE), so all of it is ground. Sampled by finite differences it can read steeper where the blurred half-block cells rise
+        // along both axes at once (a staircase climbed on its diagonal: 1 along x and 1 along z is a 54.7 degree slope), and the physics counts a normal under 50 degrees as a wall: a bump
+        // on ground that is no wall, with the boost lost. The slope is held to the design's.
+        double steep = Math.hypot(gx, gz);
+        if (steep > SLOPE) {
+            gx *= SLOPE / steep;
+            gz *= SLOPE / steep;
+        }
         double len = Math.sqrt(gx * gx + 1 + gz * gz);
         return new double[] { -gx / len, 1 / len, -gz / len };
     }

@@ -156,8 +156,8 @@ public class KartRenderer extends EntityRenderer<KartEntity> {
     public static void applyBodyTurn(PoseStack pose, KartEntity kart, double ox, double oy, double oz, float partialTick) {
         int tumble = KartFlags.tumble(kart.getVisualFlags());
         int tilt = kart.getTilt();
-        Wheelie.Pose wheelie = Wheelie.pose(KartFlags.wheelie(kart.getVisualFlags()), KartScale.LU_PER_BLOCK);
-        AirTilt.Pose air = AirTilt.pose(KartFlags.airTilt(kart.getVisualFlags()), AirTilt.DEFAULT_CHARACTER, KartScale.LU_PER_BLOCK);
+        Wheelie.Pose wheelie = Wheelie.pose(KartFlags.wheelie(kart.getVisualFlags()), KartScale.BASE_LU_PER_BLOCK);
+        AirTilt.Pose air = AirTilt.pose(KartFlags.airTilt(kart.getVisualFlags()), AirTilt.DEFAULT_CHARACTER, KartScale.BASE_LU_PER_BLOCK);
         if (air != null) wheelie = null;               // one baked pose at a time: the jump's replaces the wheelie's
         boolean wobble = KartFlags.wobble(kart.getVisualFlags()) || KartFlags.squishScale(kart.getVisualFlags()) != 1.0F;
         if (tumble == 0 && tilt == KartEntity.TILT_FLAT && wheelie == null && air == null && !wobble) return;
@@ -215,6 +215,9 @@ public class KartRenderer extends EntityRenderer<KartEntity> {
                 pose.mulPose(Axis.YP.rotation((float) (Math.sin(a) / 64.0)));
             }
             if (w.front()) pose.mulPose(Axis.YP.rotationDegrees(-steer));          // the model's front is -z: a right turn (+steer) is a negative turn about y
+            // on the water with the Floater the wheels fold down about the kart's length until they lie flat facing down (the outward side of each goes to the floor), and unfold as the ground returns
+            float fold = FloatState.fold(entity, partialTick);
+            if (fold > 0.0F) pose.mulPose(Axis.ZP.rotationDegrees((w.x() < 0 ? 90.0F : -90.0F) * fold));
             pose.mulPose(Axis.XP.rotationDegrees(-spin));                        // rolling forward (towards -z) turns the top that way
             pose.scale(w.thickness() / WHEEL_THICKNESS, w.height() / WHEEL_DIAMETER, w.length() / WHEEL_DIAMETER);       // the marker's size: the model is 3 by 7 by 7 pixels
             pose.translate(-0.5, -0.5, -0.5);
@@ -306,8 +309,8 @@ public class KartRenderer extends EntityRenderer<KartEntity> {
         applyWobble(pose, entity, partialTick);
         // the boost wheelie: lift, forward shift, nose-up pitch and squash/stretch from CTR's own pose tables (kart frame: +z ahead,
         // the model's front is -z, so the forward shift and the pitch flip)
-        Wheelie.Pose w = Wheelie.pose(KartFlags.wheelie(entity.getVisualFlags()), KartScale.LU_PER_BLOCK);
-        AirTilt.Pose air = AirTilt.pose(KartFlags.airTilt(entity.getVisualFlags()), AirTilt.DEFAULT_CHARACTER, KartScale.LU_PER_BLOCK);
+        Wheelie.Pose w = Wheelie.pose(KartFlags.wheelie(entity.getVisualFlags()), KartScale.BASE_LU_PER_BLOCK);
+        AirTilt.Pose air = AirTilt.pose(KartFlags.airTilt(entity.getVisualFlags()), AirTilt.DEFAULT_CHARACTER, KartScale.BASE_LU_PER_BLOCK);
         if (air != null) {
             w = null;                                  // one baked pose at a time: the jump's replaces the wheelie's
             applyAirTilt(pose, air);
@@ -348,7 +351,7 @@ public class KartRenderer extends EntityRenderer<KartEntity> {
         float amplitude = (float) Math.toDegrees(25.0 * 4096.0 / 1024.0 / 4096.0);
         pose.mulPose(Axis.XP.rotationDegrees(amplitude * (float) Math.sin(phase)));
         pose.mulPose(Axis.ZP.rotationDegrees(amplitude * (float) Math.cos(phase)));
-        pose.translate(0.0, WOBBLE_LIFT[wobbleFrame(kart, partialTick) % 6] / KartScale.LU_PER_BLOCK, 0.0);
+        pose.translate(0.0, WOBBLE_LIFT[wobbleFrame(kart, partialTick) % 6] / KartScale.BASE_LU_PER_BLOCK, 0.0);
     }
 
     /**

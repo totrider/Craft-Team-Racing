@@ -315,6 +315,7 @@ public final class TrackGhostRenderer {
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
         TrackClient.clear();
+        com.craftteamracing.physics.WorldScale.reset();
         TestDriveClient.clear();
         com.craftteamracing.track.RaceClient.clear();
     }

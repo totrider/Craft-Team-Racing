@@ -52,7 +52,7 @@ public final class RainCloudFx {
         }
     }
 
-    private static final double UNITS = KartScale.LU_PER_BLOCK;
+    private static final double UNITS = KartScale.BASE_LU_PER_BLOCK;
     /** The rain's box, in the units the footage shows: it stays within the kart's own bounds, about half the size the raw numbers (256 units across) give. */
     private static final double RAIN_UNITS = UNITS * 3.0;
     private static final int STREAKS = 30;

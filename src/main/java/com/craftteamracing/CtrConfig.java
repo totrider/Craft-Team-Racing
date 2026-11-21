@@ -17,10 +17,14 @@ public final class CtrConfig {
     public static final ModConfigSpec.BooleanValue ENTITY_DAMAGE;
     public static final ModConfigSpec.BooleanValue ENTITY_DAMAGE_PLAYERS;
     public static final ModConfigSpec.DoubleValue ENTITY_DAMAGE_SCALE;
+    public static final ModConfigSpec.IntValue SPEED_SCALE;
+    public static final ModConfigSpec.BooleanValue SHRINK_JUMPS;
     public static final ModConfigSpec.DoubleValue WEAPON_SPEED_SCALE;
     public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> DISABLED_TUNING;
     public static final ModConfigSpec.BooleanValue POWER_PALMS;
     public static final ModConfigSpec.DoubleValue POWER_PALMS_PER_CHUNK;
+    public static final ModConfigSpec.BooleanValue OASES;
+    public static final ModConfigSpec.IntValue OASIS_RARITY;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -50,6 +54,16 @@ public final class CtrConfig {
                 .comment("Multiplier on the damage: 1 is about 1 heart for every 2 blocks/s of speed over 6 (12 hp, 6 hearts, at top speed).")
                 .defineInRange("damageScale", 1.0, 0.0, 10.0);
         builder.pop();
+        SPEED_SCALE = builder
+                .comment("How fast everything may move, in percent (50 to 100): the kart, the weapons that fly, and with them a jump's height and length and a turn's radius, in the open world too.",
+                        "100 is the original's pace. Lower it for a weaker server (less ground to load a second) or a smaller track; the kart itself keeps its size. A track's rulebook has the same range and replaces this for the race's participants; this is its default.",
+                        "Operators can change it while playing with /ctr speed <percent> to find the right value.")
+                .defineInRange("speedScale", 100, 50, 100);
+        SHRINK_JUMPS = builder
+                .comment("Whether a lower speedScale also lowers and shortens the jumps (on, the default): with less speed you get less height, less air time and less distance off a ramp, as gravity",
+                        "takes over sooner; a plain hop stays as it is. The hang-time boost on landing follows the time in the air, so a shorter jump gives less of it.",
+                        "Off: the jump keeps its shape, the same arc at the scale's smaller size in the same time (floaty beside the kart). Operators: /ctr speed shrinkjumps <true|false>.")
+                .define("shrinkJumps", true);
         WEAPON_SPEED_SCALE = builder
                 .comment("Multiplier on how fast the Bomb rolls and how far a Potion is thrown (its horizontal speed). 1 is the original's value in the kart's own scale",
                         "(the bomb 96 units a frame against a kart's 78, a potion 120): the world is 50 units to a block like the kart, so these are fast beside crates and",
@@ -61,11 +75,17 @@ public final class CtrConfig {
                 .defineListAllowEmpty("disabledTuningProfiles", java.util.List.of(), () -> "", o -> o instanceof String);
         builder.push("worldgen");
         POWER_PALMS = builder
-                .comment("Power Palm trees grow on beaches in newly generated chunks. Turn off to stop them (saplings and planted palms still work; chunks already generated keep theirs).")
+                .comment("Power Palm trees grow on beaches, and on desert sand or jungle ground within a few blocks of water, in newly generated chunks. Turn off to stop them (saplings and planted palms still work; chunks already generated keep theirs).")
                 .define("powerPalms", true);
         POWER_PALMS_PER_CHUNK = builder
                 .comment("About how many Power Palms are tried per beach chunk (a palm needs sand and room, so fewer end up standing). 0 is none, 1 is the default.")
                 .defineInRange("powerPalmsPerChunk", 1.0, 0.0, 8.0);
+        OASES = builder
+                .comment("Small oases (a pond, a grass rim and a few Power Palms) in newly generated deserts. Turn off to stop them (chunks already generated keep theirs). Power Palms on desert sand beside water follow the powerPalms setting above.")
+                .define("oases", true);
+        OASIS_RARITY = builder
+                .comment("How rare an oasis is: about one in this many desert chunks. Higher is rarer; 40 is the default.")
+                .defineInRange("oasisRarity", 40, 1, 1000);
         builder.pop();
         SPEC = builder.build();
     }

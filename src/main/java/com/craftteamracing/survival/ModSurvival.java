@@ -70,6 +70,8 @@ public final class ModSurvival {
     public static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, CraftTeamRacingMod.MODID);
     public static final DeferredHolder<Feature<?>, PowerPalmFeature> POWER_PALM_FEATURE = FEATURES.register("power_palm", () -> new PowerPalmFeature(NoneFeatureConfiguration.CODEC));
 
+    /** A desert oasis (a pond, a grass rim and a few Power Palms): world generation only, placed into desert biomes by a biome modifier. */
+    public static final DeferredHolder<Feature<?>, OasisFeature> OASIS_FEATURE = FEATURES.register("oasis", () -> new OasisFeature(NoneFeatureConfiguration.CODEC));
     public static final DeferredHolder<Feature<?>, PowerPalmWildFeature> POWER_PALM_WILD_FEATURE = FEATURES.register("power_palm_wild", () -> new PowerPalmWildFeature(NoneFeatureConfiguration.CODEC));
 
     /** The configured feature a sapling grows (data/craftteamracing/worldgen/configured_feature/power_palm.json). */

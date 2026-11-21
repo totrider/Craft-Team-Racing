@@ -1,0 +1,759 @@
+{
+  "feature": "craftteamracing:power_palm_wild",
+  "placement": [
+    {
+      "type": "minecraft:count",
+      "count": 24
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:matching_block_tag",
+        "offset": [
+          0,
+          -1,
+          0
+        ],
+        "tag": "minecraft:sand"
+      }
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:any_of",
+        "predicates": [
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              1,
+              -1,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              1,
+              -2,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -1,
+              -1,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -1,
+              -2,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -1,
+              1
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -2,
+              1
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -1,
+              -1
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -2,
+              -1
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              1,
+              -1,
+              1
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              1,
+              -2,
+              1
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              1,
+              -1,
+              -1
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              1,
+              -2,
+              -1
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -1,
+              -1,
+              1
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -1,
+              -2,
+              1
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -1,
+              -1,
+              -1
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -1,
+              -2,
+              -1
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              2,
+              -1,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              2,
+              -2,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -2,
+              -1,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -2,
+              -2,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -1,
+              2
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -2,
+              2
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -1,
+              -2
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -2,
+              -2
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              2,
+              -1,
+              2
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              2,
+              -2,
+              2
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              2,
+              -1,
+              -2
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              2,
+              -2,
+              -2
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -2,
+              -1,
+              2
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -2,
+              -2,
+              2
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -2,
+              -1,
+              -2
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -2,
+              -2,
+              -2
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              3,
+              -1,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              3,
+              -2,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -3,
+              -1,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -3,
+              -2,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -1,
+              3
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -2,
+              3
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -1,
+              -3
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -2,
+              -3
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              3,
+              -1,
+              3
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              3,
+              -2,
+              3
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              3,
+              -1,
+              -3
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              3,
+              -2,
+              -3
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -3,
+              -1,
+              3
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -3,
+              -2,
+              3
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -3,
+              -1,
+              -3
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -3,
+              -2,
+              -3
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              4,
+              -1,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              4,
+              -2,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -4,
+              -1,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -4,
+              -2,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -1,
+              4
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -2,
+              4
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -1,
+              -4
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -2,
+              -4
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              4,
+              -1,
+              4
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              4,
+              -2,
+              4
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              4,
+              -1,
+              -4
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              4,
+              -2,
+              -4
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -4,
+              -1,
+              4
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -4,
+              -2,
+              4
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -4,
+              -1,
+              -4
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -4,
+              -2,
+              -4
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              5,
+              -1,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              5,
+              -2,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -5,
+              -1,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -5,
+              -2,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -1,
+              5
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -2,
+              5
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -1,
+              -5
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              0,
+              -2,
+              -5
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              5,
+              -1,
+              5
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              5,
+              -2,
+              5
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              5,
+              -1,
+              -5
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              5,
+              -2,
+              -5
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -5,
+              -1,
+              5
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -5,
+              -2,
+              5
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -5,
+              -1,
+              -5
+            ]
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:water",
+            "offset": [
+              -5,
+              -2,
+              -5
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

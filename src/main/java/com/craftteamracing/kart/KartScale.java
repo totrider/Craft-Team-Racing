@@ -1,11 +1,12 @@
 package com.craftteamracing.kart;
 
 import com.craftteamracing.physics.FixedMath;
+import com.craftteamracing.physics.WorldScale;
 
 /**
  * The one place that ties CTR's level units (lu) to Minecraft blocks, and CTR's angles to Minecraft's yaw.
  * Nothing in the code converts lu to meters (spec section 0). The MECHANICS (the kart's physics, the weapons' speeds and hit radii, the pickups' reach) are in lu and live at
- * {@link #LU_PER_BLOCK} = 108.8 / 1.5 = 72.53 lu to the block: the kart's model is drawn 3:2 to the crates' scale (a crate is 108.8 lu and one block), which is what fits a
+ * {@link #BASE_LU_PER_BLOCK} = 108.8 / 1.5 = 72.53 lu to the block: the kart's model is drawn 3:2 to the crates' scale (a crate is 108.8 lu and one block), which is what fits a
  * Minecraft player in it. The Balanced top speed (78 lu a frame) is then 32 blocks a second and the 25 lu collision sphere 0.34 block in radius. The VISUALS of the pickups,
  * the beakers and the bomb stay at the crates' scale ({@link #CRATE_LU}, one block): they are 2/3 of the size the mechanics, which are the original's own numbers against the
  * kart, give them, so a crate is taken from a little before the kart touches it.
@@ -15,15 +16,25 @@ public final class KartScale {
 
     /** A crate's width in lu: one block, the scale of every pickup, beaker and bomb picture. */
     public static final double CRATE_LU = 108.8;
-    /** The mechanics' scale: the kart's model is 3:2 to the crates. */
-    public static final double LU_PER_BLOCK = CRATE_LU / 1.5;
+    /** The mechanics' scale at full speed: the kart's model is 3:2 to the crates. Sizes that are only drawn (a pose's offset, a head over the kart) use this one, whatever the speed scale. */
+    public static final double BASE_LU_PER_BLOCK = CRATE_LU / 1.5;
+
+    /** The mechanics' scale now: the base over the world's speed scale (see {@link WorldScale}), so at 0.5 a block holds twice the lu and everything covers half the blocks in a second. */
+    public static double luPerBlock() {
+        return BASE_LU_PER_BLOCK / WorldScale.speed();
+    }
 
     public static double toLu(double blocks) {
-        return blocks * LU_PER_BLOCK;
+        return blocks * luPerBlock();
     }
 
     public static double toBlocks(double lu) {
-        return lu / LU_PER_BLOCK;
+        return lu / luPerBlock();
+    }
+
+    /** A drawn length in lu (a pose's offset, a mask's height over the kart) as blocks: fixed, the kart is drawn the same size at any speed scale. */
+    public static double visualBlocks(double lu) {
+        return lu / BASE_LU_PER_BLOCK;
     }
 
     /**

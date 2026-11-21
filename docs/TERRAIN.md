@@ -20,6 +20,14 @@ headroom, so bridges, overhangs and tunnels pick the right layer). The ground su
 | cliff edge, gap | the surface ends at the edge; the kart falls |
 | ceilings | boxes above the surface collide as walls (contact normal down) |
 
+**Following a staircase up.** The window sees ground up to a step (1.25 blocks) above the kart. Ground further up still counts when it can be reached from ground that is already seen by steps of no more than a step each (three rounds, so about four steps in all), which lets a steep staircase of full blocks show all its treads from its foot instead of one at a time as the kart climbs. A real wall, two blocks or more above its neighbour, is not reached by a step and stays a wall (`DiagonalStairsTest`).
+
+**Counted from the ground, not the feet.** The kart rides a hair into the ground (the smoothing lets it sit up to 0.18 block under the surface, and pushing against a wall or a steep ramp can sink it more), so its feet can be well under the top of what it stands on. The step above is counted from the top of the ground under the kart, up to 0.6 block above its feet; counted from the feet, the first step of a staircase fell out of reach and every tread was a wall until the kart was lifted.
+
+**Tall columns.** A column of the window holds one collision box per block (plain ground alone is seven in the height the window covers). The per-column scratch space is sized to the box list; it used to be a fixed eight, which dropped the top boxes of any column with a build on it, so anything about two blocks above the kart's ground was missing from the height map and counted as a wall (`DiagonalStairsTest.aColumnWithManyBoxesStillShowsItsTop`).
+
+**Closing the steps.** The rule that decides which cells a cell sees can change from one cell to the next, and where it does the cone surface used to jump by up to about half a block across a block edge (a sharp bump on a staircase). A pass over the cells lifts a cell to meet a neighbour within a step of it at 45 degrees, by at most 0.75 block, so such a jump becomes a ramp and no ramp is grown of its own. The measured normal is also held to 45 degrees (`TerrainField.normal`): the diagonal of a staircase reads as 54.7 degrees by finite differences, and under about 50 degrees the physics counts a normal as a wall.
+
 **Smoothing.** The cone surface alone turns a staircase of mixed steps (full blocks and slabs) into ramp, flat, ramp, flat. So the
 cone surface is blurred (two passes of [1 2 1] over the half-block cells, about a block wide, which cancels a one-block rhythm
 exactly) and the result may sit at most 0.18 block (3 px) below the cone surface, so the kart rides a hair into a tread's corner

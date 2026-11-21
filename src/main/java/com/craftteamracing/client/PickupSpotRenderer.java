@@ -25,7 +25,7 @@ public class PickupSpotRenderer implements BlockEntityRenderer<PickupSpotBlockEn
 
     /** Whether the item is one for building or editing a track. */
     public static boolean isEditingItem(ItemStack stack) {
-        return stack.is(ModItems.TRACK_TOOL.get()) || stack.is(ModItems.WRENCH.get()) || stack.is(ModBlocks.START_NODE_ITEM.get())
+        return stack.is(ModBlocks.RACE_BARRIER_ITEM.get()) || stack.is(ModItems.TRACK_TOOL.get()) || stack.is(ModItems.WRENCH.get()) || stack.is(ModBlocks.START_NODE_ITEM.get())
                 || stack.is(ModBlocks.CHECKPOINT_NODE_ITEM.get()) || stack.is(ModBlocks.FRUIT_SPOT_ITEM.get()) || stack.is(ModBlocks.FRUIT_CRATE_SPOT_ITEM.get())
                 || stack.is(ModBlocks.POWERUP_CRATE_SPOT_ITEM.get()) || stack.is(ModBlocks.TRIGGER_CRATE_SPOT_ITEM.get()) || stack.is(ModBlocks.REDSTONE_LINK_NODE_ITEM.get());
     }

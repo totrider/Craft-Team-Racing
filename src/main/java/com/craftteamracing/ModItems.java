@@ -36,6 +36,8 @@ public final class ModItems {
 
     /** Used on a kart: with the Floater it drives at full speed on the water instead of the water's slowdown. */
     public static final DeferredItem<Item> PADDLE = ITEMS.register("paddle", () -> new Item(new Item.Properties().stacksTo(16)));
+    /** Snow Skis: a kart upgrade; the kart drives on top of powder snow instead of sinking into it (it does nothing for slippery ground). */
+    public static final DeferredItem<Item> SNOW_SKIS = ITEMS.register("snow_skis", () -> new Item(new Item.Properties().stacksTo(16)));
 
     /** Used on a kart: replaces its Floater with one that floats on lava too and keeps the rider from lava's damage and fire. */
     public static final DeferredItem<Item> OBSIDIAN_FLOATER = ITEMS.register("obsidian_floater", () -> new Item(new Item.Properties().stacksTo(16)));

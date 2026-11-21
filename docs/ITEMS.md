@@ -121,6 +121,10 @@ Invisible markers that make a track; you see them while you hold a node, the Tra
 
 <img src="img/recipes/podium_3_node.png" width="292" alt="podium 3 node recipe">
 
+**Kart Barrier**: Makes 16. A block that stops karts and nothing else, and only while the kart is in a race: players, mobs and karts out of a race pass through it. It is invisible, and drawn as a cyan ghost only while you hold a track building item, so you can place and remove a wall of them.
+
+<img src="img/recipes/race_barrier.png" width="292" alt="race barrier recipe">
+
 **Redstone Linking Node**: A small visible block that gives a redstone signal while any Trigger Crate Spot linked to it does. Link with the Wrench.
 
 <img src="img/recipes/redstone_link_node.png" width="292" alt="redstone link node recipe">
@@ -163,7 +167,7 @@ Spots are small markers: a pickup appears there while a race is on a track near 
 ## Rule items
 Right-click in the air to set one up in its screen, then right-click a Start Node to apply it: as the track's default (needs permission to edit tracks), or for the next race only. A rule item cannot be applied while a race is on the track.
 
-**Rulebook**: Shapeless: a book, a nugget and redstone. Toggles for power fruit, fruit crates, power-up crates, boost pads, driver damage and hunger, offroad for all, soft bumper for all and the floater, spring and low-gravity rules; a top-speed cap.
+**Rulebook**: Shapeless: a book, a nugget and redstone. Toggles for power fruit, fruit crates, power-up crates, boost pads, driver damage and hunger, offroad for all, soft bumper for all and the floater, spring and low-gravity rules; the race's pace (50 to 100 percent, the server's `speedScale` by default).
 
 <img src="img/recipes/rulebook.png" width="292" alt="rulebook recipe">
 
@@ -197,6 +201,10 @@ Use one on a kart (right-click it) to install it; its switch then unlocks in the
 **Paddle**: With a Floater, the kart drives on the water's surface at full speed.
 
 <img src="img/recipes/paddle.png" width="292" alt="paddle recipe">
+
+**Snow Skis**: The kart drives on top of powder snow instead of sinking into it. It does not help on ice or other slippery ground.
+
+<img src="img/recipes/snow_skis.png" width="292" alt="snow skis recipe">
 
 **Jump Spring**: A double jump: a second press of the jump key in the air gives a high jump. Strength is a slider in the kart's screen.
 

@@ -40,7 +40,7 @@ A NeoForge mod for **Minecraft 1.21.1** (NeoForge 21.1.x, Java 21). Standalone: 
 Power Palm --> Power Fruit --cook--> Power Juice
 Power Juice + Raw Iron --> 2 Raw Power Ore --smelt--> Power Ingot
 ```
-1. **Find a Power Palm** on a beach, or plant its sapling (it also grows in dirt). Its fronds drop Power Fruit and saplings, and fruit hangs in clusters under the fronds that grow back over time. Power Fruit is food.
+1. **Find a Power Palm** on a beach, beside water in a desert or a jungle, or at a desert **oasis** (a small pond with palms and sugar cane), or plant its sapling (it also grows in dirt). Its fronds drop Power Fruit and saplings, and fruit hangs in clusters under the fronds that grow back over time. Power Fruit is food.
 2. **Cook Power Juice** from the fruit in a furnace, smoker or campfire. It is a drink.
 3. **Make Power Ingots.** Power Juice and a Raw Iron make two Raw Power Ore; smelt them in a furnace or blast furnace.
 4. **Craft the basics:**
@@ -65,12 +65,13 @@ A summary of what is in the mod. Everything is in the *Craft Team Racing* creati
 | **Boost Pad / Block / Slab / Stairs** | A turbo boost whichever way you drive over it; the arrow is a marker. The pad has no collision. An empty-hand click turns the arrow. |
 | **Super Boost Pad / Block / Slab / Stairs** | An opt-in blue boost family: a longer, stronger boost with the blue flame. |
 | **Track Tool** | Links nodes, resizes their boxes, opens the Start Node's menu. |
+| **Kart Barrier** | An invisible wall that stops karts only, and only during a race. Shown as a ghost while you hold a track building item. |
 | **Start Node**, **Checkpoint Node** | Invisible markers that make the track. See [Building a race track](#building-a-race-track). |
 | **Podium Nodes** (1st, 2nd, 3rd) | Optional: where the winners stand for the podium ceremony. |
 | **Power Fruit Spot**, **Power Fruit Crate Spot**, **Power-up Crate Spot** | Where fruit, fruit crates and power-up crates appear in a race. Invisible unless you hold something to edit them. |
 | **Trigger Crate Spot**, **Redstone Linking Node** | A "!" crate that gives a redstone signal when it is broken, and the wireless far end of that signal. |
 | **Rulebook**, **Drop Table**, **Track Music Sheet** | Rules, power-up drops and music of a track. Right-click a Start Node to apply. |
-| **Offroad Tires**, **Soft Bumper**, **Floater**, **Obsidian Floater**, **Paddle**, **Jump Spring**, **Low Gravity Module** | [Kart upgrades](docs/UPGRADES.md): use one on a kart to install it, then switch it on in the kart's screen. In a race the rules decide. |
+| **Offroad Tires**, **Soft Bumper**, **Floater**, **Obsidian Floater**, **Paddle**, **Snow Skis**, **Jump Spring**, **Low Gravity Module** | [Kart upgrades](docs/UPGRADES.md): use one on a kart to install it, then switch it on in the kart's screen. In a race the rules decide. |
 | **Power Fruit, Juice, Ingot, Nugget, Block of Power, Raw Power Ore, Bag of Power Fruit** | The survival chain. |
 | **Power Palm wood set** | Logs, wood, stripped, planks, stairs, slabs, fence, gate, door, trapdoor, button, pressure plate, fronds, sapling. |
 | **Wheel, Item Crate, Fruit Crate** (and planked variants) | Building blocks and ingredients. |
@@ -95,7 +96,7 @@ Spots are small marker blocks, invisible unless you hold something to edit them.
 | **End Crystal** | Follows the course after the kart in first place; every kart it touches is blasted. Charged: it goes through every kart ahead of you. |
 | **Clock** | Freezes, then slows, every other kart. |
 
-How many of a power-up a crate gives is set per crate spot (Wrench) or in the Drop Table. Placed weapons follow the original's mine pool (ten at a time, cleared when a race ends). What each one does and where it differs from the original is in [docs/POWERUPS.md](docs/POWERUPS.md).
+How many of a power-up a crate gives is set per crate spot (Wrench) or in the Drop Table. Placed weapons follow the original's mine pool (ten at a time, cleared when a race ends; any left on the track are also cleared before the lights, whoever placed them). What each one does and where it differs from the original is in [docs/POWERUPS.md](docs/POWERUPS.md).
 
 ## The race screen
 The HUD has the feel of the original's, adapted to sit with Minecraft's own interface instead of copying its layout: the clock and lap times, the first four racers, your place in big digits, the start lamps, the held power-up with the Power Fruit count, and the driving meters (speed dial, powerslide box, hang-time bar).
@@ -168,7 +169,7 @@ the Start Node and podium nodes are **redstone sources** while active, and after
 
 ### 8. Crates, rules, music
 Place **Power Fruit Spots**, **Fruit Crate Spots** and **Power-up Crate Spots** along the road (within 96 blocks of the track). The **Wrench** on a power-up crate spot makes it give a particular power-up or a selection.
-The **Rulebook** sets which pickups and boost pads exist, a top-speed cap, driver damage and hunger, and which upgrades count for everyone; the **Drop Table** sets which power-ups crates give; the **Track Music Sheet** the music.
+The **Rulebook** sets which pickups and boost pads exist, the race's pace, driver damage and hunger, and which upgrades count for everyone; the **Drop Table** sets which power-ups crates give; the **Track Music Sheet** the music.
 Each is applied by right-clicking the Start Node, as the track's default or for the next race only.
 
 ### Pitfalls to avoid
@@ -203,7 +204,7 @@ Craft Team Racing is a **standalone mod**: everything above works without any ot
 | [**Open Parties and Claims**](https://github.com/thexaero/open-parties-and-claims) | Planned | Track building that respects claims. |
 
 ## Configuration
-- **Server** (`craftteamracing-server.toml` in the world's `serverconfig` folder): `trackEditing`, `raceMinRacers`, `pickupTrackRadius`, `weaponSpeedScale`, `disabledTuningProfiles`, `entities` (`contact`, `damage`, `damagePlayers`, `damageScale`), `worldgen` (`powerPalms`, `powerPalmsPerChunk`).
+- **Server** (`craftteamracing-server.toml` in the world's `serverconfig` folder): `trackEditing`, `raceMinRacers`, `pickupTrackRadius`, `speedScale`, `shrinkJumps`, `weaponSpeedScale`, `disabledTuningProfiles`, `entities` (`contact`, `damage`, `damagePlayers`, `damageScale`), `worldgen` (`powerPalms`, `powerPalmsPerChunk`, `oases`, `oasisRarity`).
 - **Client** (`craftteamracing-client.toml` in `config`): sounds, animated boost pads, podium camera, wrong-way and skipped-checkpoint warnings, motion blur, the idle start grid, Jade hiding, the shield's dark layer. All have an in-game config screen (Mods > Craft Team Racing > Config).
 - **Data packs**: kart tuning profiles (`data/<namespace>/craftteamracing/kart_tuning/`, [docs/KART_TUNING.md](docs/KART_TUNING.md)), surfaces and boost pads (block tags), recipes and loot as usual.
 
