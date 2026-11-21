@@ -5,13 +5,13 @@
     "N": {
       "item": "craftteamracing:power_nugget"
     },
-    "I": {
-      "item": "minecraft:iron_ingot"
+    "S": {
+      "item": "minecraft:cobblestone"
     }
   },
   "pattern": [
     "NNN",
-    "III"
+    "SSS"
   ],
   "result": {
     "id": "craftteamracing:boost_pad",

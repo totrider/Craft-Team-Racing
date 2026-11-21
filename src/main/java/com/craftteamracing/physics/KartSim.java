@@ -1669,7 +1669,7 @@ public final class KartSim {
         double best = Math.abs(a) >= Math.abs(b) ? a : b;
         double j = jumpVel * WorldScale.hopFactor();
         double vy = Math.sqrt(best * best + j * j) - best;
-        double ny = Math.max(mv.y, Math.min(vy, JUMP_VERTICAL_CAP));
+        double ny = Math.max(mv.y, Math.min(vy, JUMP_VERTICAL_CAP * WorldScale.hopFactor()));          // the cap goes with the launch speed, or the spring's jump would be cut short at a lower speed scale
         return new V3(mv.x, ny, mv.z);
     }
 

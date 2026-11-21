@@ -737,12 +737,19 @@ def recipes():
     # the wheel (four wool and an iron ingot make four wheels)
     shaped("wheel", [" B ", "BIB", " B "], {"B": "minecraft:black_wool", "I": "minecraft:iron_ingot"}, C + "wheel", 4)
     # the boost blocks
-    shaped("boost_pad", ["NNN", "III"], {"N": C + "power_nugget", "I": "minecraft:iron_ingot"}, C + "boost_pad", 4)
+    shaped("boost_pad", ["NNN", "SSS"], {"N": C + "power_nugget", "S": "minecraft:cobblestone"}, C + "boost_pad", 4)
     shaped("boost_block", ["SSS", "SPS", "SSS"], {"S": "minecraft:cobblestone", "P": C + "power_ingot"}, C + "boost_block", 8)
     shaped("boost_slab", ["BBB"], {"B": C + "boost_block"}, C + "boost_slab", 6)
     shaped("boost_stairs", ["B  ", "BB ", "BBB"], {"B": C + "boost_block"}, C + "boost_stairs", 4)
-    for kind in ("pad", "block", "slab", "stairs"):
-        shapeless("super_boost_" + kind, [C + "boost_" + kind, "minecraft:lapis_lazuli"], C + "super_boost_" + kind)
+    # the Super Boost family: one lapis lazuli makes four boost pads or four boost blocks super. The slab and the stairs are cut from super blocks as the regular ones are (3 blocks, 6 slabs;
+    # 6 blocks, 4 stairs), or upgraded from the regular ones with the lapis in step with the block it covers: a lapis a four blocks, so eight slabs (four blocks) or three stairs (four and a half) to a lapis
+    L = "minecraft:lapis_lazuli"
+    shapeless("super_boost_pad", [C + "boost_pad"] * 4 + [L], C + "super_boost_pad", 4)
+    shapeless("super_boost_block", [C + "boost_block"] * 4 + [L], C + "super_boost_block", 4)
+    shaped("super_boost_slab", ["BBB"], {"B": C + "super_boost_block"}, C + "super_boost_slab", 6)
+    shaped("super_boost_stairs", ["B  ", "BB ", "BBB"], {"B": C + "super_boost_block"}, C + "super_boost_stairs", 4)
+    shapeless("super_boost_slab_from_boost_slab", [C + "boost_slab"] * 8 + [L], C + "super_boost_slab", 8)
+    shapeless("super_boost_stairs_from_boost_stairs", [C + "boost_stairs"] * 3 + [L], C + "super_boost_stairs", 3)
     # the kart and its tools
     shaped("kart", ["WLW", "PMP", "WRW"], {"W": C + "wheel", "L": "minecraft:leather", "P": C + "power_ingot", "M": "minecraft:minecart", "R": "minecraft:redstone"}, C + "kart")
     shaped("offroad_tires", ["WSW", "SIS", "WSW"], {"W": C + "wheel", "S": "minecraft:slime_ball", "I": "minecraft:iron_ingot"}, C + "offroad_tires")

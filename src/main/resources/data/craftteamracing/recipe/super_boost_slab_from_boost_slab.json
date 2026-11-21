@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "craftteamracing:boost_slab"
+    },
+    {
+      "item": "craftteamracing:boost_slab"
+    },
+    {
+      "item": "craftteamracing:boost_slab"
+    },
+    {
+      "item": "craftteamracing:boost_slab"
+    },
+    {
+      "item": "craftteamracing:boost_slab"
+    },
+    {
+      "item": "craftteamracing:boost_slab"
+    },
+    {
+      "item": "craftteamracing:boost_slab"
+    },
+    {
+      "item": "craftteamracing:boost_slab"
+    },
+    {
+      "item": "minecraft:lapis_lazuli"
+    }
+  ],
+  "result": {
+    "id": "craftteamracing:super_boost_slab",
+    "count": 8
+  }
+}

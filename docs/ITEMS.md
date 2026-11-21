@@ -82,21 +82,25 @@ A turbo boost whichever way you drive over them. The pad has no collision, and a
 
 <img src="img/recipes/boost_stairs.png" width="292" alt="boost stairs recipe">
 
-**Super Boost Pad**: Shapeless: a Boost Pad and Lapis Lazuli. The blue family boosts longer and harder.
+**Super Boost Pad**: Shapeless: four Boost Pads and a Lapis Lazuli give four. The blue family boosts longer and harder.
 
 <img src="img/recipes/super_boost_pad.png" width="292" alt="super boost pad recipe">
 
-**Super Boost Block**: A Boost Block and Lapis Lazuli.
+**Super Boost Block**: Shapeless: four Boost Blocks and a Lapis Lazuli give four.
 
 <img src="img/recipes/super_boost_block.png" width="292" alt="super boost block recipe">
 
-**Super Boost Slab**: Made from Super Boost Blocks, as the regular slab is.
+**Super Boost Slab**: Made from Super Boost Blocks, as the regular slab is (three blocks, six slabs). Or upgrade eight Boost Slabs (four blocks) with a Lapis Lazuli, which is the same lapis as the blocks take.
 
 <img src="img/recipes/super_boost_slab.png" width="292" alt="super boost slab recipe">
 
-**Super Boost Stairs**: Made from Super Boost Blocks, as the regular stairs are.
+<img src="img/recipes/super_boost_slab_from_boost_slab.png" width="292" alt="super boost slab from boost slab recipe">
+
+**Super Boost Stairs**: Made from Super Boost Blocks, as the regular stairs are (six blocks, four stairs). Or upgrade three Boost Stairs (four and a half blocks) with a Lapis Lazuli.
 
 <img src="img/recipes/super_boost_stairs.png" width="292" alt="super boost stairs recipe">
+
+<img src="img/recipes/super_boost_stairs_from_boost_stairs.png" width="292" alt="super boost stairs from boost stairs recipe">
 
 ## Track building
 Invisible markers that make a track; you see them while you hold a node, the Track Tool or the Wrench.

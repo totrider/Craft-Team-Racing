@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "craftteamracing:boost_stairs"
+    },
+    {
+      "item": "craftteamracing:boost_stairs"
+    },
+    {
+      "item": "craftteamracing:boost_stairs"
+    },
+    {
+      "item": "minecraft:lapis_lazuli"
+    }
+  ],
+  "result": {
+    "id": "craftteamracing:super_boost_stairs",
+    "count": 3
+  }
+}

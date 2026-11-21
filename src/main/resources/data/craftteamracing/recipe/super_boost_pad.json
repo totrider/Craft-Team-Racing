@@ -6,11 +6,20 @@
       "item": "craftteamracing:boost_pad"
     },
     {
+      "item": "craftteamracing:boost_pad"
+    },
+    {
+      "item": "craftteamracing:boost_pad"
+    },
+    {
+      "item": "craftteamracing:boost_pad"
+    },
+    {
       "item": "minecraft:lapis_lazuli"
     }
   ],
   "result": {
     "id": "craftteamracing:super_boost_pad",
-    "count": 1
+    "count": 4
   }
 }
