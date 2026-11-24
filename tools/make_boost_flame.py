@@ -5,7 +5,7 @@ The boost flame's stand-in model for the jar (the original's eight flame models 
 
 blockbench/kart/boost_flame.bbmodel is the source (written once from the shape below if missing, then it is yours; this script only reads it) and
 models/item/pickup_boost_flame_0..7.json (eight copies: the original's flame is eight pictures of one shape, so the pack can give each its own) are generated from it.
-The texture textures/item/boost_flame.png (16 x 16, written once if missing) is a soft yellow-to-orange gradient, brightest at the root; its alpha fades towards the tip.
+The texture is the layered krita/items/boost_flame.kra (a modder's template; tools/build_art.py flattens it into textures/item/boost_flame.png): a soft yellow-to-orange gradient, brightest at the root; its alpha fades towards the tip.
 
 The model's middle (8, 8, 8) is the root of the flame, where the exhaust pipe ends; the flame streams towards +z (the back of the kart, whose front is -z) 14 pixels long.
 The renderer scales it by the flame's size and mirrors it for the right pipe.
@@ -19,6 +19,8 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bbmodel  # noqa: E402
+import kra_layers  # noqa: E402
+import kra_stamp  # noqa: E402
 import make_kart as base  # noqa: E402
 
 BB = os.path.join("blockbench", "kart", "boost_flame.bbmodel")
@@ -31,6 +33,12 @@ def draw_texture():
         t = y / 15.0
         im[y, :] = (255, int(235 - 120 * t), int(150 - 130 * t), int(255 * (1.0 - 0.55 * t)))
     return Image.fromarray(im, "RGBA")
+
+
+def texture_sheet():
+    sheet = kra_layers.Sheet(16, 16)
+    sheet.add("flame gradient", draw_texture())
+    return sheet
 
 
 def box(frm, to, angle=0):
@@ -49,9 +57,8 @@ def parts():
 
 
 def main():
-    if not os.path.exists(TEX):
-        os.makedirs(os.path.dirname(TEX), exist_ok=True)
-        draw_texture().save(TEX)
+    kra_layers.write_if_stale("krita/items/boost_flame.kra", texture_sheet(), kra_stamp.inputs_for(__file__))
+    kra_layers.export_png("krita/items/boost_flame.kra")     # the PNG now: a new bbmodel embeds it
     if not os.path.exists(BB):
         bbmodel.write(BB, "boost_flame", {"flame": TEX}, list(parts().items()), display=base.display(), gui_light_front=False,
                       comment="The boost flame's stand-in: a cone of stacked boxes streaming towards +z (the back of the kart) from its root at (8, 8, 8), the end of the exhaust pipe. "

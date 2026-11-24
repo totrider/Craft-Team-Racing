@@ -1,0 +1,1516 @@
+{
+  "assets": [
+    {
+      "comment": "One kart's spot on the start grid (32x40): outline, arrow and the arrow's edge.",
+      "kra": "krita/blocks/start_grid_slot.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "start_grid_slot.png"
+        }
+      ]
+    },
+    {
+      "comment": "The gathering area behind the Start node (128x128): corner brackets, dashes and chevrons.",
+      "kra": "krita/blocks/start_grid_zone.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "start_grid_zone.png"
+        }
+      ]
+    },
+    {
+      "comment": "Offroad tires inventory icon (16x16).",
+      "kra": "krita/items/offroad_tires.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "offroad_tires.png"
+        }
+      ]
+    },
+    {
+      "comment": "Soft bumper inventory icon (16x16).",
+      "kra": "krita/items/soft_bumper.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "soft_bumper.png"
+        }
+      ]
+    },
+    {
+      "comment": "Floater (ring buoy) inventory icon (16x16).",
+      "kra": "krita/items/floater.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "floater.png"
+        }
+      ]
+    },
+    {
+      "comment": "Paddle wheel inventory icon (16x16).",
+      "kra": "krita/items/paddle.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "paddle.png"
+        }
+      ]
+    },
+    {
+      "comment": "Obsidian floater inventory icon (16x16).",
+      "kra": "krita/items/obsidian_floater.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "obsidian_floater.png"
+        }
+      ]
+    },
+    {
+      "comment": "Low gravity module inventory icon (16x16).",
+      "kra": "krita/items/low_gravity_module.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "low_gravity_module.png"
+        }
+      ]
+    },
+    {
+      "comment": "Jump spring inventory icon (16x16).",
+      "kra": "krita/items/jump_spring.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "jump_spring.png"
+        }
+      ]
+    },
+    {
+      "comment": "Snow skis inventory icon (16x16).",
+      "kra": "krita/items/snow_skis.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "snow_skis.png"
+        }
+      ]
+    },
+    {
+      "comment": "Drop table inventory icon (16x16).",
+      "kra": "krita/items/drop_table.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "drop_table.png"
+        }
+      ]
+    },
+    {
+      "comment": "Track music sheet inventory icon (16x16).",
+      "kra": "krita/items/track_music_sheet.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "track_music_sheet.png"
+        }
+      ]
+    },
+    {
+      "comment": "Rulebook inventory icon (16x16).",
+      "kra": "krita/items/rulebook.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "rulebook.png"
+        }
+      ]
+    },
+    {
+      "comment": "Podium 1 node inventory icon (16x16).",
+      "kra": "krita/items/podium_1_node.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "podium_1_node.png"
+        }
+      ]
+    },
+    {
+      "comment": "Podium 2 node inventory icon (16x16).",
+      "kra": "krita/items/podium_2_node.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "podium_2_node.png"
+        }
+      ]
+    },
+    {
+      "comment": "Podium 3 node inventory icon (16x16).",
+      "kra": "krita/items/podium_3_node.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "podium_3_node.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: power juice (16x16), drawn by tools/survival_art.py.",
+      "kra": "krita/items/power_juice.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_juice.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: raw power ore (16x16), drawn by tools/survival_art.py.",
+      "kra": "krita/items/raw_power_ore.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "raw_power_ore.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: power ingot (16x96), drawn by tools/survival_art.py.",
+      "kra": "krita/items/power_ingot.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_ingot.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: power nugget (16x64), drawn by tools/survival_art.py.",
+      "kra": "krita/items/power_nugget.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_nugget.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: power palm door (16x16), drawn by tools/survival_art.py.",
+      "kra": "krita/items/power_palm_door.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_palm_door.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: power block (16x16), drawn by tools/survival_art.py.",
+      "kra": "krita/blocks/power_block.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_block.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: power palm log (16x16), drawn by tools/survival_art.py.",
+      "kra": "krita/blocks/power_palm_log.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_palm_log.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: power palm log top (16x16), drawn by tools/survival_art.py.",
+      "kra": "krita/blocks/power_palm_log_top.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_palm_log_top.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: stripped power palm log (16x16), drawn by tools/survival_art.py.",
+      "kra": "krita/blocks/stripped_power_palm_log.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "stripped_power_palm_log.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: stripped power palm log top (16x16), drawn by tools/survival_art.py.",
+      "kra": "krita/blocks/stripped_power_palm_log_top.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "stripped_power_palm_log_top.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: power palm planks (16x16), drawn by tools/survival_art.py.",
+      "kra": "krita/blocks/power_palm_planks.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_palm_planks.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: power palm trapdoor (16x16), drawn by tools/survival_art.py.",
+      "kra": "krita/blocks/power_palm_trapdoor.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_palm_trapdoor.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: power palm door top (16x16), drawn by tools/survival_art.py.",
+      "kra": "krita/blocks/power_palm_door_top.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_palm_door_top.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: power palm door bottom (16x16), drawn by tools/survival_art.py.",
+      "kra": "krita/blocks/power_palm_door_bottom.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_palm_door_bottom.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: power palm leaves fluffy (32x32), drawn by tools/survival_art.py.",
+      "kra": "krita/blocks/power_palm_leaves_fluffy.kra",
+      "output_dir": "src/main/resources/resourcepacks/fluffy_fronds/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_palm_leaves_fluffy.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: power palm leaves (16x16), drawn by tools/survival_art.py.",
+      "kra": "krita/blocks/power_palm_leaves.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_palm_leaves.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: power palm sapling (16x16), drawn by tools/survival_art.py.",
+      "kra": "krita/blocks/power_palm_sapling.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_palm_sapling.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: power fruit bag side (16x16), drawn by tools/survival_art.py.",
+      "kra": "krita/blocks/power_fruit_bag_side.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_fruit_bag_side.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: power fruit bag top (16x16), drawn by tools/survival_art.py.",
+      "kra": "krita/blocks/power_fruit_bag_top.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_fruit_bag_top.png"
+        }
+      ]
+    },
+    {
+      "comment": "Survival side: power fruit bag bottom (16x16), drawn by tools/survival_art.py.",
+      "kra": "krita/blocks/power_fruit_bag_bottom.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_fruit_bag_bottom.png"
+        }
+      ]
+    },
+    {
+      "comment": "Pickup spot marker: fruit spot (16x16).",
+      "kra": "krita/blocks/fruit_spot.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "fruit_spot.png"
+        }
+      ]
+    },
+    {
+      "comment": "Pickup spot marker: fruit crate spot (16x16).",
+      "kra": "krita/blocks/fruit_crate_spot.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "fruit_crate_spot.png"
+        }
+      ]
+    },
+    {
+      "comment": "Pickup spot marker: powerup crate spot (16x16).",
+      "kra": "krita/blocks/powerup_crate_spot.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "powerup_crate_spot.png"
+        }
+      ]
+    },
+    {
+      "comment": "Pickup spot marker: trigger crate spot (16x16).",
+      "kra": "krita/blocks/trigger_crate_spot.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "trigger_crate_spot.png"
+        }
+      ]
+    },
+    {
+      "comment": "Redstone Linking Node block picture: redstone link node.",
+      "kra": "krita/blocks/redstone_link_node.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "redstone_link_node.png"
+        }
+      ]
+    },
+    {
+      "comment": "Redstone Linking Node block picture: redstone link node on.",
+      "kra": "krita/blocks/redstone_link_node_on.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "redstone_link_node_on.png"
+        }
+      ]
+    },
+    {
+      "comment": "Redstone Linking Node item picture.",
+      "kra": "krita/items/redstone_link_node.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "redstone_link_node.png"
+        }
+      ]
+    },
+    {
+      "comment": "Kart Barrier tile: the block texture and the item picture are the same tile.",
+      "kra": "krita/blocks/race_barrier.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "race_barrier.png"
+        },
+        {
+          "file": "race_barrier.png",
+          "dir": "src/main/resources/assets/craftteamracing/textures/item"
+        }
+      ]
+    },
+    {
+      "comment": "Track item: track tool (16x16).",
+      "kra": "krita/items/track_tool.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "track_tool.png"
+        }
+      ]
+    },
+    {
+      "comment": "Track item: wrench (16x16).",
+      "kra": "krita/items/wrench.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "wrench.png"
+        }
+      ]
+    },
+    {
+      "comment": "Track item: start node (16x16).",
+      "kra": "krita/items/start_node.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "start_node.png"
+        }
+      ]
+    },
+    {
+      "comment": "Track item: checkpoint node (16x16).",
+      "kra": "krita/items/checkpoint_node.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "checkpoint_node.png"
+        }
+      ]
+    },
+    {
+      "comment": "The evil totem (Uka Uka's mask) as 16x16 pixel art; also the dark mask's sprite.",
+      "kra": "krita/items/mask_uka.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "mask_uka.png"
+        },
+        {
+          "file": "mask_dark.png",
+          "dir": "src/main/resources/assets/craftteamracing/textures/item/sprite"
+        }
+      ]
+    },
+    {
+      "comment": "Slime Shield (green) sprite, 16x16, no outline (the HUD picture is made from it by tools/make_power_sprites.py).",
+      "kra": "krita/sprites/shield.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item/sprite",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "shield.png"
+        }
+      ]
+    },
+    {
+      "comment": "Slime Shield (blue, ten power fruit) sprite, 16x16, no outline (the HUD picture is made from it by tools/make_power_sprites.py).",
+      "kra": "krita/sprites/shield_charged.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item/sprite",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "shield_charged.png"
+        }
+      ]
+    },
+    {
+      "comment": "Warp Orb sprite, 16x16, no outline (the HUD picture is made from it by tools/make_power_sprites.py).",
+      "kra": "krita/sprites/warpball.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item/sprite",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "warpball.png"
+        }
+      ]
+    },
+    {
+      "comment": "Bomb sprite, 16x16, no outline (the HUD picture is made from it by tools/make_power_sprites.py).",
+      "kra": "krita/sprites/bomb.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item/sprite",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "bomb.png"
+        }
+      ]
+    },
+    {
+      "comment": "Bomb (powered up) sprite, 16x16, no outline (the HUD picture is made from it by tools/make_power_sprites.py).",
+      "kra": "krita/sprites/bomb_charged.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item/sprite",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "bomb_charged.png"
+        }
+      ]
+    },
+    {
+      "comment": "Turbo (Redstone Surge) sprite, 16x16, no outline (the HUD picture is made from it by tools/make_power_sprites.py).",
+      "kra": "krita/sprites/turbo.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item/sprite",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "turbo.png"
+        }
+      ]
+    },
+    {
+      "comment": "Power Fruit sprite, 16x16, no outline (the HUD picture is made from it by tools/make_power_sprites.py).",
+      "kra": "krita/sprites/power_fruit.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item/sprite",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "power_fruit.png"
+        },
+        {
+          "file": "power_fruit.png",
+          "dir": "src/main/resources/assets/craftteamracing/textures/item"
+        }
+      ]
+    },
+    {
+      "comment": "HUD power-up picture: unknown (32x32).",
+      "kra": "krita/gui/unknown.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/gui/power",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "unknown.png"
+        }
+      ]
+    },
+    {
+      "comment": "HUD power-up picture: spring (32x32).",
+      "kra": "krita/gui/spring.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/gui/power",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "spring.png"
+        }
+      ]
+    },
+    {
+      "comment": "HUD power-up picture: invisibility (32x32).",
+      "kra": "krita/gui/invisibility.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/gui/power",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "invisibility.png"
+        }
+      ]
+    },
+    {
+      "comment": "HUD power-up picture: super engine (32x32).",
+      "kra": "krita/gui/super_engine.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/gui/power",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "super_engine.png"
+        }
+      ]
+    },
+    {
+      "comment": "Start lamp, red, on (48x32).",
+      "kra": "krita/gui/lamp_red_on.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/gui/lights",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "red_on.png"
+        }
+      ]
+    },
+    {
+      "comment": "Start lamp, red, off (48x32).",
+      "kra": "krita/gui/lamp_red_off.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/gui/lights",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "red_off.png"
+        }
+      ]
+    },
+    {
+      "comment": "Start lamp, green, on (48x32).",
+      "kra": "krita/gui/lamp_green_on.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/gui/lights",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "green_on.png"
+        }
+      ]
+    },
+    {
+      "comment": "Start lamp, green, off (48x32).",
+      "kra": "krita/gui/lamp_green_off.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/gui/lights",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "green_off.png"
+        }
+      ]
+    },
+    {
+      "comment": "The starburst (96x64). Its two pictures, gui/glow.png (a quarter, scaled to the original's grey) and particle/burst.png (centred on a square), are derived and written by tools/make_burst_sprites.py.",
+      "kra": "krita/gui/burst.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/gui",
+      "base": [
+        "base"
+      ],
+      "outputs": []
+    },
+    {
+      "comment": "The five dust puffs one below the other (16x80).",
+      "kra": "krita/particles/dust_puffs.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/particle",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "dust_puff_0.png",
+          "crop": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        {
+          "file": "dust_puff_1.png",
+          "crop": [
+            0,
+            16,
+            16,
+            16
+          ]
+        },
+        {
+          "file": "dust_puff_2.png",
+          "crop": [
+            0,
+            32,
+            16,
+            16
+          ]
+        },
+        {
+          "file": "dust_puff_3.png",
+          "crop": [
+            0,
+            48,
+            16,
+            16
+          ]
+        },
+        {
+          "file": "dust_puff_4.png",
+          "crop": [
+            0,
+            64,
+            16,
+            16
+          ]
+        }
+      ]
+    },
+    {
+      "comment": "Clod particle.",
+      "kra": "krita/particles/clod.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/particle",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "clod.png"
+        }
+      ]
+    },
+    {
+      "comment": "Skid mark particle.",
+      "kra": "krita/particles/skid_mark.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/particle",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "skid_mark.png"
+        }
+      ]
+    },
+    {
+      "comment": "Smoke ring particle.",
+      "kra": "krita/particles/smoke_ring.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/particle",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "smoke_ring.png"
+        }
+      ]
+    },
+    {
+      "comment": "Confetti particle.",
+      "kra": "krita/particles/confetti.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/particle",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "confetti.png"
+        }
+      ]
+    },
+    {
+      "comment": "Streamer particle.",
+      "kra": "krita/particles/streamer.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/particle",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "streamer.png"
+        }
+      ]
+    },
+    {
+      "comment": "The shared pickup sheet (32x32): palette cells, the ? crate face, the fruit crate side and the fruit with its leaf cutouts.",
+      "kra": "krita/items/pickups.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "pickups.png"
+        }
+      ]
+    },
+    {
+      "comment": "The blank crate face (32x32, the 16 px art doubled).",
+      "kra": "krita/items/crate_blank.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "crate_blank.png"
+        }
+      ]
+    },
+    {
+      "comment": "The trigger crate face with the ! (32x32, the 16 px art doubled).",
+      "kra": "krita/items/crate_exclaim.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "crate_exclaim.png"
+        }
+      ]
+    },
+    {
+      "comment": "The TNT crate's steel (16x16; the top left 4x4 is what the frame shows).",
+      "kra": "krita/items/tnt_metal.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "tnt_metal.png"
+        }
+      ]
+    },
+    {
+      "comment": "The creeper crate's face (16x16).",
+      "kra": "krita/items/creeper_face.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "creeper_face.png"
+        }
+      ]
+    },
+    {
+      "comment": "The creeper crate's top and bottom (16x16).",
+      "kra": "krita/items/creeper_skin.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "creeper_skin.png"
+        }
+      ]
+    },
+    {
+      "comment": "The item crate block face (16x16); the planked crate's side is the same picture.",
+      "kra": "krita/blocks/item_crate.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "item_crate.png"
+        },
+        {
+          "file": "item_crate_planked_side.png"
+        }
+      ]
+    },
+    {
+      "comment": "The random item crate (the ? face).",
+      "kra": "krita/blocks/item_crate_random.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "item_crate_random.png"
+        }
+      ]
+    },
+    {
+      "comment": "The planked item crate's top and bottom.",
+      "kra": "krita/blocks/item_crate_planked_top.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "item_crate_planked_top.png"
+        }
+      ]
+    },
+    {
+      "comment": "The fruit crate block face (16x16); the planked crate's side is the same picture.",
+      "kra": "krita/blocks/fruit_crate.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "fruit_crate.png"
+        },
+        {
+          "file": "fruit_crate_planked_side.png"
+        }
+      ]
+    },
+    {
+      "comment": "The planked fruit crate's top and bottom.",
+      "kra": "krita/blocks/fruit_crate_planked_top.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "fruit_crate_planked_top.png"
+        }
+      ]
+    },
+    {
+      "comment": "TNT sprite, 16x16, no outline (the HUD picture is made from it by tools/make_crate_sprites.py).",
+      "kra": "krita/sprites/tnt.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item/sprite",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "tnt.png"
+        }
+      ]
+    },
+    {
+      "comment": "Creeper crate (charged TNT) sprite, 16x16, no outline (the HUD picture is made from it by tools/make_crate_sprites.py).",
+      "kra": "krita/sprites/tnt_charged.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item/sprite",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "tnt_charged.png"
+        }
+      ]
+    },
+    {
+      "comment": "The placeholder kart palette (16x16).",
+      "kra": "krita/items/kart.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "kart.png"
+        }
+      ]
+    },
+    {
+      "comment": "The baseline kart's picture (128x128): body, seat, strut, engine, exhaust, steering column and plate edge and the steering wheel's tile. Body, seat and strut are grey scale: the game tints them with the kart's colour.",
+      "kra": "krita/items/kart_ctr.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "kart_ctr.png"
+        }
+      ]
+    },
+    {
+      "comment": "The steering wheel's own picture (128x128): the driver's face top left, the back face under it.",
+      "kra": "krita/items/kart_ctr_wheel.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "kart_ctr_wheel.png"
+        }
+      ]
+    },
+    {
+      "comment": "The kart's wheel (64x64): the face (32x32) and the tread (16x16).",
+      "kra": "krita/items/kart_wheel.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "kart_wheel.png"
+        }
+      ]
+    },
+    {
+      "comment": "The Warp Orb crystal's picture (16x16): glass shell, gem and core in 8x8 cells.",
+      "kra": "krita/items/warp_crystal.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "warp_crystal.png"
+        }
+      ]
+    },
+    {
+      "comment": "The halo round the Warp Orb (32x32, drawn added to the screen).",
+      "kra": "krita/items/orb_glow.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "orb_glow.png"
+        }
+      ]
+    },
+    {
+      "comment": "The boost flame (16x16): a gradient that fades towards the tip.",
+      "kra": "krita/items/boost_flame.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "boost_flame.png"
+        }
+      ]
+    },
+    {
+      "comment": "Boost pad: the animated chevron arrows (16x128, eight 16x16 frames one under the other: the pattern moves one pixel a frame). The glow map, Fusion's pieced sheet and the still-arrow pack are derived from it by tools/make_boost_pad.py.",
+      "kra": "krita/blocks/boost_top.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "boost_top.png"
+        }
+      ]
+    },
+    {
+      "comment": "Boost pad: the plain metal side with an accent stripe (16x16).",
+      "kra": "krita/blocks/boost_side.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "boost_side.png"
+        }
+      ]
+    },
+    {
+      "comment": "Super Boost pad: the animated chevron arrows (16x128, eight 16x16 frames one under the other: the pattern moves one pixel a frame). The glow map, Fusion's pieced sheet and the still-arrow pack are derived from it by tools/make_boost_pad.py.",
+      "kra": "krita/blocks/super_boost_top.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "super_boost_top.png"
+        }
+      ]
+    },
+    {
+      "comment": "Super Boost pad: the plain metal side with an accent stripe (16x16).",
+      "kra": "krita/blocks/super_boost_side.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "super_boost_side.png"
+        }
+      ]
+    },
+    {
+      "comment": "Slime Shield, green (16x16, see-through layers added to the screen).",
+      "kra": "krita/items/slime_shield_green.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "slime_shield_green.png"
+        }
+      ]
+    },
+    {
+      "comment": "Slime Shield, blue (16x16).",
+      "kra": "krita/items/slime_shield_blue.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "slime_shield_blue.png"
+        }
+      ]
+    },
+    {
+      "comment": "Slime Shield nucleus (16x16, taken from the screen).",
+      "kra": "krita/items/slime_shield_dark.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "slime_shield_dark.png"
+        }
+      ]
+    },
+    {
+      "comment": "Slime Shield glint band (16x16).",
+      "kra": "krita/items/slime_shield_sheen.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "slime_shield_sheen.png"
+        }
+      ]
+    },
+    {
+      "comment": "N. Brio's Beaker palette (16x16: 4x4 cells for the liquids, the glass, the cork and the outline).",
+      "kra": "krita/items/beaker.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "beaker.png"
+        }
+      ]
+    },
+    {
+      "comment": "The Bomb's texture (32x32): iron, skull plate, belt, collar, rope and fuse tip.",
+      "kra": "krita/items/bomb_iron.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "bomb_iron.png"
+        }
+      ]
+    },
+    {
+      "comment": "The powered-up Bomb's texture (32x32).",
+      "kra": "krita/items/bomb_hot.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "bomb_hot.png"
+        }
+      ]
+    },
+    {
+      "comment": "The Rocket's palette (16x16, the firework rocket's colours in 4x4 cells).",
+      "kra": "krita/items/missile.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "missile.png"
+        }
+      ]
+    },
+    {
+      "comment": "The Rocket's exhaust flame (32x16).",
+      "kra": "krita/items/missile_flame.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "missile_flame.png"
+        }
+      ]
+    },
+    {
+      "comment": "The good mask's light ribbon (32x16).",
+      "kra": "krita/items/mask_beam_aku.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "mask_beam_aku.png"
+        }
+      ]
+    },
+    {
+      "comment": "The evil mask's light ribbon (32x16).",
+      "kra": "krita/items/mask_beam_uka.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "mask_beam_uka.png"
+        }
+      ]
+    },
+    {
+      "comment": "The Power Shield bubble's stand-in picture (16x16).",
+      "kra": "krita/items/shield.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "shield.png"
+        }
+      ]
+    },
+    {
+      "comment": "The rain cloud's grey (2x2).",
+      "kra": "krita/items/rain_cloud.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/item",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "rain_cloud.png"
+        }
+      ]
+    },
+    {
+      "comment": "The green beaker's bubbles (36x18: a dark and a bright bubble).",
+      "kra": "krita/entity/beaker_green_bubbles.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/entity",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "beaker_green_bubbles.png"
+        }
+      ]
+    },
+    {
+      "comment": "The red beaker's bubbles (36x18).",
+      "kra": "krita/entity/beaker_red_bubbles.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/entity",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "beaker_red_bubbles.png"
+        }
+      ]
+    },
+    {
+      "comment": "The glow at the bomb fuse's tip (32x32).",
+      "kra": "krita/entity/bomb_spark.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/entity",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "bomb_spark.png"
+        }
+      ]
+    },
+    {
+      "comment": "The splinters' wood picture (16x16).",
+      "kra": "krita/entity/crate_break.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/entity",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "crate_break.png"
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-# mask_beam_aku_3: exported by tools/blender_export_models.py from mask_beam.blend. Do not edit; change the .blend.
+# mask_beam_aku_3: exported by tools/blender/blender_export_models.py from mask_beam.blend. Do not edit; change the .blend.
 mtllib mask_beam_aku_3.mtl
 o mask_beam_aku_3
 usemtl atlas

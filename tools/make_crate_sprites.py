@@ -6,8 +6,10 @@ show their crates in perspective.
 
 Step one is a pre-render: the crate's faces (drawn here for the TNT: red sticks and a "TNT" label, in the colours of Minecraft's TNT block; the creeper crate's are the ones made by
 tools/make_tnt_models.py) are projected on a cube seen from the front, above and to the right (an oblique view, the faces lit 100 / 100 / 66 per cent), sampled once per sprite pixel. The result
-is the baseline; HAND TOUCHES below it (the steel corners, a clearer label) are drawn over it where the plain pre-render is not readable at 16 pixels. Writes
+is the baseline; HAND TOUCHES below it (the steel corners, a clearer label) are drawn over it where the plain pre-render is not readable at 16 pixels. Each step is a layer of
+krita/sprites/tnt.kra and tnt_charged.kra (a modder's templates). tools/build_art.py flattens them into
   textures/item/sprite/tnt.png, tnt_charged.png       the sprites, no outline
+and this script writes, from the same sheets (a derived picture), overwriting:
   textures/gui/power/tnt.png, tnt_charged.png         the HUD pictures (96 x 64, outlined)
 and, when called with --preview, a scaled picture of the plain pre-render next to the final sprite to preview.png in the folder given after it. Run from the project folder,
 after tools/make_tnt_models.py.
@@ -18,6 +20,9 @@ import sys
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import kra_layers  # noqa: E402
+import kra_stamp  # noqa: E402
+import make_tnt_models  # noqa: E402
 import sprite_outline as so  # noqa: E402
 
 ASSETS = os.path.join("src", "main", "resources", "assets", "craftteamracing", "textures")
@@ -107,18 +112,21 @@ def face(img, origin, u_axis, v_axis, sprite, tex, shade, poly):
 def cube(side, top):
     """The crate seen from the front and a little above and to the right (an oblique view: the front face square, the top and the right side running back at 45 degrees): the
     front face is the big flat one the eye reads, the top and the right side give it the perspective."""
-    sprite = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    sheet = kra_layers.Sheet(16, 16)
+    top_px, side_px, front_px = (Image.new("RGBA", (16, 16), (0, 0, 0, 0)) for _ in range(3))
     fl, fr = (0.25, 4.25), (11.75, 4.25)                      # the front face's top left and top right corners
     d = (3.75, -3.75)                                         # one cube depth, back
     bl = (fl[0], fl[1] + 11.5)
     br = (fr[0], fr[1] + 11.5)
     # top: u along the front edge, v back
-    face(sprite, fl, (11.5, 0.0), d, sprite, top, 1.0, [fl, fr, (fr[0] + d[0], fr[1] + d[1]), (fl[0] + d[0], fl[1] + d[1])])
+    face(top_px, fl, (11.5, 0.0), d, top_px, top, 1.0, [fl, fr, (fr[0] + d[0], fr[1] + d[1]), (fl[0] + d[0], fl[1] + d[1])])
     # right side: u back, v down
-    face(sprite, fr, d, (0.0, 11.5), sprite, side, 0.66, [fr, (fr[0] + d[0], fr[1] + d[1]), (br[0] + d[0], br[1] + d[1]), br])
+    face(side_px, fr, d, (0.0, 11.5), side_px, side, 0.66, [fr, (fr[0] + d[0], fr[1] + d[1]), (br[0] + d[0], br[1] + d[1]), br])
     # front: u right, v down
-    face(sprite, fl, (11.5, 0.0), (0.0, 11.5), sprite, side, 1.0, [fl, fr, br, bl])
-    return sprite
+    face(front_px, fl, (11.5, 0.0), (0.0, 11.5), front_px, side, 1.0, [fl, fr, br, bl])
+    for name, im in (("top", top_px), ("right side", side_px), ("front", front_px)):
+        sheet.add(name, im)
+    return sheet
 
 
 BLACK = (14, 18, 14)
@@ -132,8 +140,10 @@ def front_pixel(sprite, x, y, colour):
     sprite.putpixel((x, y + 4), colour + (255,))
 
 
-def hand_tnt(sprite):
-    """The label band across the front, with TNT in it, over the pre-render's smeared one."""
+def hand_tnt(sheet):
+    """The label band across the front, with TNT in it, over the pre-render's smeared one (a layer of its own)."""
+    sprite = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    sheet.add("label", sprite)
     for y in range(3, 9):
         for x in range(12):
             front_pixel(sprite, x, y, GREY if y == 8 else WHITE)
@@ -143,8 +153,10 @@ def hand_tnt(sprite):
                 front_pixel(sprite, gx, 4 + gy, INK)
 
 
-def hand_creeper(sprite, skin):
-    """The face on the front: eyes, nose, frown and two feet over the plain mottled front (no shaded rim: at this size it only muddies them)."""
+def hand_creeper(sheet, skin):
+    """The face on the front: eyes, nose, frown and two feet over the plain mottled front (no shaded rim: at this size it only muddies them), a layer of its own."""
+    sprite = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    sheet.add("creeper face", sprite)
     black = {(x + dx, y + dy) for x, y, w, h in CREEPER_FEATURES for dx in range(w) for dy in range(h)}
     for y in range(12):
         for x in range(12):
@@ -154,8 +166,10 @@ def hand_creeper(sprite, skin):
             front_pixel(sprite, x, y, c)
 
 
-def steel_corners(sprite):
-    """The crate's steel frame: a block at each front corner (2 x 2, lit top left)."""
+def steel_corners(sheet):
+    """The crate's steel frame: a block at each front corner (2 x 2, lit top left), a layer of its own."""
+    sprite = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    sheet.add("steel corners", sprite)
     for x0, y0 in ((0, 4), (10, 4), (0, 14), (10, 14)):
         for dx in (0, 1):
             for dy in (0, 1):
@@ -163,30 +177,30 @@ def steel_corners(sprite):
 
 
 def main():
-    tex = os.path.join(ASSETS, "item")
-    creeper_skin = Image.open(os.path.join(tex, "creeper_skin.png")).convert("RGBA")
+    face_sheet, skin_sheet = make_tnt_models.creeper_sheets()          # the creeper crate's pictures (not read back from the PNGs: they are built from their layers)
+    creeper_face, creeper_skin = face_sheet.flatten(), skin_sheet.flatten()
     plain_tnt = tnt_side(letters=False)
-    pre = {"tnt": cube(tnt_side(), tnt_top()), "tnt_charged": cube(Image.open(os.path.join(tex, "creeper_face.png")).convert("RGBA"), creeper_skin)}
+    pre = {"tnt": cube(tnt_side(), tnt_top()).flatten(), "tnt_charged": cube(creeper_face, creeper_skin).flatten()}
     out = {"tnt": cube(plain_tnt, tnt_top()), "tnt_charged": cube(creeper_skin, creeper_skin)}
     hand_tnt(out["tnt"])
     hand_creeper(out["tnt_charged"], creeper_skin)
-    for im in out.values():
-        steel_corners(im)
-    os.makedirs(os.path.join(tex, "sprite"), exist_ok=True)
+    for sheet in out.values():
+        steel_corners(sheet)
+    inputs = kra_stamp.inputs_for(__file__)
     os.makedirs(os.path.join(ASSETS, "gui", "power"), exist_ok=True)
-    for name, im in out.items():
-        im.save(os.path.join(tex, "sprite", name + ".png"))
-        so.hud_icon(im).save(os.path.join(ASSETS, "gui", "power", name + ".png"))
+    for name, sheet in out.items():
+        kra_layers.write_if_stale("krita/sprites/%s.kra" % name, sheet, inputs)
+        so.hud_icon(sheet.flatten()).save(os.path.join(ASSETS, "gui", "power", name + ".png"))
     if "--preview" in sys.argv:
         folder = sys.argv[sys.argv.index("--preview") + 1]
         k = 12
         sheet = Image.new("RGBA", (4 * 16 * k + 30, 16 * k), (70, 80, 120, 255))
-        for i, im in enumerate([pre["tnt"], out["tnt"], pre["tnt_charged"], out["tnt_charged"]]):
+        for i, im in enumerate([pre["tnt"], out["tnt"].flatten(), pre["tnt_charged"], out["tnt_charged"].flatten()]):
             sheet.alpha_composite(im.resize((16 * k, 16 * k), Image.NEAREST), (i * (16 * k + 10), 0))
         sheet.save(os.path.join(folder, "preview.png"))
         small = Image.new("RGBA", (2 * 100, 70), (70, 80, 120, 255))
         for i, n in enumerate(("tnt", "tnt_charged")):
-            small.alpha_composite(so.hud_icon(out[n]).resize((96, 64), Image.NEAREST), (i * 100, 3))
+            small.alpha_composite(so.hud_icon(out[n].flatten()).resize((96, 64), Image.NEAREST), (i * 100, 3))
         small.resize((small.width * 2, small.height * 2), Image.NEAREST).save(os.path.join(folder, "preview_hud.png"))
     print("crate sprites ok")
 

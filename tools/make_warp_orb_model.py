@@ -6,7 +6,7 @@ turns corner-on, spins and bobs. It is only drawn when no resource pack brings t
 
 Models are Blockbench's: blockbench/warp_orb/warp_crystal.bbmodel is the SOURCE (written once from the shape below if it is missing, then it is yours; this script only reads it). Three groups, one
 per cube (outer, inner, core), each written as its own model (models/item/pickup_warp_crystal_<group>.json) because the renderer turns them separately. One texture slot, "crystal": 16 x 16 of
-8 x 8 cells (glass shell, gem, core), drawn here every run (edit the code, not the PNG). Also writes the 16 empty frame models (pickup_warp_orb_<n>, pickup_warp_orb_solid_<n>) that a pack's
+8 x 8 cells (glass shell, gem, core), the layered krita/items/warp_crystal.kra (and orb_glow.kra), written here (a modder's templates; tools/build_art.py flattens them into the PNGs). Also writes the 16 empty frame models (pickup_warp_orb_<n>, pickup_warp_orb_solid_<n>) that a pack's
 star replaces. The model's middle (8, 8, 8) is the crystal's middle. Run from the project folder.
 """
 import json
@@ -18,6 +18,8 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bbmodel  # noqa: E402
+import kra_layers  # noqa: E402
+import kra_stamp  # noqa: E402
 
 RES = os.path.join("src", "main", "resources")
 ASSETS = os.path.join(RES, "assets", "craftteamracing")
@@ -26,40 +28,58 @@ BB = os.path.join("blockbench", "warp_orb", "warp_crystal.bbmodel")
 CELL = {"glass": (0, 0), "gem": (1, 0), "core": (0, 1)}
 
 
-def draw_texture():
-    im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
-    glass = Image.new("RGBA", (8, 8), (175, 236, 236, 70))
-    for i in range(8):
-        for x, y in ((i, 0), (i, 7), (0, i), (7, i)):
-            glass.putpixel((x, y), (215, 250, 250, 235) if (x + y) % 3 else (160, 225, 230, 235))
+def texture_sheet():
+    """The crystal's picture as layers: the glass shell (its pane, its edge and its corners), the gem (and its highlights) and the core (and its edge)."""
+    sheet = kra_layers.Sheet(16, 16)
+    pane, edge, corners = sheet.layer("glass pane"), sheet.layer("glass edge"), sheet.layer("glass corners")
+    gem, shine = sheet.layer("gem"), sheet.layer("gem highlights")
+    core, core_edge = sheet.layer("core"), sheet.layer("core edge")
+    gx, gy = CELL["glass"][0] * 8, CELL["glass"][1] * 8
+    border = {(i, 0) for i in range(8)} | {(i, 7) for i in range(8)} | {(0, i) for i in range(8)} | {(7, i) for i in range(8)}
+    for y in range(8):
+        for x in range(8):
+            if (x, y) not in border:
+                pane[gx + x, gy + y] = (175, 236, 236, 70)
+    for x, y in sorted(border):
+        edge[gx + x, gy + y] = (215, 250, 250, 235) if (x + y) % 3 else (160, 225, 230, 235)
     for x, y in ((0, 0), (7, 0), (0, 7), (7, 7)):
-        glass.putpixel((x, y), (245, 255, 255, 255))
-    gem = Image.new("RGBA", (8, 8), (0, 0, 0, 255))
+        corners[gx + x, gy + y] = (245, 255, 255, 255)
+    mx, my = CELL["gem"][0] * 8, CELL["gem"][1] * 8
+    highlights = {(2, 2), (3, 2), (2, 3)}
     for y in range(8):
         for x in range(8):
             t = (x + y) / 14.0
-            gem.putpixel((x, y), (int(110 - 80 * t), int(235 - 110 * t), int(220 - 70 * t), 235))
-    for x, y in ((2, 2), (3, 2), (2, 3)):
-        gem.putpixel((x, y), (200, 255, 240, 235))
-    core = Image.new("RGBA", (8, 8), (235, 255, 240, 255))
-    for i in range(8):
-        for x, y in ((i, 0), (i, 7), (0, i), (7, i)):
-            core.putpixel((x, y), (150, 245, 215, 255))
-    for name, img in (("glass", glass), ("gem", gem), ("core", core)):
-        cx, cy = CELL[name]
-        im.paste(img, (cx * 8, cy * 8))
-    return im
+            if (x, y) in highlights:
+                shine[mx + x, my + y] = (200, 255, 240, 235)                 # a semi-transparent highlight replaces the gem there
+            else:
+                gem[mx + x, my + y] = (int(110 - 80 * t), int(235 - 110 * t), int(220 - 70 * t), 235)
+    cx, cy = CELL["core"][0] * 8, CELL["core"][1] * 8
+    for y in range(8):
+        for x in range(8):
+            core[cx + x, cy + y] = (235, 255, 240, 255)
+    for x, y in sorted(border):
+        core_edge[cx + x, cy + y] = (150, 245, 215, 255)
+    return sheet
 
 
-def draw_glow():
+def draw_texture():
+    return texture_sheet().flatten()
+
+
+def glow_sheet():
     """The halo round the orb (textures/item/orb_glow.png, drawn added to the screen): a soft round glow, white-blue in the middle, a strong blue at its edge."""
-    im = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+    sheet = kra_layers.Sheet(32, 32)
+    px = sheet.layer("glow")
     for y in range(32):
         for x in range(32):
             d = math.hypot(x + 0.5 - 16, y + 0.5 - 16) / 16.0
             a = max(0.0, 1.0 - d) ** 2.2
-            im.putpixel((x, y), (int(50 + 150 * a), int(100 + 120 * a), 255, int(255 * a)))
-    return im
+            px[x, y] = (int(50 + 150 * a), int(100 + 120 * a), 255, int(255 * a))
+    return sheet
+
+
+def draw_glow():
+    return glow_sheet().flatten()
 
 
 def box(frm, to, cell):
@@ -83,9 +103,10 @@ def dump(path, obj):
 
 
 def main():
-    os.makedirs(os.path.dirname(TEX), exist_ok=True)
-    draw_texture().save(TEX)
-    draw_glow().save(os.path.join(os.path.dirname(TEX), "orb_glow.png"))
+    inputs = kra_stamp.inputs_for(__file__)
+    for kra, sheet in (("krita/items/warp_crystal.kra", texture_sheet()), ("krita/items/orb_glow.kra", glow_sheet())):
+        kra_layers.write_if_stale(kra, sheet, inputs)
+        kra_layers.export_png(kra)                           # the PNGs now: a new bbmodel embeds them
     if not os.path.exists(BB):
         bbmodel.write(BB, "warp_crystal", {"crystal": TEX}, shape(), display=display(), gui_light_front=False,
                       comment="Stand-in Warp Orb in the end crystal's spirit: nested cubes (outer glass, inner gem, core), one group each; the renderer turns them separately. Texture slot 'crystal' (see tools/make_warp_orb_model.py).")

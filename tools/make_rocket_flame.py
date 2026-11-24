@@ -3,10 +3,10 @@ The Rocket's exhaust flame: a 3D model that streams from the tail (like the orig
 
   python tools/make_rocket_flame.py
 
-1. Draws its picture (textures/item/missile_flame.png, 32 x 16, drawn every run: edit the code, not the PNG): along it (u) white-hot, yellow, orange, red, gone; across it (v) soft.
-2. Creates blender/rocket/missile_flame.blend once if it is missing (tools/blender_create_rocket_flame.py); after that the .blend is YOURS and is never overwritten.
+1. Draws its picture (the layered krita/items/missile_flame.kra, 32 x 16, a modder's template; tools/build_art.py flattens it into textures/item/missile_flame.png): along it (u) white-hot, yellow, orange, red, gone; across it (v) soft.
+2. Creates blender/rocket/missile_flame.blend once if it is missing (tools/blender/blender_create_rocket_flame.py); after that the .blend is YOURS and is never overwritten.
 3. Exports every .blend under blender/ (tools/export_blender_models.py): models/item/missile_flame.obj and pickup_missile_flame.json (client/MissileRenderer draws it, flickering).
-A resource pack with the original's flame (tools/extract_ctr_textures.py) overrides it. Run from the project folder.
+A resource pack with the original's flame (tools/ctr_disc/extract_ctr_textures.py) overrides it. Run from the project folder.
 """
 import os
 import subprocess
@@ -16,6 +16,8 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import export_blender_models as ebm  # noqa: E402
+import kra_layers  # noqa: E402
+import kra_stamp  # noqa: E402
 
 TEX = os.path.join("src", "main", "resources", "assets", "craftteamracing", "textures", "item", "missile_flame.png")
 BLEND = os.path.join("blender", "rocket", "missile_flame.blend")
@@ -39,14 +41,16 @@ def draw():
 
 
 def main():
-    os.makedirs(os.path.dirname(TEX), exist_ok=True)
-    draw().save(TEX)
+    sheet = kra_layers.Sheet(32, 16)
+    sheet.add("flame", draw())
+    kra_layers.write_if_stale("krita/items/missile_flame.kra", sheet, kra_stamp.inputs_for(__file__))
+    kra_layers.export_png("krita/items/missile_flame.kra")
     if not os.path.exists(BLEND):
         os.makedirs(os.path.dirname(BLEND), exist_ok=True)
         exe = ebm.find_blender()
         if not exe:
             sys.exit("Blender not found (set BLENDER to its blender.exe): cannot create " + BLEND)
-        subprocess.run([exe, "--background", "--factory-startup", "--python", os.path.join("tools", "blender_create_rocket_flame.py"), "--", BLEND], check=True)
+        subprocess.run([exe, "--background", "--factory-startup", "--python", os.path.join("tools", "blender", "blender_create_rocket_flame.py"), "--", BLEND], check=True)
     ebm.export_all()
     print("rocket flame ok")
 

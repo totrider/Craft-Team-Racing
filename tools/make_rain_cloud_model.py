@@ -15,6 +15,8 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bbmodel  # noqa: E402
+import kra_layers  # noqa: E402
+import kra_stamp  # noqa: E402
 
 RES = os.path.join("src", "main", "resources")
 ASSETS = os.path.join(RES, "assets", "craftteamracing")
@@ -42,8 +44,10 @@ def dump(path, obj):
 
 
 def main():
-    if not os.path.exists(TEX):
-        Image.new("RGBA", (2, 2), (70, 72, 84, 215)).save(TEX)
+    sheet = kra_layers.Sheet(2, 2)
+    sheet.add("grey", Image.new("RGBA", (2, 2), (70, 72, 84, 215)))
+    kra_layers.write_if_stale("krita/items/rain_cloud.kra", sheet, kra_stamp.inputs_for(__file__))
+    kra_layers.export_png("krita/items/rain_cloud.kra")
     if not os.path.exists(BB):
         bbmodel.write(BB, "rain_cloud", {"cloud": TEX}, shape(), display=display(), gui_light_front=False,
                       comment="Stand-in rain cloud: upright grey slabs. Texture slot 'cloud' is one translucent grey (see tools/make_rain_cloud_model.py).")

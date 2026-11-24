@@ -64,11 +64,11 @@ def load_games():
 
 
 def code_dir(game):
-    """Where the game's extractor scripts are: the packaged folder next to this one, or the project's tools/ when run from a checkout."""
+    """Where the game's extractor scripts are: the packaged folder next to this one, or the project's tools/ctr_disc/ when run from a checkout."""
     packaged = os.path.join(HERE, game.get("code", game["id"]))
     if os.path.isdir(packaged):
         return packaged
-    tools = os.path.join(os.path.dirname(HERE), "tools")
+    tools = os.path.join(os.path.dirname(HERE), "tools", "ctr_disc")
     return tools if os.path.isdir(tools) else None
 
 

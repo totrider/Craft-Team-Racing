@@ -5,14 +5,20 @@ darker towards the tips, which the code tints (the bomb's burst: yellow to red).
   python tools/make_burst_sprites.py
 
 Writes textures/gui/glow.png (48 x 32: one QUARTER of the burst, its centre in the bottom right corner, as the original's picture is; ItemHud draws it four times mirrored with the game's colours) and textures/particle/burst.png (96 x 96, the same burst
-centred on a square, as particles are square). A file that exists is yours and is not overwritten (delete it to have it drawn again). The original's burst picture (the
-shared pack's `poweredup` icon) is made into the same two files, in a local resource pack, by tools/extract_ctr_textures.py. Run from the project folder.
+centred on a square, as particles are square). The burst itself is the layered krita/gui/burst.kra (a modder's template, 96 x 64); the two pictures are made from it here (derived:
+the shine is its top left quarter scaled to the original's grey, the particle is it centred on a square), overwriting. The original's burst picture (the
+shared pack's `poweredup` icon) is made into the same two files, in a local resource pack, by tools/ctr_disc/extract_ctr_textures.py. Run from the project folder.
 """
 import math
 import os
 import random
+import sys
 
 from PIL import Image, ImageDraw
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import kra_layers  # noqa: E402
+import kra_stamp  # noqa: E402
 
 ROOT = os.path.join("src", "main", "resources", "assets", "craftteamracing", "textures")
 W, H = 96, 64
@@ -41,13 +47,12 @@ def main():
     glow = os.path.join(ROOT, "gui", "glow.png")
     part = os.path.join(ROOT, "particle", "burst.png")
     img = burst()
+    sheet = kra_layers.Sheet(W, H)
+    sheet.add("burst", img)
+    kra_layers.write_if_stale("krita/gui/burst.kra", sheet, kra_stamp.inputs_for(__file__))
     for path, make in ((glow, lambda: original_grey(img.crop((0, 0, W // 2, H // 2)))), (part, lambda: pad(img))):
-        if os.path.exists(path):
-            print("exists, left alone:", path)
-            continue
         os.makedirs(os.path.dirname(path), exist_ok=True)
         make().save(path)
-        print("wrote", path)
 
 
 def original_grey(quarter):

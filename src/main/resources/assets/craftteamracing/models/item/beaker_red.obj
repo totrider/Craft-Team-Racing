@@ -1,4 +1,4 @@
-# beaker_red: exported by tools/blender_export_models.py from beaker.blend. Do not edit; change the .blend.
+# beaker_red: exported by tools/blender/blender_export_models.py from beaker.blend. Do not edit; change the .blend.
 mtllib beaker_red.mtl
 o beaker_red
 usemtl atlas

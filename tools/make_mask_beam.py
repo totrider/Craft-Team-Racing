@@ -4,10 +4,10 @@ ukabeam), drawn added to the screen for the good totem and taken from it for the
 
   python tools/make_mask_beam.py
 
-1. Draws the ribbon's picture for each (textures/item/mask_beam_{aku,uka}.png: a soft band, bright down its middle and fading at both ends; overwritten each run, edit the code).
-2. Creates blender/mask/mask_beam.blend once if it is missing (tools/blender_create_mask_beam.py); after that the .blend is YOURS and is never overwritten.
+1. Draws the ribbon's picture for each (the layered krita/items/mask_beam_{aku,uka}.kra, a modder's templates; tools/build_art.py flattens them into textures/item/mask_beam_*.png: a soft band, bright down its middle and fading at both ends; edit the code).
+2. Creates blender/mask/mask_beam.blend once if it is missing (tools/blender/blender_create_mask_beam.py); after that the .blend is YOURS and is never overwritten.
 3. Exports every .blend under blender/ (tools/export_blender_models.py): models/item/mask_beam_{aku,uka}_{0..23}.obj and the pickup_mask_beam_*.json.
-A resource pack with the original's beam (tools/extract_ctr_textures.py) overrides these. Run from the project folder.
+A resource pack with the original's beam (tools/ctr_disc/extract_ctr_textures.py) overrides these. Run from the project folder.
 """
 import os
 import subprocess
@@ -17,6 +17,8 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import export_blender_models as ebm  # noqa: E402
+import kra_layers  # noqa: E402
+import kra_stamp  # noqa: E402
 
 TEX_DIR = os.path.join("src", "main", "resources", "assets", "craftteamracing", "textures", "item")
 BLEND = os.path.join("blender", "mask", "mask_beam.blend")
@@ -38,15 +40,19 @@ def band(rim, core):
 
 
 def main():
-    os.makedirs(TEX_DIR, exist_ok=True)
+    inputs = kra_stamp.inputs_for(__file__)
     for who, (rim, core) in COLOURS.items():
-        band(rim, core).save(os.path.join(TEX_DIR, "mask_beam_%s.png" % who))
+        sheet = kra_layers.Sheet(32, 16)
+        sheet.add("ribbon", band(rim, core))
+        kra = "krita/items/mask_beam_%s.kra" % who
+        kra_layers.write_if_stale(kra, sheet, inputs)
+        kra_layers.export_png(kra)
     if not os.path.exists(BLEND):
         os.makedirs(os.path.dirname(BLEND), exist_ok=True)
         exe = ebm.find_blender()
         if not exe:
             sys.exit("Blender not found (set BLENDER to its blender.exe): cannot create " + BLEND)
-        subprocess.run([exe, "--background", "--factory-startup", "--python", os.path.join("tools", "blender_create_mask_beam.py"), "--", BLEND], check=True)
+        subprocess.run([exe, "--background", "--factory-startup", "--python", os.path.join("tools", "blender", "blender_create_mask_beam.py"), "--", BLEND], check=True)
     ebm.export_all()
     print("mask beam ok")
 

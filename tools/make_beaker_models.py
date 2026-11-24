@@ -3,10 +3,10 @@ N. Brio's Beaker, the mod's own 3D model: a round flask with a flat base, a wide
 
   python tools/make_beaker_models.py
 
-The model is Blender's: blender/beaker/beaker.blend (made once by this script from tools/blender_create_beaker.py, yours after that) holds the collections beaker_green and beaker_red, exported
+The model is Blender's: blender/beaker/beaker.blend (made once by this script from tools/blender/blender_create_beaker.py, yours after that) holds the collections beaker_green and beaker_red, exported
 by tools/export_blender_models.py to models/item/beaker_<colour>.obj + pickup_beaker_<colour>.json (the beaker entity renderer fetches those baked models; a resource pack's original
 replaces them under the same names). The shape follows the original's flask measured from its model: 0.49 wide, 0.64 high, a base 0.28 across, the bulb widest a third of the way up,
-a neck 0.18 across from 0.38 to 0.57 and a lip 0.30 across. The texture, textures/item/beaker.png, is drawn here every run (a palette of 4 x 4 texel cells: the top two rows are the green and red
+a neck 0.18 across from 0.38 to 0.57 and a lip 0.30 across. The texture, the layered krita/items/beaker.kra (a modder's template; tools/build_art.py flattens it into textures/item/beaker.png), is drawn here every run (a palette of 4 x 4 texel cells: the top two rows are the green and red
 sets: liquid, shade, light, glass; edit the code, not the PNG). The bubbles that rise in it are billboards (client/BeakerBubbles): textures/entity/beaker_<colour>_bubbles.png and
 beaker/beaker_<colour>_bubbles.json are drawn here every run. Run from the project folder.
 """
@@ -15,6 +15,10 @@ import os
 import sys
 
 from PIL import Image
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import kra_layers  # noqa: E402
+import kra_stamp  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -36,11 +40,25 @@ def alpha_of(name):
     return 150 if name.endswith("_glass") else 205 if name in ("green", "green_dark", "green_light", "red", "red_dark", "red_light") else 255
 
 
-def draw_texture():
-    im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+def texture_sheet():
+    """The beaker's palette as layers, one per cell (4 x 4 texels each; the glass and the liquid are see-through)."""
+    sheet = kra_layers.Sheet(16, 16)
     for name, ((cx, cy), rgb) in PALETTE.items():
-        im.paste(Image.new("RGBA", (4, 4), rgb + (alpha_of(name),)), (cx * 4, cy * 4))
-    return im
+        px = sheet.layer(name)
+        for y in range(cy * 4, cy * 4 + 4):
+            for x in range(cx * 4, cx * 4 + 4):
+                px[x, y] = rgb + (alpha_of(name),)
+    return sheet
+
+
+def draw_texture():
+    return texture_sheet().flatten()
+
+
+def bubbles_sheet(colour):
+    sheet = kra_layers.Sheet(36, 18)
+    sheet.add("bubbles", draw_bubbles(colour))
+    return sheet
 
 
 def cell(name):
@@ -104,22 +122,23 @@ def main():
     import subprocess
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import export_blender_models as ebm
+    inputs = kra_stamp.inputs_for(__file__)
     for colour in ("green", "red"):
-        for path, make in ((BUBBLE_TEX % colour, lambda c=colour: draw_bubbles(c).save(BUBBLE_TEX % c)), ):
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            make()
+        kra = "krita/entity/beaker_%s_bubbles.kra" % colour
+        kra_layers.write_if_stale(kra, bubbles_sheet(colour), inputs)
+        kra_layers.export_png(kra)
         os.makedirs(os.path.dirname(BUBBLE_DATA % colour), exist_ok=True)
         with open(BUBBLE_DATA % colour, "w", encoding="utf-8", newline="\n") as f:
             json.dump(bubble_data(colour), f, indent=1)
-    os.makedirs(os.path.dirname(TEX), exist_ok=True)
-    draw_texture().save(TEX)
+    kra_layers.write_if_stale("krita/items/beaker.kra", texture_sheet(), inputs)
+    kra_layers.export_png("krita/items/beaker.kra")
     blend = os.path.join("blender", "beaker", "beaker.blend")
     if not os.path.exists(blend):
         os.makedirs(os.path.dirname(blend), exist_ok=True)
         exe = ebm.find_blender()
         if not exe:
             sys.exit("Blender not found (set BLENDER to its blender.exe): cannot create " + blend)
-        subprocess.run([exe, "--background", "--factory-startup", "--python", os.path.join("tools", "blender_create_beaker.py"), "--", blend], check=True)
+        subprocess.run([exe, "--background", "--factory-startup", "--python", os.path.join("tools", "blender", "blender_create_beaker.py"), "--", blend], check=True)
     ebm.export_all()
     print("beaker models written")
 

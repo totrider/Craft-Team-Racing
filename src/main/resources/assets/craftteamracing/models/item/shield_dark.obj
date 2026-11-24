@@ -1,4 +1,4 @@
-# shield_dark: exported by tools/blender_export_models.py from slime_shield.blend. Do not edit; change the .blend.
+# shield_dark: exported by tools/blender/blender_export_models.py from slime_shield.blend. Do not edit; change the .blend.
 mtllib shield_dark.mtl
 o shield_dark
 usemtl atlas

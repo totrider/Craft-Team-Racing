@@ -1,4 +1,4 @@
-# shield_green: exported by tools/blender_export_models.py from slime_shield.blend. Do not edit; change the .blend.
+# shield_green: exported by tools/blender/blender_export_models.py from slime_shield.blend. Do not edit; change the .blend.
 mtllib shield_green.mtl
 o shield_green
 usemtl atlas

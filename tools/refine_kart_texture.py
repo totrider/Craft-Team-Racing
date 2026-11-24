@@ -12,6 +12,9 @@ What it does, in place, to blockbench/kart/kart_ctr.bbmodel and textures/item/ka
 - The steering column gets what a column has: a boot where it comes out of the body, a collar, a joint under the wheel with a pin on each side (cubes named column_*, in the group of steering_0;
   they stay with the kart, the wheel turns on its own).
 Then run tools/make_kart_ctr.py to regenerate the model.
+
+The picture work is done and is now part of tools/make_kart_texture.py (it paints the seat and the exhausts with the functions here, into the layered krita/items/kart_ctr.kra); the model
+changes are recorded in the bbmodel. Do not run this script again on the picture: textures/item/kart_ctr.png is built from the .kra.
 """
 import base64
 import copy

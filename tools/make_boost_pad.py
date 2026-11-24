@@ -20,13 +20,14 @@ missing, then it is yours; this script only reads them). Non-obvious structure, 
 Connecting textures (Fusion, optional): with the Fusion mod installed, boost blocks of the same state next to each other join up
 (the yellow border is only drawn where nothing continues it). This is a 5-tile "pieced" sheet made FROM boost_top.png by compose_pieced():
 the outer 2 px ring of the base texture is the border, tile 0 is the base as drawn, and the others replace the ring with the
-background colour where a neighbour continues it. So repaint boost_top.png (keep a 2 px border ring and keep the arrow inside it) and
-the sheet follows on the next build. The sheet lives in src/main/resources/fusion-overrides/ and is only used when Fusion is
+background colour where a neighbour continues it. So change draw_frame (keep a 2 px border ring and keep the arrow inside it) and
+the sheet follows on the next build (the arrows are drawn by this script: see draw_frame). The sheet lives in src/main/resources/fusion-overrides/ and is only used when Fusion is
 present (pack.mcmeta's fusion.overrides_folder); without Fusion the plain boost_top.png is used. `--preview` draws a sample field to
 build/boost_connect_preview.png.
 
-Writes models, item models, block states, loot tables, tags and names, and draws placeholder textures once if missing (yours to
-repaint). Run from the project folder. The stair rotation table is vanilla's (oak_stairs blockstate), kept here as data.
+Writes models, item models, block states, loot tables, tags and names, and the textures: the arrows' animation and the side are layered files (a modder's templates),
+krita/blocks/{boost,super_boost}_top.kra and _side.kra, which tools/build_art.py flattens into textures/block/*.png; the glow maps, Fusion's pieced sheets and the still-arrow
+pack are derived from them here, every run. Run from the project folder. The stair rotation table is vanilla's (oak_stairs blockstate), kept here as data.
 """
 import json
 import os
@@ -36,6 +37,8 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bbmodel  # noqa: E402
+import kra_layers  # noqa: E402
+import kra_stamp  # noqa: E402
 
 RES = os.path.join("src", "main", "resources")
 ASSETS = os.path.join(RES, "assets", "craftteamracing")
@@ -136,25 +139,56 @@ def draw_frame(accent, k):
     return im
 
 
-def draw_top(accent):
-    """The animated texture: FRAMES frames of 16 x 16, one under the other."""
-    sheet = Image.new("RGBA", (16, 16 * FRAMES))
+def top_sheet(accent):
+    """The animated texture as layers: FRAMES frames of 16 x 16, one under the other. The background, then the arrows of each frame (frame k has the pattern moved k px up) and the
+    2 px border ring (the accent colour outside, a dark line inside it) over them."""
+    h = 16 * FRAMES
+    sheet = kra_layers.Sheet(16, h)
+    sheet.add("background", Image.new("RGBA", (16, h), BG))
     for k in range(FRAMES):
-        sheet.paste(draw_frame(accent, k), (0, 16 * k))
+        arrows = Image.new("RGBA", (16, h), (0, 0, 0, 0))
+        for y in range(16):
+            r = (y + k) % PERIOD
+            if r >= 6:
+                continue
+            for dx in (0, 1):
+                arrows.putpixel((8 - r - dx, 16 * k + y), accent)
+                arrows.putpixel((7 + r + dx, 16 * k + y), accent)
+        sheet.add("frame %d arrows" % (k + 1), arrows)
+    ring, line = sheet.layer("border (accent)"), sheet.layer("border (dark line)")
+    for k in range(FRAMES):
+        for y in range(16):
+            for x in range(16):
+                edge = min(x, y, 15 - x, 15 - y)
+                if edge == 0:
+                    ring[x, 16 * k + y] = accent
+                elif edge == 1:
+                    line[x, 16 * k + y] = DARK
+    return sheet
+
+
+def draw_top(accent):
+    """The animated texture flattened."""
+    return top_sheet(accent).flatten()
+
+
+def side_sheet(accent):
+    """Plain dark metal with a stripe in the accent colour along the top edge and a few rivets, as layers."""
+    sheet = kra_layers.Sheet(16, 16)
+    sheet.add("metal", Image.new("RGBA", (16, 16), BG))
+    stripe, lines, rivets = sheet.layer("accent stripe"), sheet.layer("dark lines"), sheet.layer("rivets")
+    for x in range(16):
+        stripe[x, 0] = accent
+        stripe[x, 1] = accent
+        lines[x, 2] = DARK
+        lines[x, 15] = DARK
+    for x in (3, 12):
+        rivets[x, 8] = (96, 98, 110, 255)
     return sheet
 
 
 def draw_side(accent):
-    """Plain dark metal with a stripe in the accent colour along the top edge and a few rivets."""
-    im = Image.new("RGBA", (16, 16), BG)
-    for x in range(16):
-        im.putpixel((x, 0), accent)
-        im.putpixel((x, 1), accent)
-        im.putpixel((x, 2), DARK)
-        im.putpixel((x, 15), DARK)
-    for x in (3, 12):
-        im.putpixel((x, 8), (96, 98, 110, 255))
-    return im
+    return side_sheet(accent).flatten()
 
 
 # ---------------------------------------------------------------------------------------------------------------- shapes
@@ -252,10 +286,13 @@ def write_glow(path_png, accent, emissive=False):
 
 def ensure_sources():
     os.makedirs(TEX_DIR, exist_ok=True)
+    inputs = kra_stamp.inputs_for(__file__)
     for fam in FAMILIES:
-        # placeholder art, regenerated every run (the arrows' animation and the pieced sheet follow from it); repaint by changing draw_frame
-        draw_top(fam["accent"]).save(os.path.join(TEX_DIR, fam["key"] + "_top.png"))
-        draw_side(fam["accent"]).save(os.path.join(TEX_DIR, fam["key"] + "_side.png"))
+        # the arrows' animation and the side as layered files; the PNGs now (the glow map and the copies below are made from them), tools/build_art.py would do it at the end
+        for kind, sheet in (("top", top_sheet(fam["accent"])), ("side", side_sheet(fam["accent"]))):
+            kra = "krita/blocks/%s_%s.kra" % (fam["key"], kind)
+            kra_layers.write_if_stale(kra, sheet, inputs)
+            kra_layers.export_png(kra)
         dump(os.path.join(TEX_DIR, fam["key"] + "_top.png.mcmeta"), {"animation": {"frametime": 1}})
         write_glow(os.path.join(TEX_DIR, fam["key"] + "_top.png"), fam["accent"])
     for name, groups in sources().items():

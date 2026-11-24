@@ -35,6 +35,7 @@ function Run-Gen($name) {
 if (Get-Command python -ErrorAction SilentlyContinue) {
     Write-Host "Generating model and sounds..." -ForegroundColor Cyan
     Run-Gen "make_kart.py"
+    Run-Gen "make_kart_texture.py"
     Run-Gen "make_kart_ctr.py"
     Run-Gen "make_kart_wheel.py"
     Run-Gen "make_boost_flame.py"
@@ -63,6 +64,16 @@ if (Get-Command python -ErrorAction SilentlyContinue) {
     Run-Gen "make_track_overlays.py"
     Run-Gen "make_sounds.py"
     Run-Gen "make_survival_assets.py"
+    Run-Gen "make_drop_table_icon.py"
+    Run-Gen "make_music_sheet_icon.py"
+    Run-Gen "make_rulebook_icon.py"
+    Run-Gen "make_podium_icons.py"
+    Run-Gen "make_upgrade_icons.py"
+    Run-Gen "make_barrier_assets.py"
+    Run-Gen "make_confetti.py"
+    Run-Gen "make_rain_cloud_model.py"
+    # the layered Krita files (krita/) are flattened into the PNGs the scripts above no longer write themselves (see krita/README.md)
+    Run-Gen "build_art.py"
 }
 
 Write-Host "Building..." -ForegroundColor Cyan

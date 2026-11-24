@@ -17,6 +17,8 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bbmodel  # noqa: E402
+import kra_layers  # noqa: E402
+import kra_stamp  # noqa: E402
 
 ASSETS = os.path.join("src", "main", "resources", "assets", "craftteamracing")
 TEX = os.path.join(ASSETS, "textures", "item", "missile.png")
@@ -36,13 +38,20 @@ PALETTE = {
 }
 
 
-def draw_texture():
-    im = Image.new("RGBA", (16, 16), (255, 0, 255, 255))
-    for _, (cx, cy, rgb) in PALETTE.items():
+def texture_sheet():
+    """The palette as layers: the magenta of the unused cells, then one layer per colour cell (4 x 4 texels)."""
+    sheet = kra_layers.Sheet(16, 16)
+    sheet.add("unused cells (magenta)", Image.new("RGBA", (16, 16), (255, 0, 255, 255)))
+    for name, (cx, cy, rgb) in PALETTE.items():
+        px = sheet.layer(name)
         for y in range(cy, cy + 4):
             for x in range(cx, cx + 4):
-                im.putpixel((x, y), rgb + (255,))
-    return im
+                px[x, y] = rgb + (255,)
+    return sheet
+
+
+def draw_texture():
+    return texture_sheet().flatten()
 
 
 def box(frm, to, colour):
@@ -75,7 +84,8 @@ def display():
 
 def main():
     os.makedirs(os.path.dirname(TEX), exist_ok=True)
-    draw_texture().save(TEX)
+    kra_layers.write_if_stale("krita/items/missile.kra", texture_sheet(), kra_stamp.inputs_for(__file__))
+    kra_layers.export_png("krita/items/missile.kra")
     if not os.path.exists(BB):
         bbmodel.write(BB, "missile", {"missile": TEX}, list(parts().items()), display=display(), gui_light_front=False,
                       comment="Stand-in Rocket after Minecraft's firework rocket, in the original missile's proportions (12.5 x 2.5 px): red cone, pale band, red and white tube, nozzle, stick. "

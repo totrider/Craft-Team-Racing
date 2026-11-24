@@ -3,7 +3,8 @@ The kart's texture, and the uv mapping of blockbench/kart/kart_ctr.bbmodel onto 
 
   python tools/make_kart_texture.py
 
-Writes src/main/resources/assets/craftteamracing/textures/item/kart_ctr.png (128 x 128, only if missing: it is a placeholder, yours to repaint) and, ONCE, maps the faces of the cubes in
+Writes the layered krita/items/kart_ctr.kra (128 x 128, a modder's template: one layer per tile) and kart_ctr_wheel.kra (the steering wheel's own picture); tools/build_art.py flattens them
+into textures/item/kart_ctr.png and kart_ctr_wheel.png. It also, ONCE, maps the faces of the cubes in
 kart_ctr.bbmodel onto it by their names (it does nothing to a model whose texture is already kart_ctr.png: after that the uvs are yours). The picture is 16 x 16 uv units, 8 texels to a
 unit; each part has a tile:
 
@@ -22,6 +23,12 @@ import sys
 
 import numpy as np
 from PIL import Image
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import kra_layers  # noqa: E402
+import kra_stage  # noqa: E402
+import kra_stamp  # noqa: E402
+import refine_kart_texture as refine  # noqa: E402  (the seat's and the exhausts' pictures, painted at the wheels' texel density)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEX = os.path.join(ROOT, "src", "main", "resources", "assets", "craftteamracing", "textures", "item", "kart_ctr.png")
@@ -52,14 +59,29 @@ def noise(rng, shape, amp):
     return rng.integers(-amp, amp + 1, size=shape)
 
 
-def paint():
+TILE_NAMES = {REGIONS["body"]: "body panel (tintable)", REGIONS["seat"]: "seat (tintable)", REGIONS["strut"]: "strut (tintable)", REGIONS["engine"]: "engine",
+              REGIONS["exhaust"]: "exhaust pipe", REGIONS["exhaust_end"]: "exhaust end", REGIONS["column"]: "steering column", REGIONS["edge"]: "steering plate edge"}
+
+
+REFINED = {REGIONS["seat"], REGIONS["exhaust"], REGIONS["exhaust_end"]}          # these three tiles are repainted below (the first draw only keeps the random numbers in step)
+
+
+def paint_layers():
+    """The kart's picture as layers, one per tile (the steering wheel's tile in its drawing steps): a list of (name, 128 x 128 image), bottom first."""
     rng = np.random.default_rng(3)
     im = np.zeros((N, N, 4), dtype=np.int32)
     im[:, :, 3] = 0
+    stages = kra_stage.Stages(N, N)
 
     def put(region, arr):
         x0, y0, x1, y1 = px(region)
         im[y0:y1, x0:x1] = arr
+        if region in TILE_NAMES and region not in REFINED:
+            view = im.copy()
+            for r in REFINED:                                # the first drawing of the repainted tiles is not a layer
+                rx0, ry0, rx1, ry1 = px(r)
+                view[ry0:ry1, rx0:rx1] = 0
+            stages.snap(TILE_NAMES[region], view)
 
     def solid(w, h, rgb):
         a = np.zeros((h, w, 4), dtype=np.int32)
@@ -163,19 +185,46 @@ def paint():
     bottom = poly([(0.20, 0.80), (0.80, 0.80), (0.82, 0.96), (0.18, 0.96)])
     plate = poly([(0.36, 0.14), (0.64, 0.14), (0.78, 0.30), (0.80, 0.80), (0.20, 0.80), (0.22, 0.30)])
     wheel = np.zeros((H, W, 4), dtype=np.int32)
+    ws = kra_stage.Stages(W, H)
     wheel[grip_l | grip_r | bottom, :3] = suede
     wheel[grip_l | grip_r | bottom, 3] = 255
+    ws.snap("wheel: grips and bottom bar", wheel)
     weave = ((xs // 2 + ys // 2) % 2 == 0)
     wheel[plate & weave, :3] = (84, 88, 96)
     wheel[plate & ~weave, :3] = (56, 60, 68)
     wheel[plate, 3] = 255
+    ws.snap("wheel: carbon plate", wheel)
     wheel[(abs(y - 0.22) < 0.03) & (abs(x - 0.5) < 0.12) & plate, :3] = (228, 228, 232)   # the maker's stripe on the narrow top of the plate (the 3D bar covers the middle)
+    ws.snap("wheel: maker's stripe", wheel)
     for bx, col in ((0.32, (200, 40, 40)), (0.68, (230, 190, 40))):                         # two buttons
         b = np.hypot((xs + 0.5) / W - bx, ((ys + 0.5) / H - 0.70) * 0.66) < 0.035
         wheel[b, :3] = col
         wheel[b, 3] = 255
+    ws.snap("wheel: buttons", wheel)
     put(REGIONS["wheel"], wheel)
-    return Image.fromarray(np.clip(im, 0, 255).astype(np.uint8), "RGBA")
+    # the seat and the exhausts, repainted at the texel density of the wheels (the picture work of tools/refine_kart_texture.py, whose model changes are done): the seat's cushion with quilted
+    # diamonds in the top left 46 x 46 of its tile, the pipe and its open end smaller than their tiles
+    rng5 = np.random.default_rng(5)
+    view = im.copy()
+    for r in REFINED:
+        rx0, ry0, rx1, ry1 = px(r)
+        view[ry0:ry1, rx0:rx1] = 0
+    for region, arr, name in ((REGIONS["seat"], refine.paint_seat(rng5), "seat (tintable)"), (REGIONS["exhaust"], refine.paint_exhaust(rng5), "exhaust pipe"),
+                              (REGIONS["exhaust_end"], refine.paint_exhaust_end(), "exhaust end")):
+        x0, y0, x1, y1 = px(region)
+        refine.put(view, x0, y0, arr)
+        stages.snap(name, view)
+    sheet = kra_layers.Sheet(N, N)
+    for name, img in stages.layers:
+        sheet.add(name, img)
+    x0, y0, _, _ = px(REGIONS["wheel"])
+    kra_layers.place(sheet, ws.layers, (x0, y0))
+    return sheet
+
+
+def paint():
+    """The kart's picture flattened (128 x 128)."""
+    return paint_layers().flatten()
 
 
 WHEEL_TEX = os.path.join(ROOT, "src", "main", "resources", "assets", "craftteamracing", "textures", "item", "kart_ctr_wheel.png")
@@ -183,7 +232,7 @@ WHEEL_FRONT = (0, 0, 6, 4)          # the face towards the driver (uv units of t
 WHEEL_BACK = (0, 4, 6, 8)           # the face towards the front of the kart: the same wheel, plain
 
 
-def wheel_face(buttons):
+def wheel_face(buttons, ws=None):
     """48 x 32: an oblong racing wheel (grips at the sides with horns at the top, a carbon plate narrow at the top, a flat bottom bar); the openings are see-through. With {buttons} the
     shift lights, the maker's stripe, the buttons and the hub, as the driver sees it; without, the plain back. Detail: perforated, stitched grips with finger grooves and a lit edge; a
     carbon twill plate with a sheen, a bevel and bolts."""
@@ -243,6 +292,8 @@ def wheel_face(buttons):
     dashes = seam & (((xs + ys) // 2) % 2 == 0)
     wheel[dashes, :3] = (88, 84, 76)                                                # the stitching
     wheel[grips, 3] = 255
+    if ws:
+        ws.snap("grips and bottom bar", wheel)
 
     # the carbon plate: a twill weave with a sheen, a bevelled edge and bolts
     weave = ((xs // 2 + ys // 2) % 2 == 0)
@@ -255,39 +306,58 @@ def wheel_face(buttons):
     wheel[pedge & ((xs + ys) < 28), :3] = (120, 124, 134)
     wheel[pedge & ((xs + ys) >= 28), :3] = (24, 26, 30)
     wheel[plate, 3] = 255
+    if ws:
+        ws.snap("carbon plate", wheel)
     for bx, by in ((0.26, 0.74), (0.74, 0.74), (0.40, 0.20), (0.60, 0.20)):         # four bolts
         cx, cy = int(bx * W), int(by * H)
         if plate[cy, cx]:
             wheel[cy:cy + 2, cx:cx + 2, :3] = (150, 154, 164)
             wheel[cy + 1, cx + 1, :3] = (70, 72, 80)
             wheel[cy, cx, :3] = (210, 214, 224)
+    if ws:
+        ws.snap("bolts", wheel)
 
     if buttons:
         # shift lights along the narrow top of the plate: three green, two yellow, two red, with dark gaps
         for i, col in enumerate(((60, 220, 90), (60, 220, 90), (60, 220, 90), (240, 210, 50), (240, 210, 50), (230, 60, 50), (230, 60, 50))):
             lx = 17 + i * 2
             wheel[6:8, lx:lx + 1, :3] = col
+        if ws:
+            ws.snap("shift lights", wheel)
         wheel[(abs(y - 0.30) < 0.018) & (abs(x - 0.5) < 0.13) & plate, :3] = (226, 226, 232)      # the maker's stripe
+        if ws:
+            ws.snap("maker's stripe", wheel)
         for bx, col in ((0.34, (206, 44, 44)), (0.66, (236, 196, 48))):                          # two buttons, ringed, with a glint
             r = np.hypot((xs + 0.5) / W - bx, ((ys + 0.5) / H - 0.66) * 0.66)
             wheel[r < 0.048, :3] = (16, 16, 18)
             wheel[r < 0.037, :3] = col
             glint = (r < 0.037) & (xs + 0.5 < bx * W - 0.5) & (ys + 0.5 < 0.66 * H - 0.5)
             wheel[glint, :3] = (255, 250, 235)
+        if ws:
+            ws.snap("buttons", wheel)
         hub = np.hypot((xs + 0.5) / W - 0.5, ((ys + 0.5) / H - 0.50) * 0.66)             # the hub: a ringed disc with a small red mark
         wheel[hub < 0.05, :3] = (20, 22, 26)
         wheel[hub < 0.036, :3] = (96, 100, 110)
         wheel[hub < 0.014, :3] = (206, 44, 44)
+        if ws:
+            ws.snap("hub", wheel)
     return wheel
 
 
-def paint_wheel():
-    """The steering wheel's own picture (128 x 128, uv 0-16): the driver's face top left, the back face under it."""
-    im = np.zeros((N, N, 4), dtype=np.int32)
-    for region, buttons in ((WHEEL_FRONT, True), (WHEEL_BACK, False)):
+def paint_wheel_layers():
+    """The steering wheel's own picture (128 x 128, uv 0-16) as layers: the driver's face top left, the back face under it, each in its drawing steps."""
+    sheet = kra_layers.Sheet(N, N)
+    for region, buttons, prefix in ((WHEEL_FRONT, True, "driver's face: "), (WHEEL_BACK, False, "back face: ")):
         x0, y0, x1, y1 = px(region)
-        im[y0:y1, x0:x1] = wheel_face(buttons)
-    return Image.fromarray(np.clip(im, 0, 255).astype(np.uint8), "RGBA")
+        ws = kra_stage.Stages(x1 - x0, y1 - y0)
+        wheel_face(buttons, ws)
+        kra_layers.place(sheet, ws.layers, (x0, y0), prefix)
+    return sheet
+
+
+def paint_wheel():
+    """The steering wheel's picture flattened (128 x 128)."""
+    return paint_wheel_layers().flatten()
 
 
 # the faces of a cube: the two sizes its picture has (px), by face
@@ -370,18 +440,14 @@ def refresh_wheel_copy():
 
 
 def main():
-    if "--repaint-wheel" in sys.argv:
-        paint_wheel().save(WHEEL_TEX)
+    inputs = kra_stamp.inputs_for(__file__)
+    for kra, sheet in (("krita/items/kart_ctr.kra", paint_layers()), ("krita/items/kart_ctr_wheel.kra", paint_wheel_layers())):
+        kra_layers.write_if_stale(kra, sheet, inputs)
+        kra_layers.export_png(kra)                           # the PNGs now, not at the end of the build: the bbmodel embeds them
+    if "--repaint-wheel" in sys.argv:                        # put the current wheel picture into the copy the bbmodel carries
         refresh_wheel_copy()
-        print("kart_ctr_wheel.png repainted")
+        print("kart_ctr_wheel.png copied into the bbmodel")
         return
-    if not os.path.exists(WHEEL_TEX):
-        paint_wheel().save(WHEEL_TEX)
-        print("kart_ctr_wheel.png written")
-    if not os.path.exists(TEX):
-        os.makedirs(os.path.dirname(TEX), exist_ok=True)
-        paint().save(TEX)
-        print("kart_ctr.png written")
     map_bbmodel(BB)
 
 

@@ -7,7 +7,7 @@ blockbench/kart/kart_ctr.bbmodel is the source (written once from the numbers be
 src/main/resources/assets/craftteamracing/models/item/kart_ctr.json is generated from it (the entity renderer fetches that model) and so is the spawn item's models/item/kart.json (the same kart with its wheels and steering wheel in place).
 The placeholder texture is the same 16x16 palette as the old kart's (textures/item/kart.png).
 
-Where the numbers come from: tools/inspect_ctr_kart.py measures the original's racer models (local only). Crash's kart in level units, drawn at 72.7 units to the block (16 pixels = 1 block here, so 1 unit = 0.22 px; between the crates' 108.8, which was too small beside a player, and the physics' 50, which was a car): 56 units across is 0.77 block:
+Where the numbers come from: tools/ctr_disc/inspect_ctr_kart.py measures the original's racer models (local only). Crash's kart in level units, drawn at 72.7 units to the block (16 pixels = 1 block here, so 1 unit = 0.22 px; between the crates' 108.8, which was too small beside a player, and the physics' 50, which was a car): 56 units across is 0.77 block:
   * the tub (body) is 56 wide, about 100 long (z -48 to +52, the front is +z), 10 to 30 high; the nose lip along the ground is 14 wide and 58 long; the rear cowl behind the driver
     is 44 wide and 40 high at the top; two exhaust pipes stand behind it, up to about 62
   * the wheels are drawn as sprites of 32 x 32 units (the game's `DrawTires`: the centres are at x +-36, y 16, z +50 at the front and -24 at the back, in the model's own units); here

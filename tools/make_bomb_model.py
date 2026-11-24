@@ -9,7 +9,7 @@ The ball is a sphere flattened at the two ends of the axle it rolls about, with 
 pack's original bomb (models/item/bomb.obj, pickup_bomb.json) replaces it; the powered-up model is then not used (the renderer tints the pack's bomb red, as before).
 
 Textures (drawn here every run: edit the code, not the PNGs), 32 x 32, in the grey of Minecraft's cauldron and anvil for the iron, the skeleton's face and the bone item's cream for the skulls:
-  bomb_iron.png   iron (top left), skull plate (top right), steel belt (bottom left, upper half), collar (bottom left, lower half), rope (bottom right, upper half), burnt tip (lower half)
+  bomb_iron.png   (the layered krita/items/bomb_iron.kra and bomb_hot.kra, a modder's templates; tools/build_art.py flattens them into the PNGs) iron (top left), skull plate (top right), steel belt (bottom left, upper half), collar (bottom left, lower half), rope (bottom right, upper half), burnt tip (lower half)
   bomb_hot.png    the same layout for the powered-up bomb: heated iron with glowing orange cracks (after the fire charge), the skulls' eyes alight, a flame-coloured fuse
 Also writes textures/entity/bomb_spark.png (the glow at the fuse's tip) and bomb/bomb_fuse.json ({tip: [x, y, z] in blocks from the ball's middle, spark_size, ground: the ball's radius}):
 the tip is where BombFx puts the flames, so the model's fuse ends there. The model's middle (0.5, 0.5, 0.5) is the ball's middle; its front is north (-z); the fuse leaves the -x end.
@@ -26,6 +26,8 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import export_blender_models as ebm  # noqa: E402
+import kra_layers  # noqa: E402
+import kra_stamp  # noqa: E402
 
 ASSETS = os.path.join("src", "main", "resources", "assets", "craftteamracing")
 TEX = os.path.join(ASSETS, "textures", "item")
@@ -47,16 +49,21 @@ CRUST = [(31, 22, 21), (40, 30, 28), (55, 42, 40), (81, 73, 49)]
 GLOW = [(255, 200, 60), (255, 150, 30), (230, 100, 20)]
 
 
-def draw_spark():
+def spark_sheet():
     n = 32
-    im = Image.new("RGBA", (n, n), (0, 0, 0, 0))
+    sheet = kra_layers.Sheet(n, n)
+    px = sheet.layer("glow")
     for y in range(n):
         for x in range(n):
             d = math.hypot(x + 0.5 - n / 2, y + 0.5 - n / 2) / (n / 2)
             star = max(0.0, 1.0 - d) ** 1.6 + max(0.0, 1.0 - min(abs(x + 0.5 - n / 2), abs(y + 0.5 - n / 2)) / 1.6) * max(0.0, 1.0 - d) * 0.7
             a = max(0.0, min(1.0, star))
-            im.putpixel((x, y), (255, int(120 + 135 * a), int(30 + 150 * a * a), int(255 * a)))
-    return im
+            px[x, y] = (255, int(120 + 135 * a), int(30 + 150 * a * a), int(255 * a))
+    return sheet
+
+
+def draw_spark():
+    return spark_sheet().flatten()
 
 
 SKULL = [  # 16 x 16: a skull over two crossed bones (B bone, L light, D shade, S socket, . plate)
@@ -79,47 +86,56 @@ SKULL = [  # 16 x 16: a skull over two crossed bones (B bone, L light, D shade, 
 ]
 
 
+def opaque(w, h, colour=(0, 0, 0, 255)):
+    return Image.new("RGBA", (w, h), colour)
+
+
+def clear(w, h):
+    return Image.new("RGBA", (w, h), (0, 0, 0, 0))
+
+
 def plate(hot, rnd):
-    im = Image.new("RGBA", (16, 16), (0, 0, 0, 255))
+    """The skull plate (16 x 16) as layers: the plate's grain and the skull."""
+    base_im, skull_im = opaque(16, 16), clear(16, 16)
     base = CRUST if hot else IRON
     for y in range(16):
         for x in range(16):
-            im.putpixel((x, y), rnd.choice(base[:3]) + (255,))
+            base_im.putpixel((x, y), rnd.choice(base[:3]) + (255,))
     col = {"B": BONE, "L": BONE_LIGHT, "D": BONE_DARK, "S": (255, 150, 30) if hot else SOCKET}
     for y, row in enumerate(SKULL):
         for x, c in enumerate(row):
             if c in col:
-                im.putpixel((x, y), col[c] + (255,))
-    return im
+                skull_im.putpixel((x, y), col[c] + (255,))
+    return [("plate", base_im), ("skull", skull_im)]
 
 
 def iron(hot, rnd):
-    """16 x 16 iron: the anvil's grain (long strokes across the roll), or the fire charge's crust with glowing cracks."""
-    im = Image.new("RGBA", (16, 16), (0, 0, 0, 255))
+    """16 x 16 iron as layers: the anvil's grain (long strokes across the roll) and its glint, or the fire charge's crust with glowing cracks."""
+    grain, top = opaque(16, 16), clear(16, 16)
     if not hot:
         for y in range(16):
             row = rnd.choice(IRON[1:5])
             for x in range(16):
                 v = row if rnd.random() < 0.75 else rnd.choice(IRON)
-                im.putpixel((x, y), v + (255,))
+                grain.putpixel((x, y), v + (255,))
         for x, y in ((3, 4), (4, 4), (3, 5)):                              # a glint
-            im.putpixel((x, y), IRON[5] + (255,))
-        return im
+            top.putpixel((x, y), IRON[5] + (255,))
+        return [("iron grain", grain), ("glint", top)]
     for y in range(16):
         for x in range(16):
-            im.putpixel((x, y), rnd.choice(CRUST[:3]) + (255,))
+            grain.putpixel((x, y), rnd.choice(CRUST[:3]) + (255,))
     for _ in range(6):                                                      # cracks that wander across
         x, y = rnd.randrange(16), rnd.randrange(16)
         for _ in range(rnd.randint(4, 7)):
-            im.putpixel((x % 16, y % 16), rnd.choice(GLOW) + (255,))
+            top.putpixel((x % 16, y % 16), rnd.choice(GLOW) + (255,))
             x += rnd.choice((-1, 0, 1, 1))
             y += rnd.choice((-1, 0, 1))
-    return im
+    return [("crust", grain), ("glowing cracks", top)]
 
 
 def belt(hot, rnd):
-    """16 x 8: the steel belt round the middle: lighter, with rivets."""
-    im = Image.new("RGBA", (16, 8), (0, 0, 0, 255))
+    """16 x 8: the steel belt round the middle: lighter, with rivets (two layers)."""
+    im, rivets = opaque(16, 8), clear(16, 8)
     for y in range(8):
         for x in range(16):
             c = rnd.choice(IRON[3:]) if not hot else rnd.choice(CRUST[1:])
@@ -127,60 +143,61 @@ def belt(hot, rnd):
                 c = IRON[1] if not hot else CRUST[0]
             im.putpixel((x, y), c + (255,))
     for x in (2, 6, 10, 14):
-        im.putpixel((x, 3), IRON[5] + (255,) if not hot else GLOW[1] + (255,))
-        im.putpixel((x, 4), IRON[2] + (255,) if not hot else GLOW[2] + (255,))
-    return im
+        rivets.putpixel((x, 3), IRON[5] + (255,) if not hot else GLOW[1] + (255,))
+        rivets.putpixel((x, 4), IRON[2] + (255,) if not hot else GLOW[2] + (255,))
+    return [("belt", im), ("rivets", rivets)]
 
 
 def collar(hot, rnd):
-    im = Image.new("RGBA", (16, 8), (0, 0, 0, 255))
+    im = opaque(16, 8)
     for y in range(8):
         for x in range(16):
             c = rnd.choice(IRON[:3]) if not hot else rnd.choice(CRUST[:2])
             if y == 0:
                 c = IRON[4] if not hot else GLOW[2]
             im.putpixel((x, y), c + (255,))
-    return im
+    return [("collar", im)]
 
 
 def rope(hot):
     """16 x 8: twisted rope in diagonal bands."""
-    im = Image.new("RGBA", (16, 8), (0, 0, 0, 255))
+    im = opaque(16, 8)
     a, b = ((150, 124, 78), (112, 90, 56)) if not hot else ((205, 120, 40), (150, 70, 25))
     for y in range(8):
         for x in range(16):
             im.putpixel((x, y), (a if (x + y) % 4 < 2 else b) + (255,))
-    return im
+    return [("rope", im)]
 
 
 def tip(hot):
     """16 x 8: the burnt end of the fuse."""
-    im = Image.new("RGBA", (16, 8), (30, 24, 20, 255))
+    im = opaque(16, 8, (30, 24, 20, 255))
     if hot:
         for x in range(16):
             for y in range(8):
                 im.putpixel((x, y), GLOW[(x + y) % 3] + (255,))
-    return im
+    return [("fuse tip", im)]
+
+
+def texture_sheet(hot):
+    """The bomb's texture (32 x 32) as layers: iron, skull plate, belt, collar, rope and fuse tip, each in its tile (the random generator is used in this order)."""
+    rnd = random.Random(21 if hot else 12)
+    sheet = kra_layers.Sheet(32, 32)
+    for prefix, layers, offset in (("iron: ", iron(hot, rnd), (0, 0)), ("skull plate: ", plate(hot, rnd), (16, 0)), ("belt: ", belt(hot, rnd), (0, 16)),
+                                   ("collar: ", collar(hot, rnd), (0, 24)), ("rope: ", rope(hot), (16, 16)), ("fuse tip: ", tip(hot), (16, 24))):
+        kra_layers.place(sheet, layers, offset, prefix)
+    return sheet
 
 
 def draw_texture(hot):
-    rnd = random.Random(21 if hot else 12)
-    im = Image.new("RGBA", (32, 32), (0, 0, 0, 255))
-    im.paste(iron(hot, rnd), (0, 0))
-    im.paste(plate(hot, rnd), (16, 0))
-    im.paste(belt(hot, rnd), (0, 16))
-    im.paste(collar(hot, rnd), (0, 24))
-    im.paste(rope(hot), (16, 16))
-    im.paste(tip(hot), (16, 24))
-    return im
+    return texture_sheet(hot).flatten()
 
 
 def main():
-    os.makedirs(TEX, exist_ok=True)
-    draw_texture(False).save(os.path.join(TEX, "bomb_iron.png"))
-    draw_texture(True).save(os.path.join(TEX, "bomb_hot.png"))
-    os.makedirs(os.path.dirname(SPARK), exist_ok=True)
-    draw_spark().save(SPARK)
+    inputs = kra_stamp.inputs_for(__file__)
+    for kra, sheet in (("krita/items/bomb_iron.kra", texture_sheet(False)), ("krita/items/bomb_hot.kra", texture_sheet(True)), ("krita/entity/bomb_spark.kra", spark_sheet())):
+        kra_layers.write_if_stale(kra, sheet, inputs)
+        kra_layers.export_png(kra)
     os.makedirs(os.path.dirname(FUSE), exist_ok=True)
     with open(FUSE, "w", encoding="utf-8", newline="\n") as f:
         json.dump({"tip": list(TIP), "spark_size": SPARK_SIZE, "ground": GROUND}, f, indent=2)
@@ -189,7 +206,7 @@ def main():
         exe = ebm.find_blender()
         if not exe:
             sys.exit("Blender not found (set BLENDER to its blender.exe): cannot create " + BLEND)
-        subprocess.run([exe, "--background", "--factory-startup", "--python", os.path.join("tools", "blender_create_bomb.py"), "--", BLEND], check=True)
+        subprocess.run([exe, "--background", "--factory-startup", "--python", os.path.join("tools", "blender", "blender_create_bomb.py"), "--", BLEND], check=True)
     ebm.export_all()
     print("bomb ok")
 

@@ -5,8 +5,8 @@ The kart: model, item model, texture (placeholder) and name.
 
 The model is Blockbench's: blockbench/kart/kart.bbmodel is the source (written once from the shape below if it is
 missing, then it is yours; this script only reads it). Writes src/main/resources/assets/craftteamracing/models/item/kart.json
-(the spawn item AND the entity renderer use it: the renderer fetches the baked item model), and draws the placeholder
-texture textures/item/kart.png once if missing (yours to repaint). Run from the project folder.
+(the spawn item AND the entity renderer use it: the renderer fetches the baked item model), and the placeholder
+texture as the layered krita/items/kart.kra (a modder's template; tools/build_art.py flattens it into textures/item/kart.png). Run from the project folder.
 
 Orientation of the model: the FRONT of the kart is NORTH (-z), the way every Minecraft block model faces. The renderer turns
 it to the kart's heading. The model is centred on x = 8, z = 8 (the kart's origin, the bottom centre, is the middle of the block).
@@ -19,6 +19,8 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bbmodel  # noqa: E402
+import kra_layers  # noqa: E402
+import kra_stamp  # noqa: E402
 
 RES = os.path.join("src", "main", "resources")
 ASSETS = os.path.join(RES, "assets", "craftteamracing")
@@ -38,13 +40,20 @@ PALETTE = {
 }
 
 
-def draw_texture():
-    im = Image.new("RGBA", (16, 16), (255, 0, 255, 255))
-    for _, (cx, cy, rgb) in PALETTE.items():
+def texture_sheet():
+    """The placeholder palette as layers: the magenta of the unused cells, then one layer per colour cell."""
+    sheet = kra_layers.Sheet(16, 16)
+    sheet.add("unused cells (magenta)", Image.new("RGBA", (16, 16), (255, 0, 255, 255)))
+    for name, (cx, cy, rgb) in PALETTE.items():
+        px = sheet.layer(name)
         for y in range(cy, cy + 4):
             for x in range(cx, cx + 4):
-                im.putpixel((x, y), rgb + (255,))
-    return im
+                px[x, y] = rgb + (255,)
+    return sheet
+
+
+def draw_texture():
+    return texture_sheet().flatten()
 
 
 def box(frm, to, colour):
@@ -93,9 +102,8 @@ def dump(path, obj):
 
 
 def main():
-    os.makedirs(os.path.dirname(TEX), exist_ok=True)
-    if not os.path.exists(TEX):
-        draw_texture().save(TEX)
+    kra_layers.write_if_stale("krita/items/kart.kra", texture_sheet(), kra_stamp.inputs_for(__file__))
+    kra_layers.export_png("krita/items/kart.kra")            # the PNG now: a new bbmodel embeds it
     if not os.path.exists(BB):
         write_first_bbmodel()
     model = bbmodel.read(BB)

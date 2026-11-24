@@ -3,14 +3,19 @@ The jar's own crate break-up (a stand-in): 18 splinters of wood thrown out of th
   src/main/resources/assets/craftteamracing/textures/entity/crate_break.png   a small wood picture (orange planks with a dark grain)
   src/main/resources/assets/craftteamracing/crate_break/crate_break.json      {frames, texture, triangles: [{uv: [6 numbers], pos: [[9 numbers] per frame]}]}, blocks, the crate's
                                                                          middle at (0, 0.5, 0), its base on y = 0
-The original's 22 pieces (the shared pack's crate explosion) replace both in the local resource pack made by tools/extract_ctr_textures.py. Written once: delete a file to
+The original's 22 pieces (the shared pack's crate explosion) replace both in the local resource pack made by tools/ctr_disc/extract_ctr_textures.py. Written once: delete a file to
 have it made again. Deterministic (a fixed seed). Needs numpy and Pillow.
 """
 import json
 import math
 import os
+import sys
 
 import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import kra_layers  # noqa: E402
+import kra_stamp  # noqa: E402
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -28,6 +33,13 @@ def texture():
             grain = 0.82 + 0.18 * math.sin(y * 1.9 + math.sin(x * 0.7) * 1.5)
             img[y, x] = (int(214 * grain), int(128 * grain), int(40 * grain), 255)
     return Image.fromarray(img, "RGBA")
+
+
+def texture_sheet():
+    """The splinters' wood picture (16 x 16), one layer: orange planks with a dark grain."""
+    sheet = kra_layers.Sheet(16, 16)
+    sheet.add("wood grain", texture())
+    return sheet
 
 
 def data():
@@ -57,9 +69,7 @@ def data():
 
 
 def main():
-    os.makedirs(os.path.dirname(TEX), exist_ok=True)
-    if not os.path.exists(TEX):
-        texture().save(TEX)
+    kra_layers.write_if_stale("krita/entity/crate_break.kra", texture_sheet(), kra_stamp.inputs_for(__file__))
     os.makedirs(os.path.dirname(DATA), exist_ok=True)
     if not os.path.exists(DATA):
         with open(DATA, "w", encoding="utf-8", newline="\n") as f:

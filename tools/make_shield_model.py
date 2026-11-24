@@ -18,6 +18,8 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bbmodel  # noqa: E402
+import kra_layers  # noqa: E402
+import kra_stamp  # noqa: E402
 
 ASSETS = os.path.join("src", "main", "resources", "assets", "craftteamracing")
 TEX = os.path.join(ASSETS, "textures", "item", "shield.png")
@@ -27,16 +29,23 @@ BB = os.path.join("blockbench", "pickups", "shield.bbmodel")
 RINGS = [(2.0, 3.3, 6.0), (3.3, 5.0, 10.0), (5.0, 11.0, 12.0), (11.0, 12.7, 10.0), (12.7, 14.0, 6.0)]
 
 
-def draw_texture():
-    im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+def texture_sheet():
+    """The bubble's picture as layers: the pale see-through shell (a faint chequer) and the highlight, which replaces the shell where it is."""
+    sheet = kra_layers.Sheet(16, 16)
+    shell, glint = sheet.layer("shell"), sheet.layer("highlight")
     for y in range(16):
         for x in range(16):
             a = 150 + (40 if (x // 4 + y // 4) % 2 == 0 else 0)
-            im.putpixel((x, y), (235, 245, 235, a))
+            shell[x, y] = (235, 245, 235, a)
     for y in range(2, 6):
         for x in range(2, 7):
-            im.putpixel((x, y), (255, 255, 255, 235))              # the highlight
-    return im
+            glint[x, y] = (255, 255, 255, 235)
+    sheet.replace_semantics()
+    return sheet
+
+
+def draw_texture():
+    return texture_sheet().flatten()
 
 
 def box(frm, to, rotation=None):
@@ -66,9 +75,8 @@ def display():
 
 
 def main():
-    if not os.path.exists(TEX):
-        os.makedirs(os.path.dirname(TEX), exist_ok=True)
-        draw_texture().save(TEX)
+    kra_layers.write_if_stale("krita/items/shield.kra", texture_sheet(), kra_stamp.inputs_for(__file__))
+    kra_layers.export_png("krita/items/shield.kra")
     if not os.path.exists(BB):
         bbmodel.write(BB, "shield", {"shield": TEX}, list(parts().items()), display=display(), gui_light_front=False,
                       comment="Stand-in Power Shield bubble: a ball of five octagonal prisms along x (12 px across), middle (8, 8, 8). The game tints it green or blue, scales it "

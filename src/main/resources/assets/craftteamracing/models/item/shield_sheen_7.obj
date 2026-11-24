@@ -1,4 +1,4 @@
-# shield_sheen_7: exported by tools/blender_export_models.py from slime_shield.blend. Do not edit; change the .blend.
+# shield_sheen_7: exported by tools/blender/blender_export_models.py from slime_shield.blend. Do not edit; change the .blend.
 mtllib shield_sheen_7.mtl
 o shield_sheen_7
 usemtl atlas

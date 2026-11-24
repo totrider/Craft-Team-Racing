@@ -5,7 +5,8 @@ The pickups in the world: the Power Fruit, the fruit crate and the power-up ("?"
 
 The models are Blockbench's: blockbench/pickups/<name>.bbmodel is the source (written once from the shapes below if missing, then it is yours; this
 script only reads it). Writes src/main/resources/assets/craftteamracing/models/item/pickup_<name>.json (the pickup entity renderer fetches these baked
-models) and draws the shared placeholder texture textures/item/pickups.png once if it is missing (yours to repaint).
+models) and the shared texture sheet as layered files (a modder's templates): krita/items/pickups.kra, crate_blank.kra and crate_exclaim.kra; tools/build_art.py flattens them into
+textures/item/pickups.png, crate_blank.png and crate_exclaim.png.
 
 SIZES are the original game's PROPORTIONS, normalised so that a crate is exactly one block, the unit Minecraft works in (the kart, which already
 feels right, is the other reference). The original crate is a cube of 108.8 level units and the fruit 54.8 x 60.6 x 67.5 (measured from the model data
@@ -28,6 +29,8 @@ from PIL import Image, ImageDraw
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bbmodel  # noqa: E402
+import kra_layers  # noqa: E402
+import kra_stamp  # noqa: E402
 
 RES = os.path.join("src", "main", "resources")
 ASSETS = os.path.join(RES, "assets", "craftteamracing")
@@ -43,9 +46,8 @@ CRATE_LO, CRATE_HI = 8.0 - CRATE / 2.0, 8.0 + CRATE / 2.0
 FRAME = 18.1 * PX_PER_UNIT                   # the bevel strip of the original's crate: 18.1 units wide
 
 # The stand-in's resolution: FACE is the size in texels of one crate face (= one block face, 16 model px): 16 is the vanilla block texture's resolution, 32 a
-# finer one. The sheet is two faces wide and high. Choose with  python tools/make_pickup_models.py --face 16   (the sheet is only drawn if it is missing; delete
-# textures/item/pickups.png to redraw it, then refresh the textures embedded in the bbmodels with --embed). Everything on the sheet is laid out in fractions of
-# the quadrant, so the packs made by tools/extract_ctr_textures.py can use any whole multiple of the sheet's quadrant.
+# finer one. The sheet is two faces wide and high. Choose with  python tools/make_pickup_models.py --face 16   (the layered sheet is made at 16 only; refresh the textures embedded in the bbmodels with --embed). Everything on the sheet is laid out in fractions of
+# the quadrant, so the packs made by tools/ctr_disc/extract_ctr_textures.py can use any whole multiple of the sheet's quadrant.
 FACE = 16
 ART = 16                    # the resolution the crates' and the fruit's art is drawn in (vanilla's 16 texels per block face); the sheet doubles it, so the leaves, which are
                             # small, get cutouts of twice the resolution (4 x 8 and 5 x 8 texels: a 2 x 4 triangle is too crude to read as a leaf)
@@ -274,6 +276,156 @@ def draw_texture():
         im = im.resize((SHEET, SHEET), Image.NEAREST)
     im.alpha_composite(fruit_cells(fruit_palette, QUAD), (QUAD, QUAD))
     return im
+
+
+# ======================================================================== the same pictures as LAYERED sheets (krita/items/pickups.kra, crate_blank.kra, crate_exclaim.kra and the survival crates)
+# Each picture's parts are layers, bottom to top, in the order they are drawn above; flattened they are exactly the pictures the functions above make.
+def _blank(n):
+    return Image.new("RGBA", (n, n), (0, 0, 0, 0))
+
+
+def blank_panel_layers(n):
+    """blank_panel(n) as layers: the wood, the crossed braces, the outline and the iron nails."""
+    wood_im, braces, outline, nails = (_blank(n) for _ in range(4))
+    wood(ImageDraw.Draw(wood_im), [0, 0, n - 1, n - 1], rgba(SPRUCE["base"]), rgba(SPRUCE["dark"]), rgba(SPRUCE["light"]), 1, vertical=False)
+    d = ImageDraw.Draw(braces)
+    for a, b in (((0, 0), (n - 1, n - 1)), ((n - 1, 0), (0, n - 1))):          # crossed braces
+        thick, thin = (max(3, n // 5), max(2, n // 7)) if n >= 16 else (2, 1)
+        d.line([a, b], fill=rgba(SPRUCE["dark"]), width=thick)
+        d.line([a, b], fill=rgba(OAK["base"]), width=thin)
+    ImageDraw.Draw(outline).rectangle([0, 0, n - 1, n - 1], outline=rgba(SPRUCE["edge"]))
+    dn = ImageDraw.Draw(nails)
+    for x, y in ((1, 1), (n - 2, 1), (1, n - 2), (n - 2, n - 2)):           # iron nails where the braces end
+        dn.point((x, y), fill=rgba(IRON["base"]))
+    return [("wood", wood_im), ("crossed braces", braces), ("panel outline", outline), ("nails", nails)]
+
+
+def glyph_layers(n, glyph):
+    """The yellow glyph with its red outline (the "?" and the "!") as two layers: the outline and the glyph."""
+    p = lambda name: PALETTE[name][2] + (255,)
+    gw, gh = len(glyph[0]), len(glyph)
+    k = max(1, (n - 2) // gh)
+    mask = Image.new("L", (n, n), 0)
+    md = ImageDraw.Draw(mask)
+    gx, gy = (n - gw * k) // 2, (n - gh * k) // 2
+    for y, row in enumerate(glyph):
+        for x, c in enumerate(row):
+            if c == "X":
+                md.rectangle([gx + x * k, gy + y * k, gx + x * k + k - 1, gy + y * k + k - 1], fill=255)
+    outline = Image.new("L", (n, n), 0)
+    od = ImageDraw.Draw(outline)
+    for dx in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            od.bitmap((dx, dy), mask, fill=255)
+    edge, fill = _blank(n), _blank(n)
+    for y in range(n):
+        for x in range(n):
+            if outline.getpixel((x, y)):
+                edge.putpixel((x, y), p("red"))
+            if mask.getpixel((x, y)):
+                fill.putpixel((x, y), p("yellow"))
+    return [("glyph outline", edge), ("glyph", fill)]
+
+
+def question_panel_layers(n):
+    return blank_panel_layers(n) + glyph_layers(n, QUESTION if n >= 16 else QUESTION_SMALL)
+
+
+def exclaim_panel_layers(n):
+    return blank_panel_layers(n) + glyph_layers(n, EXCLAIM_SMALL)
+
+
+def plank_panel_layers(n):
+    """plank_panel(n) as layers: the slats, the seams between them and the outline."""
+    slats, seams, outline = _blank(n), _blank(n), _blank(n)
+    ds, dl = ImageDraw.Draw(slats), ImageDraw.Draw(seams)
+    for i in range(4):
+        x0, x1 = i * n // 4, (i + 1) * n // 4 - 1                      # four planks that together cover the panel at any size
+        c = SPRUCE if i % 2 else DARK_OAK
+        wood(ds, [x0, 0, x1, n - 1], rgba(c["base"]), rgba(c["dark"]), rgba(c["light"]), 10 + i)
+        dl.line([(x0, 0), (x0, n - 1)], fill=rgba(DARK_OAK["edge"]))
+    ImageDraw.Draw(outline).rectangle([0, 0, n - 1, n - 1], outline=rgba(DARK_OAK["dark"]))
+    return [("slats", slats), ("seams", seams), ("panel outline", outline)]
+
+
+def oak_top_panel_layers(n):
+    """The planked crates' top: plain oak planks with an outline."""
+    planks, outline = _blank(n), _blank(n)
+    wood(ImageDraw.Draw(planks), [0, 0, n - 1, n - 1], rgba(OAK["base"]), rgba(OAK["dark"]), rgba(OAK["light"]), 5, vertical=False)
+    ImageDraw.Draw(outline).rectangle([0, 0, n - 1, n - 1], outline=rgba(OAK["edge"]))
+    return [("oak planks", planks), ("panel outline", outline)]
+
+
+def face_layers(size, panel_layers):
+    """crate_face(size, panel) as layers: the four mitred strips, the panel's own layers and the dark line round the outside."""
+    frame = round(size * 18.1 / 108.8)
+    base = trapezoid(size, frame, wood_strip())
+    strips = _blank(size)
+    for turns in range(4):
+        strips.alpha_composite(base.rotate(90 * turns))
+    out = [("frame strips", strips)]
+    for name, img in panel_layers(size - 2 * frame):
+        layer = _blank(size)
+        layer.alpha_composite(img, (frame, frame))
+        out.append((name, layer))
+    ring = _blank(size)
+    outer_ring(ring, size)
+    out.append(("outer ring", ring))
+    return out
+
+
+def fruit_layers(palette, q):
+    """fruit_cells(palette, q) as layers (the quadrant's pictures, q x q px): the side strips, the two caps and the two leaf cutouts."""
+    strips, caps = Image.new("RGBA", (q, q), (0, 0, 0, 0)), Image.new("RGBA", (q, q), (0, 0, 0, 0))
+    half, quarter, scale = q // 2, q // 4, q / float(QUAD)
+    scale_i = q // QUAD
+    top_t, mid_t = 1.0 - 1.0 / FRUIT_ROWS, 1.0 / FRUIT_ROWS
+    strips.paste(strip_image(5 * scale_i, 4 * scale_i, palette, top_t, mid_t), (0, 0))
+    strips.paste(strip_image(4 * scale_i, scale_i, palette, 1.0, top_t), (0, 6 * scale_i))
+    strips.paste(strip_image(4 * scale_i, scale_i, palette, mid_t, 0.0), (0, 7 * scale_i))
+    caps.paste(cap_image(quarter, palette, True), (half, 0))
+    caps.paste(cap_image(quarter, palette, False), (half + quarter, 0))
+    light = palette["green"]
+    tones = {"dark": (tuple(int(c * 0.7) for c in light), tuple(int(c * 0.7 * 0.7) for c in light)),
+             "light": (light, tuple(int(c * 0.7) for c in light))}
+    out = [("fruit side strips", strips), ("fruit caps", caps)]
+    for shade, (x, y, w, h) in leaf_layout(QUAD).items():
+        leaf = Image.new("RGBA", (q, q), (0, 0, 0, 0))
+        leaf.paste(leaf_image(int(w * scale), int(h * scale), *tones[shade]), (int(x * scale), int(y * scale)))
+        out.append(("leaf (%s)" % shade, leaf))
+    return out
+
+
+def pickups_sheet():
+    """draw_texture() as a layered sheet: the palette cells, the "?" crate face, the fruit crate's side and the fruit (with its two leaf cutouts)."""
+    a, cell_px = ART, ART // 4
+    assert a == FACE, "the layered sheet is made at the vanilla resolution (FACE = ART = 16)"
+    sheet = kra_layers.Sheet(2 * a, 2 * a)
+    cells = sheet.layer("palette cells")
+    for _, (cx, cy, rgb) in PALETTE.items():
+        for y in range(cy * cell_px, cy * cell_px + cell_px):
+            for x in range(cx * cell_px, cx * cell_px + cell_px):
+                cells[x, y] = rgb + (255,)
+    kra_layers.place(sheet, face_layers(a, question_panel_layers), (a, 0), "power-up crate: ")
+    kra_layers.place(sheet, face_layers(a, plank_panel_layers), (0, a), "fruit crate side: ")
+    fruit_palette = {n: c[2] for n, c in PALETTE.items()}
+    fruit_palette.update(green_dark=(70, 90, 12), yellow_dark=(165, 160, 20), orange_light=(250, 190, 25), orange=(245, 110, 20), red=(220, 35, 30), green=(40, 150, 40))
+    kra_layers.place(sheet, fruit_layers(fruit_palette, QUAD), (QUAD, QUAD))
+    return sheet
+
+
+def crate_face_sheet(panel_layers):
+    """A whole crate face at the sheet's resolution (drawn at ART, the pixels doubled), as layers: crate_blank.png and crate_exclaim.png."""
+    sheet = kra_layers.Sheet(SHEET, SHEET)
+    kra_layers.place(sheet, face_layers(ART, panel_layers), (0, 0), "", SHEET // ART)
+    return sheet
+
+
+def crate_block_sheet(panel_layers):
+    """A crate block's face, 16 x 16, as layers (the survival side's crate textures)."""
+    sheet = kra_layers.Sheet(16, 16)
+    kra_layers.place(sheet, face_layers(16, panel_layers), (0, 0))
+    return sheet
 
 
 def cell(name):
@@ -519,13 +671,11 @@ def embed():
 
 
 def main():
-    os.makedirs(os.path.dirname(TEX), exist_ok=True)
-    if not os.path.exists(TEX):
-        draw_texture().save(TEX)
-    if not os.path.exists(BLANK_TEX):
-        blank_crate(SHEET).save(BLANK_TEX)
-    if not os.path.exists(EXCLAIM_TEX):
-        exclaim_crate(SHEET).save(EXCLAIM_TEX)
+    inputs = kra_stamp.inputs_for(__file__)
+    for kra, make in (("krita/items/pickups.kra", pickups_sheet), ("krita/items/crate_blank.kra", lambda: crate_face_sheet(blank_panel_layers)),
+                      ("krita/items/crate_exclaim.kra", lambda: crate_face_sheet(exclaim_panel_layers))):
+        kra_layers.write_if_stale(kra, make(), inputs)
+        kra_layers.export_png(kra)                           # the PNGs now, not at the end of the build: a new Blockbench model embeds them
     os.makedirs(BB, exist_ok=True)
     for name, groups in models().items():
         path = os.path.join(BB, name + ".bbmodel")

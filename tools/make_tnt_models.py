@@ -6,8 +6,9 @@ The TNT power-up's crate and the charged one (the "Nitro", here creeper themed):
 The TNT keeps the Minecraft TNT block's own textures (as decided with the author) and gets what makes it a power-up and not a placed block: a steel frame, a rivetted corner
 block at each of the eight corners and a strap along each of the twelve edges. The charged one is a creeper crate: green with a creeper's face on its four sides and the same steel.
 The models are Blockbench's: blockbench/pickups/tnt.bbmodel and nitro.bbmodel are the source (written once from the shapes below if missing, then they are yours; this script only
-reads them). Writes models/item/pickup_tnt.json and pickup_nitro.json, and draws once if missing (yours to repaint) textures/item/tnt_metal.png (16 x 16: the steel plate, the
-top left 4 x 4 is what the frame's pieces show), creeper_face.png and creeper_skin.png (16 x 16; the creeper's, from Minecraft's creeper head, written every run). Origin: the bottom centre of the block; 16 px is one block.
+reads them). Writes models/item/pickup_tnt.json and pickup_nitro.json, and the layered krita/items/tnt_metal.kra (16 x 16: the steel plate, the
+top left 4 x 4 is what the frame's pieces show), creeper_face.kra and creeper_skin.kra (16 x 16; the creeper's, from Minecraft's creeper head) (a modder's templates;
+tools/build_art.py flattens them into textures/item/*.png). Origin: the bottom centre of the block; 16 px is one block.
 """
 import json
 import os
@@ -18,27 +19,30 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bbmodel  # noqa: E402
+import kra_layers  # noqa: E402
+import kra_stamp  # noqa: E402
 
 ASSETS = os.path.join("src", "main", "resources", "assets", "craftteamracing")
 TEX = os.path.join(ASSETS, "textures", "item")
 BB = os.path.join("blockbench", "pickups")
 
 
-def draw_metal():
-    """Brushed steel with a darker rim and a rivet; the frame pieces use its top left 4 x 4."""
+def metal_sheet():
+    """Brushed steel with a darker rim and a rivet; the frame pieces use its top left 4 x 4. Layers: the steel, the rim (the top left 4 x 4's edge, darkened) and the rivet."""
     rnd = random.Random(7)
-    im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    sheet = kra_layers.Sheet(16, 16)
+    steel, rim, rivet = sheet.layer("brushed steel"), sheet.layer("rim"), sheet.layer("rivet")
     for y in range(16):
         for x in range(16):
             v = 150 + rnd.randint(-8, 8) + (6 if y % 4 == 1 else 0)
-            im.putpixel((x, y), (v, v + 4, v + 14, 255))
+            steel[x, y] = (v, v + 4, v + 14, 255)
     for i in range(4):
         for x, y in ((i, 0), (i, 3), (0, i), (3, i)):
-            c = im.getpixel((x, y))
-            im.putpixel((x, y), (c[0] - 55, c[1] - 55, c[2] - 50, 255))
+            c = rim[x, y] if rim[x, y][3] else steel[x, y]          # a corner is darkened twice: it is in the rim twice
+            rim[x, y] = (c[0] - 55, c[1] - 55, c[2] - 50, 255)
     for x, y in ((1, 1), (2, 1), (1, 2), (2, 2)):
-        im.putpixel((x, y), (210, 214, 226, 255) if (x, y) == (1, 1) else (96, 100, 112, 255))
-    return im
+        rivet[x, y] = (210, 214, 226, 255) if (x, y) == (1, 1) else (96, 100, 112, 255)
+    return sheet
 
 
 # The creeper's face, taken from Minecraft's creeper head (an 8 x 8 face): eyes, a nose block, a frown with two feet. X is black. Here every pixel is two wide and two tall, on a 16 x 16 crate face.
@@ -62,12 +66,13 @@ def mottle(rnd, n):
     return [[rnd.choice(pool) for _ in range(n)] for _ in range(n)]
 
 
-def draw_creeper():
-    """The creeper crate's pictures: the face (side, 16 x 16) and the skin (top and bottom): the head's mottled greens at the crate's resolution, a dark halo round the features as the head has,
-    the face two pixels to the head's one. Written every run (edit the code, not the PNGs)."""
+def creeper_sheets():
+    """The creeper crate's pictures as layered sheets: the face (side, 16 x 16) and the skin (top and bottom): the head's mottled greens at the crate's resolution, a dark halo round
+    the features as the head has, the face two pixels to the head's one. Layers of the face: the head, the halo round the features and the features."""
     rnd = random.Random(11)
-    face = Image.new("RGBA", (16, 16), (0, 0, 0, 255))
-    skin = Image.new("RGBA", (16, 16), (0, 0, 0, 255))
+    face, skin = kra_layers.Sheet(16, 16), kra_layers.Sheet(16, 16)
+    head, halo, features = face.layer("head"), face.layer("halo"), face.layer("features")
+    skin_px = skin.layer("mottled greens")
     cells = mottle(rnd, 8)
     skin_cells = mottle(rnd, 8)
     dark = lambda c, k: tuple(int(v * k) for v in c)
@@ -75,20 +80,29 @@ def draw_creeper():
         for fx in range(8):
             c = cells[fy][fx]
             near = any(0 <= fy + dy < 8 and 0 <= fx + dx < 8 and CREEPER_FACE[fy + dy][fx + dx] == "X" for dx in (-1, 0, 1) for dy in (-1, 0, 1))
+            target = head
             if CREEPER_FACE[fy][fx] == "X":
                 c = BLACK
+                target = features
             elif near:
                 c = dark(c, 0.55)
+                target = halo
             for dy in (0, 1):
                 for dx in (0, 1):
                     jitter = 1.0 + rnd.choice((-0.07, 0.0, 0.0, 0.07)) if c != BLACK else 1.0          # the head's pixels are flat: a whisper of grain at the finer grid
-                    face.putpixel((fx * 2 + dx, fy * 2 + dy), tuple(min(255, int(v * jitter)) for v in c) + (255,))
+                    target[fx * 2 + dx, fy * 2 + dy] = tuple(min(255, int(v * jitter)) for v in c) + (255,)
             sc = skin_cells[fy][fx]
             for dy in (0, 1):
                 for dx in (0, 1):
                     jitter = 1.0 + rnd.choice((-0.07, 0.0, 0.0, 0.07))
-                    skin.putpixel((fx * 2 + dx, fy * 2 + dy), tuple(min(255, int(v * jitter)) for v in sc) + (255,))
+                    skin_px[fx * 2 + dx, fy * 2 + dy] = tuple(min(255, int(v * jitter)) for v in sc) + (255,)
     return face, skin
+
+
+def draw_creeper():
+    """The creeper crate's face and skin as flat 16 x 16 pictures (the layered sheets flattened)."""
+    face, skin = creeper_sheets()
+    return face.flatten(), skin.flatten()
 
 
 def box(frm, to, faces):
@@ -145,13 +159,12 @@ def embed(path, files):
 
 
 def main():
-    os.makedirs(TEX, exist_ok=True)
     metal, face, skin = (os.path.join(TEX, n + ".png") for n in ("tnt_metal", "creeper_face", "creeper_skin"))
-    if not os.path.exists(metal):
-        draw_metal().save(metal)
-    f, k = draw_creeper()
-    f.save(face)
-    k.save(skin)
+    inputs = kra_stamp.inputs_for(__file__)
+    face_sheet, skin_sheet = creeper_sheets()
+    for kra, sheet in (("krita/items/tnt_metal.kra", metal_sheet()), ("krita/items/creeper_face.kra", face_sheet), ("krita/items/creeper_skin.kra", skin_sheet)):
+        kra_layers.write_if_stale(kra, sheet, inputs)
+        kra_layers.export_png(kra)                           # the PNGs now, not at the end of the build: the nitro bbmodel embeds them
     os.makedirs(BB, exist_ok=True)
     jobs = {
         "tnt": ({"side": None, "top": None, "bottom": None, "metal": metal}, [("body", [body_tnt()]), ("frame", frame())],

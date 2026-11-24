@@ -5,7 +5,7 @@ model: tools/make_mask_beam.py.
 
   python tools/make_mask_models.py
 
-Writes models/item/pickup_mask_aku.json and pickup_mask_uka.json. Run from the project folder. The original game's masks only ever exist in the local pack made by tools/extract_ctr_textures.py.
+Writes models/item/pickup_mask_aku.json and pickup_mask_uka.json. Run from the project folder. The original game's masks only ever exist in the local pack made by tools/ctr_disc/extract_ctr_textures.py.
 """
 import json
 import os

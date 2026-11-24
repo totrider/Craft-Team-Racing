@@ -5,14 +5,20 @@ kart-shaped silhouette with a bump at each wheel, and dust puffs that go from a 
   python tools/make_kart_fx.py
 
 Writes textures/entity/kart_shadow.png (64 x 80: a soft dark kart-shaped blob, front at the top) and textures/particle/dust_puff_0..4.png (16 x 16 each: a
-rough round puff that grows and darkens from picture to picture). Placeholder art: a file that exists is yours and is not overwritten (delete one to have it
-drawn again). Run from the project folder.
+rough round puff that grows and darkens from picture to picture), textures/particle/clod.png, skid_mark.png and smoke_ring.png.
+The pictures are layered files (a modder's templates): krita/particles/dust_puffs.kra (the five puffs one below the other, 16 x 80, a layer each), clod.kra, skid_mark.kra and
+smoke_ring.kra; tools/build_art.py flattens them into the PNGs. Run from the project folder.
 """
 import math
 import os
 import random
+import sys
 
 from PIL import Image, ImageDraw, ImageFilter
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import kra_layers  # noqa: E402
+import kra_stamp  # noqa: E402
 
 ASSETS = os.path.join("src", "main", "resources", "assets", "craftteamracing", "textures")
 
@@ -57,12 +63,14 @@ def puff(frame):
 
 
 def clod():
-    im = Image.new("RGBA", (8, 8), (0, 0, 0, 0))
-    d = ImageDraw.Draw(im)
+    sheet = kra_layers.Sheet(8, 8)
+    d = kra_layers.Painter(sheet)
+    d.part("clod")
     d.ellipse([1, 1, 6, 6], fill=(110, 78, 50, 255), outline=(70, 48, 30, 255))
+    d.part("highlights")
     d.point((3, 2), fill=(150, 112, 78, 255))
     d.point((4, 3), fill=(150, 112, 78, 255))
-    return im
+    return sheet
 
 
 def smoke_ring():
@@ -98,23 +106,29 @@ def skid_mark():
     return im
 
 
-def main():
-    os.makedirs(os.path.join(ASSETS, "entity"), exist_ok=True)
-    os.makedirs(os.path.join(ASSETS, "particle"), exist_ok=True)
-    # (the kart's shadow is made from its model by tools/make_kart_shadow.py)
+def one_layer(name, image):
+    sheet = kra_layers.Sheet(*image.size)
+    sheet.add(name, image)
+    return sheet
+
+
+def dust_puffs():
+    """The five puffs one below the other, a layer each (build_art cuts them apart again)."""
+    sheet = kra_layers.Sheet(16, 16 * 5)
     for i in range(5):
-        path = os.path.join(ASSETS, "particle", "dust_puff_%d.png" % i)
-        if not os.path.exists(path):
-            puff(i).save(path)
-    path = os.path.join(ASSETS, "particle", "clod.png")
-    if not os.path.exists(path):
-        clod().save(path)
-    path = os.path.join(ASSETS, "particle", "skid_mark.png")
-    if not os.path.exists(path):
-        skid_mark().save(path)
-    path = os.path.join(ASSETS, "particle", "smoke_ring.png")
-    if not os.path.exists(path):
-        smoke_ring().save(path)
+        layer = Image.new("RGBA", (16, 16 * 5), (0, 0, 0, 0))
+        layer.paste(puff(i), (0, 16 * i))
+        sheet.add("puff %d" % (i + 1), layer)
+    return sheet
+
+
+def main():
+    # (the kart's shadow is made from its model by tools/make_kart_shadow.py)
+    inputs = kra_stamp.inputs_for(__file__)
+    kra_layers.write_if_stale("krita/particles/dust_puffs.kra", dust_puffs(), inputs)
+    kra_layers.write_if_stale("krita/particles/clod.kra", clod(), inputs)
+    kra_layers.write_if_stale("krita/particles/skid_mark.kra", one_layer("tyre mark", skid_mark()), inputs)
+    kra_layers.write_if_stale("krita/particles/smoke_ring.kra", one_layer("star", smoke_ring()), inputs)
     print("kart fx textures ok")
 
 

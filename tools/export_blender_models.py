@@ -1,5 +1,5 @@
 """
-Exports the mod's Blender models: every blender/**/*.blend is opened in Blender (in the background) and tools/blender_export_models.py writes each of its collections as a model.
+Exports the mod's Blender models: every blender/**/*.blend is opened in Blender (in the background) and tools/blender/blender_export_models.py writes each of its collections as a model.
 
   python tools/export_blender_models.py
 
@@ -31,7 +31,7 @@ def export_all():
         print("Blender not found: the committed models under src/main/resources are used as they are")
         return
     for blend in blends:
-        subprocess.run([exe, "--background", "--factory-startup", blend, "--python", os.path.join("tools", "blender_export_models.py"), "--",
+        subprocess.run([exe, "--background", "--factory-startup", blend, "--python", os.path.join("tools", "blender", "blender_export_models.py"), "--",
                         os.path.join("src", "main", "resources", "assets", "craftteamracing")], check=True)
 
 

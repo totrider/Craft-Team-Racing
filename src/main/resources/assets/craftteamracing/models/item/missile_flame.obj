@@ -1,4 +1,4 @@
-# missile_flame: exported by tools/blender_export_models.py from missile_flame.blend. Do not edit; change the .blend.
+# missile_flame: exported by tools/blender/blender_export_models.py from missile_flame.blend. Do not edit; change the .blend.
 mtllib missile_flame.mtl
 o missile_flame
 usemtl atlas

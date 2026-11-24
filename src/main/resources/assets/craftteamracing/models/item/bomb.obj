@@ -1,4 +1,4 @@
-# bomb: exported by tools/blender_export_models.py from bomb.blend. Do not edit; change the .blend.
+# bomb: exported by tools/blender/blender_export_models.py from bomb.blend. Do not edit; change the .blend.
 mtllib bomb.mtl
 o bomb
 usemtl atlas
