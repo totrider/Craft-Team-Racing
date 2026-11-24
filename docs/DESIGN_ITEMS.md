@@ -37,8 +37,8 @@ The pickups are sized against that crate, from the proportions of the models on 
 the crate and kart sizes are not the original's ratio. Icons are 32 x 48, the Power Fruit sprite and the lamps 48 x 32, as the original's. The pickup's reach for a kart is its own size plus the kart's half width.
 
 ## Original art
-`tools/extract_ctr_textures.py` builds local resource packs from the player's own disc with the original crate faces, power-up icons, Power Fruit
-sprite and start lamps (Minecraft size, and original size). The disc formats it reads are in `tools/ctr_disc_textures.py`. Models stay the mod's own;
+`tools/ctr_disc/extract_ctr_textures.py` builds local resource packs from the player's own disc with the original crate faces, power-up icons, Power Fruit
+sprite and start lamps (Minecraft size, and original size). The disc formats it reads are in `tools/ctr_disc/ctr_disc_textures.py`. Models stay the mod's own;
 the packs replace the pickup sheet (`textures/item/pickups.png`: palette, "?" face, fruit crate side) and the two crate models with plain cubes.
 
 ## Rule sets

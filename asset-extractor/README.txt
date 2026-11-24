@@ -31,5 +31,5 @@ Adding a game
 Write games\<name>.json (copy ctr_usa.json: id, title, platform, serials, a folder name for its scripts under "code", and the steps), and put its extractor scripts in a
 folder of that name next to extract.py. Every script is called as
     python script.py --disc <image> --out <folder to write into> [--install <resourcepacks folder>]
-and writes a Minecraft resource pack (assets\...) into the folder. The scripts for Crash Team Racing are in ctr\ (made by tools\package_asset_extractor.py in the
-mod's source tree; when this folder is run from a source checkout without ctr\, the scripts in ..\tools are used).
+and writes a Minecraft resource pack (assets\...) into the folder. The scripts for Crash Team Racing are in ctr\ (made by tools\ctr_disc\package_asset_extractor.py in the
+mod's source tree; when this folder is run from a source checkout without ctr\, the scripts in ..\tools\ctr_disc are used).

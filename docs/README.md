@@ -19,7 +19,12 @@ The documents here come in two kinds, and the difference matters:
 | [TERRAIN.md](TERRAIN.md) | How blocks become smooth ground, and the surface tags |
 | [MUSIC.md](MUSIC.md) | Race music events and the local music pack |
 | [PHYSICS_PORT.md](PHYSICS_PORT.md) | Function-by-function map of the physics port and what is verified |
+| [DEVELOPING.md](DEVELOPING.md) | Setting up, building, how models, textures and generated files fit together, the tools and the common jobs |
 | [ROADMAP.md](ROADMAP.md) | What is built, what comes next, and the architecture decisions |
+| [../krita/README.md](../krita/README.md) | The layered Krita files (templates for modders): how they are made, the layer rules, what builds what |
+| [../blockbench/README.md](../blockbench/README.md) | The Blockbench models that are the source of every box model, and their non-obvious structure |
+| [../blender/README.md](../blender/README.md) | The Blender models (meshes) and their export conventions |
+| [../tools/README.md](../tools/README.md) | The generators and libraries, grouped by what they make |
 
 ## Design records and logs (history)
 | Document | What it is |

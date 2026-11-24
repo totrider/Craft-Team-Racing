@@ -7,6 +7,8 @@ Roadmap: `docs/ROADMAP.md`. Research: `docs/RESEARCH.md`.
 - Test instances: `F:\ATLauncher\instances\CraftTeamRacing` (NeoForge 21.1.265) and `F:\ATLauncher\instances\CraftTeamRacingMP` (multiplayer tests;
   every build goes to both). `build-and-install.bat` builds and copies the
   jar into its `mods` folder. Minecraft locks the jar while it runs: close the game first.
+- Layout (details in `docs/DEVELOPING.md` and the README of each source folder): `tools/` generators (flat: they import each other), `tools/blender/` (runs inside Blender), `tools/ctr_disc/`
+  (reads the user's own disc, local packs only), `scripts/` (launchers for the disc tools), `krita/` (the layered `.kra` templates), `modpack/` (assets for the mod and modpack pages: icons, title, instance icon).
 - Models: **Blockbench first**. Every block/item/entity model's geometry lives in `blockbench/<family>/*.bbmodel` and is
   the source of truth; generators in `tools/` read them. Never put geometry only in Java or hand-edit generated model
   JSON. Patch existing bbmodels in place so the user's manual edits survive. New model = new bbmodel first.
@@ -16,7 +18,13 @@ Roadmap: `docs/ROADMAP.md`. Research: `docs/RESEARCH.md`.
   reference pixel is 0.7361 as wide as tall); `tools/sprite_outline.py`, `tools/make_power_sprites.py`. Minecraft's own sprites the mod borrows (totem, clock) are outlined at run time (`client/IconSprites`), never copied.
 - Recipe pictures (`docs/img/recipes/`, used by the README and `docs/ITEMS.md`) are generated from the recipe JSON and the models by `tools/make_recipe_grids.py`; rerun it after changing a recipe or an icon.
 - Docs: guides describe what is implemented (README, `docs/ITEMS.md`...); `DESIGN_*.md` and the devlog are history. The README refers only to implemented features.
-- Textures: layered Krita `.kra` in `art/` (not .ora); a build script exports PNGs. Never hand-edit generated PNGs.
+- Textures: the pipeline is **script -> layered `.kra` -> PNG**. The art scripts in `tools/` write whole layered `.kra` files (`krita/`, not .ora; layers come from the drawing code),
+  and `tools/build_art.py` flattens them into the shipped PNGs (`krita/manifest.json` says which layer or tile becomes which PNG). Never hand-edit a generated PNG.
+- The `.kra` files are a **modder's resource, not a development source**: templates and baselines a modder copies into their own folder to make hand-made assets, a resource pack override
+  or their own variant. They are never edited inside the project. A script rewrites its `.kra` only when its stamp changed (a hash of the script, its helper modules and any data file it reads,
+  kept in `krita/.stamps.json`; `--force` rebuilds all), so a small change does not rebuild everything. If the author paints something by hand, the author tells Claude, and Claude carries it into
+  the script as faithfully as the script's rules allow (approximately, never by breaking the script's structure). Until a script owns its `.kra`, the file is "not yet scripted" and is left alone.
+- The same goes for a Blockbench change the author makes by hand: the author tells Claude, and Claude carries it into the generator and baseline files.
 - When handing over an editable source file (bbmodel, kra, config), say up front anything non-obvious about its structure.
 - `.mcp.json` is local only (gitignored). The Blockbench MCP server is configured there (local path).
 - Datagen output in `src/generated/resources`; data-driven things (terrain table, recipes, tags) as data packs where possible.
@@ -29,8 +37,8 @@ Roadmap: `docs/ROADMAP.md`. Research: `docs/RESEARCH.md`.
 - Sable/Create are soft dependencies (compile-only + `compat/` package + optional mod dependency). The mod must load
   without them. Never bundle Sable (Polyform Shield).
 - Do not ship CTR game assets (models, textures, audio). License is GPL-3.0-or-later because the physics is a port.
-  Original CTR sounds and textures only ever exist as LOCAL resource packs made from the user's own disc by `tools/extract_ctr_sounds.py` and
-  `tools/extract_ctr_textures.py` (`extract-ctr-sounds.bat`, `extract-ctr-textures.bat`; output in git-ignored `local-assets/`, installed into the instance's `resourcepacks/`, never in the jar,
+  Original CTR sounds and textures only ever exist as LOCAL resource packs made from the user's own disc by `tools/ctr_disc/extract_ctr_sounds.py` and
+  `tools/ctr_disc/extract_ctr_textures.py` (`scripts/extract-ctr-sounds.bat`, `scripts/extract-ctr-textures.bat`; output in git-ignored `local-assets/`, installed into the instance's `resourcepacks/`, never in the jar,
   never uploaded). The disc image in the project folder is git-ignored too. The mod ships synthesised placeholders (`tools/make_sounds.py`).
 - Client-side sim at fixed 30 Hz with interpolation; server validates, does not simulate.
 

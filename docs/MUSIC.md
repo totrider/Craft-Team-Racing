@@ -46,7 +46,7 @@ The files are `assets/craftteamracing/sounds/music/my_song.ogg` and so on. Notes
 
 ## The original's jingles
 
-`extract-ctr-music.bat` (`tools/extract_ctr_music.py`) decodes the original's jingles from your own raw disc image (2352 bytes a sector: the jingles are CD-XA audio, which a cooked
+`scripts/extract-ctr-music.bat` (`tools/ctr_disc/extract_ctr_music.py`) decodes the original's jingles from your own raw disc image (2352 bytes a sector: the jingles are CD-XA audio, which a cooked
 `.iso` does not keep) into the local resource pack `CTR-OriginalMusic` and installs it in the test instances. The pack stays on your machine, never in the repository or
 the jar. It fills `music.race_intro` (the four intro jingles), `music.final_lap` and the two `music.race_end` events. A track is located as the game does
 (`XA/ENG.XNF`, then the sectors of its channel in `XA/MUSIC/S00.XA`; the decoder follows `platform/native_audio.c`).
@@ -55,9 +55,9 @@ the jar. It fills `music.race_intro` (the four intro jingles), `music.final_lap`
 
 The original's race music is not recorded: each level has a CSEQ song pack in `SOUNDS/KART.HWL` (the sector offsets follow the bank offsets in the HOWL header,
 `howl_ParseHeader`), a small MIDI-like format played at 60 Hz by the game's own sequencer through the instrument and drum samples of the bank, on the SPU's 24 voices.
-`tools/ctr_cseq.py` (constants in `tools/ctr_spu_tables.py`, copied from `zGlobal_DATA.c` and `native_audio.c`) parses a pack, runs the sequencer offline and mixes the SPU voices;
-`tools/extract_ctr_music.py` renders **song 0 of the pack of each level 0 to 24** (the race tracks and the arenas; `data.levBank_Song` is the identity there) into the local pack
-`CTR-OriginalMusic` as `sounds/music/ctr_level_<level>.ogg`, listed under its own event `music.level.<level>` (what the track music sheet picks); `music.race`, the default for a track with no pick, holds **Crash Cove's song only**. `extract-ctr-music.bat` does it
+`tools/ctr_disc/ctr_cseq.py` (constants in `tools/ctr_disc/ctr_spu_tables.py`, copied from `zGlobal_DATA.c` and `native_audio.c`) parses a pack, runs the sequencer offline and mixes the SPU voices;
+`tools/ctr_disc/extract_ctr_music.py` renders **song 0 of the pack of each level 0 to 24** (the race tracks and the arenas; `data.levBank_Song` is the identity there) into the local pack
+`CTR-OriginalMusic` as `sounds/music/ctr_level_<level>.ogg`, listed under its own event `music.level.<level>` (what the track music sheet picks); `music.race`, the default for a track with no pick, holds **Crash Cove's song only**. `scripts/extract-ctr-music.bat` does it
 together with the jingles; `--no-level-music` skips it, `--jobs N` sets the processes (about a minute for all 40 songs). The hub levels (25 to 29), the boss race song and the
 menu/intro/credits songs are not rendered. Everything is local (`local-assets/ctr-music`, git-ignored, never in the jar).
 
@@ -71,7 +71,7 @@ The mod plays them: while the local driver's kart has the Mask on during a race,
 
 ### What is ported, by C function
 
-| Part | Python (`tools/ctr_cseq.py`) | C source |
+| Part | Python (`tools/ctr_disc/ctr_cseq.py`) | C source |
 |---|---|---|
 | song pack / song / note header layout | `CseqPack` | `howl_ParseCseqHeader`, `howl_LoadSong` (HOWL_Load.c), `SongPool_Start` (HOWL_SongPool.c) |
 | delta time of an event | `get_next_note` | `howl_GetNextNote` (HOWL_Load.c) |

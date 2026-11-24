@@ -223,8 +223,8 @@ If you own *Crash Team Racing*, the supplied tools can build **local resource pa
 
 - **The easy way: the `asset-extractor` folder.** Copy it into your Minecraft instance folder (next to `mods\` and `resourcepacks\`), put your disc image (`.bin`, `.iso` or `.cue`) into its `iso` folder and run `extract.bat`. It identifies the game from the disc itself, runs the extractors (sounds, music, textures), and installs the packs into the instance's `resourcepacks` folder; enable them in Options > Resource Packs. Needs Python 3.
   `extract.bat --list` says what is in `iso`; `--only sounds,music` runs some steps. See `asset-extractor/README.txt`.
-- **From a checkout** the separate `extract-ctr-sounds.bat`, `extract-ctr-textures.bat` (two packs: Minecraft-sized and original-sized) and `extract-ctr-music.bat` (jingles and the level music, rendered offline from the game's sequences, see [docs/MUSIC.md](docs/MUSIC.md)) do the same.
-- `browse-ctr-assets.bat` writes a local web page to look through what is on your disc, and `tools/export_ctr_mesh.py` exports models as OBJ files for Blender.
+- **From a checkout** the separate `scripts/extract-ctr-sounds.bat`, `scripts/extract-ctr-textures.bat` (two packs: Minecraft-sized and original-sized) and `scripts/extract-ctr-music.bat` (jingles and the level music, rendered offline from the game's sequences, see [docs/MUSIC.md](docs/MUSIC.md)) do the same.
+- `scripts/browse-ctr-assets.bat` writes a local web page to look through what is on your disc, and `tools/ctr_disc/export_ctr_mesh.py` exports models as OBJ files for Blender.
 
 ## Building from source
 Java 21 is needed.
@@ -247,7 +247,7 @@ The project is inspired by [**World of Kartcraft**](https://github.com/duxanlol/
 The rule for behaviour: **the default is what the PS1 game does**, as read from the decompilation. Anything beyond that (a Super Boost family, upgrades, tunings) is an opt-in extension: a different block, an item, a data pack entry or a setting. The exception is interaction with Minecraft's own entities, which is on by default.
 
 ## Contributing and project rules
-Models are made in Blockbench first (`blockbench/`), mesh models in Blender (`blender/`), textures in layered Krita files (`art/`), and the generators in `tools/` build the game files from them. The working rules are in [CLAUDE.md](CLAUDE.md); the guides and the design record are in [docs/](docs/).
+Models are made in Blockbench first (`blockbench/`) and mesh models in Blender (`blender/`); the generators in `tools/` build the game files from them. Textures are drawn by the art scripts, which also write them as layered Krita files (`krita/`), templates for anyone who wants to make their own art. The working rules are in [CLAUDE.md](CLAUDE.md); the guides and the design record are in [docs/](docs/).
 Bug reports and ideas are welcome as issues.
 
 ## License and credits
