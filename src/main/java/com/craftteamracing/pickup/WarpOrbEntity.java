@@ -92,6 +92,7 @@ public class WarpOrbEntity extends Entity {
             clientFx();
             return;
         }
+        com.craftteamracing.track.ChunkKeeper.keep(this, 3);
         ServerPlayer driver = owner == null ? null : level().getServer().getPlayerList().getPlayer(owner);
         if (driver == null) {
             discard();

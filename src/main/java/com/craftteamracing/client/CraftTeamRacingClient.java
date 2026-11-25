@@ -116,6 +116,24 @@ public final class CraftTeamRacingClient {
         event.registerSpecial(com.craftteamracing.ModParticles.CRATE_BREAK.get(), new CrateBreakParticle.Provider());
     }
 
+    /** Active only while riding a kart, and in conflict with nothing: the alternate key defaults to Q like the drop key, which does not drop anything in a kart. */
+    public static final net.neoforged.neoforge.client.settings.IKeyConflictContext IN_KART = new net.neoforged.neoforge.client.settings.IKeyConflictContext() {
+        @Override
+        public boolean isActive() {
+            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            return mc.screen == null && mc.player != null && mc.player.getVehicle() instanceof com.craftteamracing.kart.KartEntity;
+        }
+
+        @Override
+        public boolean conflicts(net.neoforged.neoforge.client.settings.IKeyConflictContext other) {
+            return other == this;
+        }
+    };
+
+    /** The held power-up's other way of firing (a Potion thrown forward, a Bomb rolled backwards). */
+    public static final KeyMapping KEY_ITEM_ALT =
+            new KeyMapping("key.craftteamracing.item_alt", IN_KART, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_Q, CATEGORY);
+
     /** Use the held power-up. */
     public static final KeyMapping KEY_ITEM =
             new KeyMapping("key.craftteamracing.item", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, CATEGORY);
@@ -139,6 +157,8 @@ public final class CraftTeamRacingClient {
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(CraftTeamRacingMod.MODID, "race_hud"), RaceHud::render);
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(CraftTeamRacingMod.MODID, "item_hud"), ItemHud::render);
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(CraftTeamRacingMod.MODID, "screen_flash"), ScreenFlash::render);
+        event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(CraftTeamRacingMod.MODID, "spectate_hud"), SpectateCamera::render);
+        event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(CraftTeamRacingMod.MODID, "leave_race_bar"), HoldBar::renderLeaveRace);
     }
 
     @SubscribeEvent
@@ -159,5 +179,6 @@ public final class CraftTeamRacingClient {
         event.register(KEY_RESPAWN);
         event.register(KEY_LEAVE);
         event.register(KEY_ITEM);
+        event.register(KEY_ITEM_ALT);
     }
 }

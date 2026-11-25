@@ -8,6 +8,7 @@ The source of every block, item and entity model that is made of boxes. One fold
 | `kart/` | The baseline kart (`kart_ctr`), the old placeholder kart, the wheel and the boost flame | `tools/make_kart_ctr.py`, `make_kart.py`, `make_kart_wheel.py`, `make_boost_flame.py` |
 | `pickups/` | The Power Fruit, the fruit crate, the power-up crates (`powerup_crate`, `_blank`, `trigger_crate`), the TNT and creeper crates, the rocket and the shield bubble | `tools/make_pickup_models.py`, `make_tnt_models.py`, `make_missile_model.py`, `make_shield_model.py` |
 | `rain_cloud/` | The red beaker's rain cloud | `tools/make_rain_cloud_model.py` |
+| `spectate/` | The viewing console: a full block, the monitor on its north face (the blockstate turns it), buttons and a joystick standing out by a pixel or two | `tools/make_viewing_console.py` |
 | `survival/` | The fluffy palm leaves, the hanging fruit pods, the wheel block and the bag of power fruit | `tools/make_survival_assets.py` |
 | `warp_orb/` | The Warp Orb's crystal | `tools/make_warp_orb_model.py` |
 

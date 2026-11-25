@@ -106,7 +106,9 @@ public final class ItemHud {
 
     public static void render(GuiGraphics g, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || !(mc.player.getVehicle() instanceof KartEntity)) {
+        // the kart whose item box this is: the player's own, or the one a viewer at a console follows (read only: nothing here changes it)
+        net.minecraft.world.entity.Entity kartShown = mc.player == null ? null : SpectateCamera.viewing() ? SpectateCamera.viewedKart() : mc.player.getVehicle() instanceof KartEntity k ? k : null;
+        if (kartShown == null) {
             PowerFruitFly.reset();
             return;
         }
@@ -201,7 +203,7 @@ public final class ItemHud {
             }
         }
 
-        PowerFruitFly.update(ItemClient.powerFruit(), mc.player.getVehicle().getPosition(delta.getGameTimeDeltaPartialTick(false)), g.guiWidth(), g.guiHeight(), mc.isPaused());
+        PowerFruitFly.update(ItemClient.powerFruit(), kartShown.getPosition(delta.getGameTimeDeltaPartialTick(false)), g.guiWidth(), g.guiHeight(), mc.isPaused());
         int powerFruit = ItemClient.powerFruit() - PowerFruitFly.pending();                // the count goes up as each fruit arrives
         int colour = ItemClient.powerFruit() >= ItemManager.CHARGED ? CHARGED : ORANGE;
         GuiTextures.drawPowerFruit(g, POWER_FRUIT, Math.round(mid + 316 * sx), Math.round(23 * sy), Math.round(20 * sy));

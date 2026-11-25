@@ -28,7 +28,7 @@ The texture scripts write layered `.kra` files into `krita/` and `build_art.py` 
 | Pickups and crates | `make_pickup_models.py`, `make_pickup_spots.py`, `make_tnt_models.py`, `make_crate_sprites.py`, `make_crate_break.py` |
 | Power-ups | `make_power_sprites.py`, `make_power_icons.py`, `make_evil_totem.py`, `make_mask_models.py`, `make_mask_beam.py`, `make_slime_shield.py`, `make_shield_model.py`, `make_warp_orb_model.py`, `make_bomb_model.py`, `make_beaker_models.py`, `make_missile_model.py`, `make_rocket_flame.py`, `make_rain_cloud_model.py`, `make_burst_sprites.py` |
 | Survival | `make_survival_assets.py` (textures, models, recipes, loot, tags, lang) |
-| Track and items | `make_track_items.py`, `make_track_overlays.py`, `make_barrier_assets.py`, `make_drop_table_icon.py`, `make_music_sheet_icon.py`, `make_rulebook_icon.py`, `make_podium_icons.py`, `make_upgrade_icons.py`, `make_confetti.py` |
+| Track and items | `make_track_items.py`, `make_track_overlays.py`, `make_barrier_assets.py`, `make_viewing_console.py`, `make_drop_table_icon.py`, `make_music_sheet_icon.py`, `make_rulebook_icon.py`, `make_podium_icons.py`, `make_upgrade_icons.py`, `make_confetti.py` |
 | Sounds | `make_sounds.py`, `make_jingles.py` (synthesised placeholders) |
 
 ## Pictures for the documentation

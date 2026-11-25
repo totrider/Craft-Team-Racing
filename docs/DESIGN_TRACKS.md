@@ -157,6 +157,14 @@ they have no links to checkpoints and the recorded routes ignore them. A Start n
   for the normal view when the space is too tight. The group shot needs the podium inside the player's loaded world (the server only sends chunks and entities round the player), otherwise the normal view stays.
 - **Cool-down:** after a race that had a podium ceremony, the Start node accepts no new race for 15 seconds after the ceremony; the usual race-starting text shows "Next race in N", and a race starts by itself when it ends if enough karts are waiting in the area.
 
+### Viewing consoles (spectating)
+
+A **Viewing Console** block is hooked up to a Start node with the Track Tool (select the Start node, click the console; the link is stored in the console, not in the node graph). Right-clicking it puts a player who is not racing in **spectator mode** and keeps them within reach of what they watch
+(the server teleports them when they are more than 6 blocks away, so the chunks and karts are sent; the viewer's position is never the camera): the leader to begin with, or, with no race on (gathering, cool-down, nothing), the Start node. The game mode and position are saved in the player's data and restored on leaving,
+on a log out and on the next login after a crash. The camera is a client-only marker entity (`SpectateCamera`): an orbit round the followed kart (mouse, wheel, click for next/previous racer), the race intro's pan during the lamps phase, the podium group shot during a ceremony, and a fixed sweep over the grid
+when idle. The viewer is sent, read only, what the followed racer is sent (`RaceManager.viewOf`, `ItemManager.viewOf`: the race state and the item box) every three ticks, and the driver's meters (speedometer angle, powerslide room, hang time, and the Floater mode the driver really runs) ride on the kart entity's synced data.
+Leaving: sneak held for three seconds, the console broken or unhooked, or the Start node removed.
+
 ## Race progress model (revised 2026-11-17)
 
 Replaces the older "rings in order, forward only" description of `RaceProgress` above. There are two things, kept apart:

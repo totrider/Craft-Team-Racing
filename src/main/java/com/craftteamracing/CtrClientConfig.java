@@ -16,6 +16,7 @@ public final class CtrClientConfig {
     public static final ModConfigSpec.BooleanValue GRID_WHEN_IDLE;
     public static final ModConfigSpec.BooleanValue SHIELD_DARK_LAYER;
     public static final ModConfigSpec.BooleanValue HIDE_JADE_IN_RACE;
+    public static final ModConfigSpec.BooleanValue SHOW_BARRIERS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -43,6 +44,9 @@ public final class CtrClientConfig {
         HIDE_JADE_IN_RACE = builder
                 .comment("With Jade installed, hide its pop-up while you take part in a race (from the gathering to the finish), so it does not get in the way of the race's own screen.")
                 .define("hideJadeInRace", true);
+        SHOW_BARRIERS = builder
+                .comment("Draw the Kart Barriers (the invisible walls that stop karts in a race) all the time, as a cyan ghost, not only while you hold a track building item. /ctr barriers switches it.")
+                .define("showBarriers", false);
         SHIELD_DARK_LAYER = builder
                 .comment("The original's held shield bubble has a dark layer under its colour (the thrown one has none): it darkens the picture behind the bubble. Turn it off to have the held shield look",
                         "like the thrown one (a bright colour layer only).")

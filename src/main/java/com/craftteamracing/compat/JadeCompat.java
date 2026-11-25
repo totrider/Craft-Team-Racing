@@ -15,6 +15,6 @@ import snownee.jade.api.WailaPlugin;
 public class JadeCompat implements IWailaPlugin {
     @Override
     public void registerClient(IWailaClientRegistration registration) {
-        registration.addRayTraceCallback(10000, (hit, accessor, original) -> CtrClientConfig.HIDE_JADE_IN_RACE.get() && RaceClient.active() ? null : accessor);
+        registration.addRayTraceCallback(10000, (hit, accessor, original) -> CtrClientConfig.HIDE_JADE_IN_RACE.get() && (RaceClient.active() || com.craftteamracing.client.SpectateCamera.viewing()) ? null : accessor);
     }
 }

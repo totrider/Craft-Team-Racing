@@ -109,6 +109,7 @@ public class TntEntity extends Entity implements MinePool.Mine {
         super.tick();
         if (!(level() instanceof ServerLevel level)) return;
         if (debug) return;
+        com.craftteamracing.track.ChunkKeeper.keep(this, 2);
         int fuse = fuse();
         if (fuse >= 0) {
             ServerPlayer driver = victim == null ? null : level.getServer().getPlayerList().getPlayer(victim);

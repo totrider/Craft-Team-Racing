@@ -13,6 +13,8 @@ public final class CtrConfig {
     public static final ModConfigSpec.EnumValue<EditPolicy> TRACK_EDITING;
     public static final ModConfigSpec.IntValue RACE_MIN_RACERS;
     public static final ModConfigSpec.DoubleValue PICKUP_TRACK_RADIUS;
+    public static final ModConfigSpec.BooleanValue KEEP_COURSE_LOADED;
+    public static final ModConfigSpec.BooleanValue KEEP_WEAPONS_LOADED;
     public static final ModConfigSpec.BooleanValue ENTITY_CONTACT;
     public static final ModConfigSpec.BooleanValue ENTITY_DAMAGE;
     public static final ModConfigSpec.BooleanValue ENTITY_DAMAGE_PLAYERS;
@@ -39,6 +41,14 @@ public final class CtrConfig {
                 .comment("A fruit, crate or power-up spot belongs to a track when it is within this many blocks of the track's line (the links between its nodes);",
                         "its pickup then appears while a race on that track is on. A spot with a redstone signal is always on.")
                 .defineInRange("pickupTrackRadius", 96.0, 8.0, 512.0);
+        KEEP_COURSE_LOADED = builder
+                .comment("Keep the chunks along a track (its nodes and the links between them) loaded and running from the moment a race gathers until it ends, so the pickup spots along the whole track keep their crates",
+                        "and the track's redstone keeps working whoever is near. Costs server time on a long track; switch off if a claims or chunk-loading mod already does this.")
+                .define("keepCourseLoaded", true);
+        KEEP_WEAPONS_LOADED = builder
+                .comment("Keep the chunks round a placed or flying weapon (TNT and Nitro crates, Potions, Bombs, Missiles, Warp Orbs) loaded for as long as it exists, so a trap does not vanish when nobody is near it and a missile or orb",
+                        "does not freeze in the air at the edge of the loaded world.")
+                .define("keepWeaponsLoaded", true);
         builder.push("entities");
         ENTITY_CONTACT = builder
                 .comment("Karts bump into other entities (mobs, boats, minecarts, players on foot): the kart bounces and the entity is thrown.",

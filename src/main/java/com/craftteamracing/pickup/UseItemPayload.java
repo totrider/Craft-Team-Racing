@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-/** Client to server: the use-item key was pressed; {@code forward} is whether the forward key was held (the original's d-pad up: a flask is thrown, not dropped), {@code back} whether the back key was (a bomb rolls backwards). */
+/** Client to server: a power-up key was pressed. The use key sends neither flag (a flask is dropped behind, a bomb rolls forward); the alternate key (Q by default) sends both: {@code forward} throws a flask forward (the original's d-pad up), {@code back} rolls a bomb backwards. */
 public record UseItemPayload(boolean forward, boolean back) implements CustomPacketPayload {
     public static final Type<UseItemPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(CraftTeamRacingMod.MODID, "use_item"));
     public static final StreamCodec<RegistryFriendlyByteBuf, UseItemPayload> STREAM_CODEC = StreamCodec.composite(

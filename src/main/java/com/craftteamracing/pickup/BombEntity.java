@@ -266,6 +266,7 @@ public class BombEntity extends Entity {
         }
         if (!(level() instanceof ServerLevel level)) return;
         if (debug) return;
+        com.craftteamracing.track.ChunkKeeper.keep(this, 3);
         if (detonate || tickCount > LIFETIME_TICKS || (raceId != null && !raceId.equals(RaceManager.raceIdOf(owner)))) {
             if (detonate) explode(level, "the use key"); else vanish();
             return;

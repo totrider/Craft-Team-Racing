@@ -355,8 +355,19 @@ def loot_tables():
                  "functions": [{"function": "minecraft:set_count", "count": {"type": "minecraft:uniform", "min": 1.0, "max": 2.0}, "add": False}]}]}]})
 
 
+# Vanilla tags that tools/make_boost_pad.py fills too (the boost blocks): this script adds its entries to what is there instead of replacing the file, whichever runs first.
+SHARED_TAGS = {"minecraft/tags/%s/%s" % (kind, name) for kind in ("block", "item") for name in ("slabs", "stairs")} | {"minecraft/tags/block/mineable/pickaxe"}
+
+
 def tag(path, values):
-    write_json(os.path.join(DATA, path + ".json"), {"values": values})
+    full = os.path.join(DATA, path + ".json")
+    obj = {}
+    if path in SHARED_TAGS and os.path.exists(full):
+        with open(full, encoding="utf-8") as f:
+            obj = json.load(f)
+        values = list(dict.fromkeys(list(obj.get("values", [])) + list(values)))
+    obj["values"] = values
+    write_json(full, obj)
 
 
 def tags():

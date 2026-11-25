@@ -92,7 +92,7 @@ public final class KartDriver {
             while (CraftTeamRacingClient.KEY_HOP2.consumeClick()) { }
         }
         springLatch = false;
-        com.craftteamracing.pickup.ItemClient.clear();
+        if (!SpectateCamera.viewing()) com.craftteamracing.pickup.ItemClient.clear();          // a viewer at a console is shown a racer's item box: this is not their kart to reset
         sim = null;
         simEntityId = -1;
         lastFluidY = Double.NEGATIVE_INFINITY;
@@ -194,6 +194,7 @@ public final class KartDriver {
             int floaterMode = race ? RaceClient.rules().floater() : kart.floaterMode();
             boolean floating = floaterMode >= 1;
             McBlockSource.floaterMode = floaterMode;
+            reportedFloater = floaterMode;
             McBlockSource.paddleActive = race ? RaceClient.rules().paddle() : kart.paddleOn();
             McBlockSource.skisActive = race ? RaceClient.rules().skis() : kart.skisOn();
             McBlockSource.barriersActive = race;              // the Kart Barriers are walls to a kart in a race, and nothing at all otherwise
@@ -541,6 +542,14 @@ public final class KartDriver {
         return (e[0] & 0xFF) | ((e[1] & 0xFF) << 8) | ((sim.steerCode() & 31) << 16);
     }
 
+    /** The Floater mode the sim runs with (the rules' in a race): other players' clients draw the kart's water effects by it. */
+    private static int reportedFloater;
+
+    /** What a viewer of the race needs to draw the meters: the needle angle, the powerslide room and the Floater mode (see KartEntity#setMeters). */
+    private static int meterData() {
+        return (sim.speedometerAngle() & 0xFFF) | (Math.min(0x3FF, sim.slideMeterRoomLeft()) << 12) | ((reportedFloater & 3) << 22);
+    }
+
     /** The kart's smoothed ground normal (what it leans on) as two bytes: x and z, value = n * 127 + 127. */
     private static int tiltData() {
         com.craftteamracing.physics.V3 up = sim.visualNormal();
@@ -621,8 +630,29 @@ public final class KartDriver {
     private static final int LEAVE_TICKS = 40;
     private static int leaveHeld;
 
+    /** How far the leave key has been held, 0 to 1 (the bar on the screen, see HoldBar). */
+    public static float leaveProgress() {
+        return Math.min(1.0F, leaveHeld / (float) LEAVE_TICKS);
+    }
+
     private static V3 toLu(Vec3 pos) {
         return new V3(KartScale.toLu(pos.x), KartScale.toLu(pos.y), KartScale.toLu(pos.z));
+    }
+
+    /**
+     * In a kart the drop key does not drop the held item, whatever it is bound to (Q by default, like the alternate fire key): the clicks are taken away at the start of the tick, before the
+     * game turns them into a drop. The alternate key is the power-up's other way of firing (a flask thrown forward, a bomb rolled backwards).
+     */
+    @SubscribeEvent
+    public static void onClientTickStart(ClientTickEvent.Pre event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || !(mc.player.getVehicle() instanceof KartEntity)) return;
+        while (mc.options.keyDrop.consumeClick()) {
+            // nothing: no drop in a kart
+        }
+        while (CraftTeamRacingClient.KEY_ITEM_ALT.consumeClick()) {
+            PacketDistributor.sendToServer(new com.craftteamracing.pickup.UseItemPayload(true, true));
+        }
     }
 
     /** Once a game tick, tell the server where the kart is and how it looks (replaces vanilla's move-vehicle packet). */
@@ -631,7 +661,8 @@ public final class KartDriver {
         Minecraft mc = Minecraft.getInstance();
         while (CraftTeamRacingClient.KEY_ITEM.consumeClick()) {
             if (mc.player != null && mc.player.getVehicle() instanceof KartEntity) {
-                PacketDistributor.sendToServer(new com.craftteamracing.pickup.UseItemPayload(mc.options.keyUp.isDown(), mc.options.keyDown.isDown()));
+                // the power-up's usual way: a flask dropped behind, a bomb rolled forward (the throttle and the steering do not change it)
+                PacketDistributor.sendToServer(new com.craftteamracing.pickup.UseItemPayload(false, false));
             }
         }
         // leaving a race: the key held for two seconds
@@ -640,8 +671,6 @@ public final class KartDriver {
             if (leaveHeld >= LEAVE_TICKS) {
                 leaveHeld = 0;
                 PacketDistributor.sendToServer(new com.craftteamracing.track.LeaveRacePayload());
-            } else if (leaveHeld % 10 == 1) {
-                mc.player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.craftteamracing.race.leaving", leaveHeld * 100 / LEAVE_TICKS), true);
             }
         } else {
             leaveHeld = 0;
@@ -654,7 +683,7 @@ public final class KartDriver {
         if (sim != null && mc.player != null && mc.player.getVehicle() instanceof KartEntity kart
                 && kart.getId() == simEntityId && !mc.isPaused()) {
             PacketDistributor.sendToServer(new KartStatePayload(kart.getId(), kart.getX(), kart.getY(), kart.getZ(),
-                    kart.getYRot(), sim.drawnYaw(), visualFlags(), engineData(), tiltData()));
+                    kart.getYRot(), sim.drawnYaw(), visualFlags(), engineData(), tiltData(), meterData(), sim.jumpMeterShown()));
         }
     }
 }

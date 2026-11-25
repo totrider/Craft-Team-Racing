@@ -1511,6 +1511,71 @@
           "file": "crate_break.png"
         }
       ]
+    },
+    {
+      "comment": "Viewing console: the front picture (16x16).",
+      "kra": "krita/blocks/viewing_console_front.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "viewing_console_front.png"
+        }
+      ]
+    },
+    {
+      "comment": "Viewing console: the side picture (16x16).",
+      "kra": "krita/blocks/viewing_console_side.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "viewing_console_side.png"
+        }
+      ]
+    },
+    {
+      "comment": "Viewing console: the back picture (16x16).",
+      "kra": "krita/blocks/viewing_console_back.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "viewing_console_back.png"
+        }
+      ]
+    },
+    {
+      "comment": "Viewing console: the top picture (16x16).",
+      "kra": "krita/blocks/viewing_console_top.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "viewing_console_top.png"
+        }
+      ]
+    },
+    {
+      "comment": "Viewing console: the parts picture (16x16).",
+      "kra": "krita/blocks/viewing_console_parts.kra",
+      "output_dir": "src/main/resources/assets/craftteamracing/textures/block",
+      "base": [
+        "base"
+      ],
+      "outputs": [
+        {
+          "file": "viewing_console_parts.png"
+        }
+      ]
     }
   ]
 }

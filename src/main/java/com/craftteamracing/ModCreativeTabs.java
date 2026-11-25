@@ -45,6 +45,7 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.PODIUM_1_NODE_ITEM.get());
                         output.accept(ModBlocks.PODIUM_2_NODE_ITEM.get());
                         output.accept(ModBlocks.PODIUM_3_NODE_ITEM.get());
+                        output.accept(ModBlocks.VIEWING_CONSOLE_ITEM.get());
                         output.accept(ModBlocks.FRUIT_SPOT_ITEM.get());
                         output.accept(ModBlocks.FRUIT_CRATE_SPOT_ITEM.get());
                         output.accept(ModBlocks.POWERUP_CRATE_SPOT_ITEM.get());

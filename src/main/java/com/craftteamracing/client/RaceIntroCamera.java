@@ -42,15 +42,14 @@ public final class RaceIntroCamera {
     public static void onFrame(RenderFrameEvent.Pre event) {
         Minecraft mc = Minecraft.getInstance();
         RacePayload s = RaceClient.state();
-        boolean intro = mc.player != null && mc.level != null && mc.player.getVehicle() instanceof KartEntity && s.phase() == RacePayload.LIGHTS
-                && RaceClient.introMsLeft() > 0 && RaceClient.introTotalMs() > 0 && s.placeSeq() != 0;
+        boolean intro = wanted(mc);
         if (!intro) {
             if (camera != null) stop(mc);
             return;
         }
         if (camera == null) {
             camera = new Marker(EntityType.MARKER, mc.level);
-            previous = mc.getCameraEntity();
+            previous = SpectateCamera.isCamera(mc.getCameraEntity()) ? mc.player : mc.getCameraEntity();
             previousType = mc.options.getCameraType();
             mc.options.setCameraType(CameraType.FIRST_PERSON);        // the camera sits at the marker, not behind it
             mc.setCameraEntity(camera);
@@ -61,6 +60,13 @@ public final class RaceIntroCamera {
         camera.moveTo(p.x(), p.y(), p.z(), p.yaw(), p.pitch());
         camera.setOldPosAndRot();
         lastPose = p;
+    }
+
+    /** Whether the intro is on for this player: a driver on the grid, or a viewer at a console (who sees it as the racer they follow does). */
+    static boolean wanted(Minecraft mc) {
+        RacePayload s = RaceClient.state();
+        return mc.player != null && mc.level != null && (mc.player.getVehicle() instanceof KartEntity || SpectateCamera.viewing()) && s.phase() == RacePayload.LIGHTS
+                && RaceClient.introMsLeft() > 0 && RaceClient.introTotalMs() > 0 && s.placeSeq() != 0;
     }
 
     private static Pose lastPose;

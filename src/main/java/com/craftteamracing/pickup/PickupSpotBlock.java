@@ -129,6 +129,15 @@ public class PickupSpotBlock extends Block implements EntityBlock {
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
+        if (stack.getItem() instanceof WrenchItem && kind != PickupKind.TRIGGER_CRATE && player.isShiftKeyDown()) {
+            // crouching with the Wrench: whether a race manages this spot (default) or only redstone does
+            if (level.isClientSide) return ItemInteractionResult.SUCCESS;
+            if (player instanceof ServerPlayer sp && TrackPermissions.canEdit(sp, pos) && level.getBlockEntity(pos) instanceof PickupSpotBlockEntity be) {
+                be.setRaceManaged(!be.raceManaged());
+                sp.displayClientMessage(Component.translatable(be.raceManaged() ? "message.craftteamracing.spot.race_managed" : "message.craftteamracing.spot.redstone_only"), true);
+            }
+            return ItemInteractionResult.CONSUME;
+        }
         if (!(stack.getItem() instanceof WrenchItem) || (kind != PickupKind.POWERUP_CRATE && kind != PickupKind.TRIGGER_CRATE)) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }

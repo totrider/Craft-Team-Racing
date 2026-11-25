@@ -1,5 +1,5 @@
 # Builds Craft Team Racing and copies the jar into the ATLauncher test instance.
-# Run it from anywhere:  powershell -ExecutionPolicy Bypass -File "H:\Craft Team Racing\build-and-install.ps1"
+# Run it from anywhere:  powershell -ExecutionPolicy Bypass -File build-and-install.ps1
 # (or just double-click build-and-install.bat)
 
 $ErrorActionPreference = "Stop"
@@ -70,6 +70,7 @@ if (Get-Command python -ErrorAction SilentlyContinue) {
     Run-Gen "make_podium_icons.py"
     Run-Gen "make_upgrade_icons.py"
     Run-Gen "make_barrier_assets.py"
+    Run-Gen "make_viewing_console.py"
     Run-Gen "make_confetti.py"
     Run-Gen "make_rain_cloud_model.py"
     # the layered Krita files (krita/) are flattened into the PNGs the scripts above no longer write themselves (see krita/README.md)
@@ -100,7 +101,6 @@ foreach ($instance in $Instances) {
     }
     # remove older craftteamracing jars so two versions never load together
     Get-ChildItem $mods -Filter "craftteamracing-*.jar" | Remove-Item -Force
-    Get-ChildItem $mods -Filter "ctrcraft-*.jar" | Remove-Item -Force   # the jar's old name
     Copy-Item $jar.FullName $mods -Force
     Write-Host "`nInstalled $($jar.Name) -> $mods" -ForegroundColor Green
     $installed++

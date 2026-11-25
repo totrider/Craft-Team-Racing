@@ -1,5 +1,8 @@
 {
+  "replace": false,
   "values": [
-    "craftteamracing:power_palm_slab"
+    "craftteamracing:power_palm_slab",
+    "craftteamracing:boost_slab",
+    "craftteamracing:super_boost_slab"
   ]
 }

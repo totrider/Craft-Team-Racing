@@ -18,7 +18,7 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 /**
  * Draws the Kart Barriers near the player as translucent cyan boxes with an outline, only while the player holds something for building a track (the barrier itself, the Track Tool,
- * a node block, a spot block or the Wrench) or the nodes debug view is on. Faces between two barriers are left out, so a wall of them reads as one slab.
+ * a node block, a spot block or the Wrench), or the nodes debug view is on, or the player has switched them on for good with {@code /ctr barriers} (client config {@code showBarriers}). Faces between two barriers are left out, so a wall of them reads as one slab.
  */
 @EventBusSubscriber(modid = CraftTeamRacingMod.MODID, value = Dist.CLIENT)
 public final class BarrierGhostRenderer {
@@ -30,7 +30,7 @@ public final class BarrierGhostRenderer {
     public static void render(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return;
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || mc.player == null || !(PickupSpotRenderer.holdingEditingItem(mc.player) || RaceDebugClient.nodes())) return;
+        if (mc.level == null || mc.player == null || !(PickupSpotRenderer.holdingEditingItem(mc.player) || RaceDebugClient.nodes() || com.craftteamracing.CtrClientConfig.SHOW_BARRIERS.get())) return;
         BlockPos centre = mc.player.blockPosition();
         PoseStack pose = event.getPoseStack();
         Vec3 cam = event.getCamera().getPosition();

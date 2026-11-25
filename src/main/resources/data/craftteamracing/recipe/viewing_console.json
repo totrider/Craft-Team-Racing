@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "I": {
+      "item": "craftteamracing:power_ingot"
+    },
+    "N": {
+      "item": "craftteamracing:power_nugget"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "III",
+    "IGI",
+    "NRN"
+  ],
+  "result": {
+    "id": "craftteamracing:viewing_console",
+    "count": 1
+  }
+}

@@ -125,7 +125,10 @@ Invisible markers that make a track; you see them while you hold a node, the Tra
 
 <img src="img/recipes/podium_3_node.png" width="292" alt="podium 3 node recipe">
 
-**Kart Barrier**: Makes 16. A block that stops karts and nothing else, and only while the kart is in a race: players, mobs and karts out of a race pass through it. It is invisible, and drawn as a cyan ghost only while you hold a track building item, so you can place and remove a wall of them.
+**Viewing Console**: Shaped: five Power Ingots, two Power Nuggets, a glass pane and redstone. A full block with a monitor on one face (it faces you when placed) and buttons, keys and a joystick on the others. Hook it up to a Start Node with the Track Tool, then right-click it to watch that track's race: see the README's "Watching a race".
+
+<img src="img/recipes/viewing_console.png" width="292" alt="viewing console recipe">
+**Kart Barrier**: Makes 16. A block that stops karts and nothing else, and only while the kart is in a race: players, mobs and karts out of a race pass through it. It is invisible, and drawn as a cyan ghost only while you hold a track building item, so you can place and remove a wall of them. While you hold any block you can still point at one, so a regular block can be placed against its face. `/ctr barriers` draws them all the time (and `/ctr barriers off` goes back), for an overview without switching items; the choice is saved in the client config.
 
 <img src="img/recipes/race_barrier.png" width="292" alt="race barrier recipe">
 
@@ -134,7 +137,7 @@ Invisible markers that make a track; you see them while you hold a node, the Tra
 <img src="img/recipes/redstone_link_node.png" width="292" alt="redstone link node recipe">
 
 ## Crates and spots
-Spots are small markers: a pickup appears there while a race is on a track near it, or when a redstone signal arms it. The crates are also plain building blocks.
+Spots are small markers: a pickup appears there while a race is on a track near it, or while a redstone signal is on it. The crates are also plain building blocks. The four spots can be placed in mid-air: right-click while pointing at nothing and the spot goes up to three blocks in front of you, as if it were against a block (the old "angel block"), with an outline showing the cell it will take; pointing at a block places it against that block as usual. Crouch and right-click a spot with the Wrench to switch whether a race manages it (the default) or only redstone does: a spot set to redstone only ignores races, so a signal alone brings its pickup (a race-managed spot still also reacts to redstone).
 
 **Item Crate**: A block marked on every side as a power-up crate is, and the ingredient of the power-up crate spot and the Drop Table.
 

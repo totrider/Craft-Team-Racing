@@ -33,6 +33,9 @@ public class TrackToolItem extends Item {
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
+        if (level.getBlockState(pos).getBlock() instanceof com.craftteamracing.spectate.ViewingConsoleBlock) {
+            return hookConsole(context, level, pos);
+        }
         if (!(level.getBlockState(pos).getBlock() instanceof TrackNodeBlock)) {
             return InteractionResult.PASS;
         }
@@ -101,6 +104,32 @@ public class TrackToolItem extends Item {
             }
             case TWO_STARTS -> player.displayClientMessage(Component.translatable("message.craftteamracing.track.two_starts"), true);
             default -> player.displayClientMessage(Component.translatable("message.craftteamracing.track.cleared"), true);
+        }
+        return InteractionResult.CONSUME;
+    }
+
+    /** A viewing console is hooked up to the selected Start node (or unhooked, if it already is). */
+    private InteractionResult hookConsole(UseOnContext context, Level level, BlockPos pos) {
+        if (!(level instanceof ServerLevel server) || !(context.getPlayer() instanceof ServerPlayer player)) {
+            return InteractionResult.SUCCESS;
+        }
+        if (!TrackPermissions.canEdit(player, pos)) {
+            player.displayClientMessage(Component.translatable("message.craftteamracing.track.no_permission"), true);
+            return InteractionResult.FAIL;
+        }
+        GlobalPos selected = context.getItemInHand().get(ModComponents.SELECTED_NODE.get());
+        TrackGraph graph = TrackData.get(server).graph();
+        TrackGraph.Node node = selected == null || !selected.dimension().equals(server.dimension()) ? null : graph.get(selected.pos().asLong());
+        if (node == null || node.kind != TrackGraph.Kind.START || !(level.getBlockEntity(pos) instanceof com.craftteamracing.spectate.ViewingConsoleBlockEntity be)) {
+            player.displayClientMessage(Component.translatable("message.craftteamracing.console.needs_start"), true);
+            return InteractionResult.CONSUME;
+        }
+        if (be.linked() && be.start() == selected.pos().asLong()) {
+            be.unlink();
+            player.displayClientMessage(Component.translatable("message.craftteamracing.console.unhooked"), true);
+        } else {
+            be.link(selected.pos().asLong());
+            player.displayClientMessage(Component.translatable("message.craftteamracing.console.hooked"), true);
         }
         return InteractionResult.CONSUME;
     }

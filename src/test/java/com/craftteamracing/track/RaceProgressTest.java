@@ -187,4 +187,61 @@ class RaceProgressTest {
             assertEquals(Kind.LAP, p.reach(s).kind());
         }
     }
+
+    private static long at(int x, int y, int z) {
+        return NodeGeometry.pack(x, y, z);
+    }
+
+    /**
+     * A track from a real world: the main path S, 1 ... 7 and back to S, and a shortcut that leaves at ring 3, passes two rings and runs into S beside main ring 7 to S. Driving the shortcut
+     * to its end and then (a jump sideways) on to the main path beside it, the line must end at main ring 7 (the one before the exit) without a skipped checkpoint, wherever the main path's nearest segment is along the way.
+     */
+    @Test
+    void aShortcutMergingIntoTheStartLeavesTheLineAtTheRingBeforeIt() {
+        long[] m = { at(-729, -56, 624), at(-733, -59, 557), at(-795, -57, 534), at(-805, -59, 580), at(-804, -60, 635), at(-812, -60, 697), at(-754, -60, 708), at(-722, -57, 676) };
+        long b1 = at(-779, -56, 627);
+        long b2 = at(-751, -52, 669);
+        TrackGraph g = new TrackGraph();
+        g.put(m[0], TrackGraph.Kind.START, 0);
+        for (int i = 1; i < 8; i++) g.put(m[i], TrackGraph.Kind.CHECKPOINT, 0);
+        g.put(b1, TrackGraph.Kind.CHECKPOINT, 0);
+        g.put(b2, TrackGraph.Kind.CHECKPOINT, 0);
+        for (int i = 0; i < 8; i++) g.toggleLink(m[i], m[(i + 1) % 8]);
+        g.toggleLink(m[3], b1);
+        g.toggleLink(b1, b2);
+        g.toggleLink(b2, m[0]);
+        TrackRoutes r = new TrackRoutes();
+        TestDrive d = new TestDrive(g, r, m[0]);
+        for (int i = 1; i < 8; i++) d.reach(m[i]);
+        d.reach(m[0]);
+        d.reach(b1);
+        d.reach(b2);
+        d.reach(m[0]);
+        RaceProgress p = new RaceProgress(g, r);
+        p.reach(m[1]);
+        p.reach(m[2]);
+        p.reach(m[3]);
+        double[][] way = { { -805, -59, 580 }, { -779, -56, 627 }, { -751, -52, 669 }, { -735, -57, 672 }, { -727, -57, 643 }, { -729, -56, 624 } };
+        double px = way[0][0] + 0.5;
+        double py = way[0][1] + 0.5;
+        double pz = way[0][2] + 0.5;
+        for (int leg = 1; leg < way.length; leg++) {
+            double len = Math.sqrt(Math.pow(way[leg][0] - way[leg - 1][0], 2) + Math.pow(way[leg][2] - way[leg - 1][2], 2));
+            int steps = (int) Math.ceil(len);
+            for (int s = 1; s <= steps; s++) {
+                double u = s / (double) steps;
+                double x = way[leg - 1][0] + (way[leg][0] - way[leg - 1][0]) * u + 0.5;
+                double y = way[leg - 1][1] + (way[leg][1] - way[leg - 1][1]) * u + 0.5;
+                double z = way[leg - 1][2] + (way[leg][2] - way[leg - 1][2]) * u + 0.5;
+                p.track(x, y, z);
+                p.move(px, py, pz, x, y, z);
+                p.noteDirection();
+                px = x;
+                py = y;
+                pz = z;
+                assertTrue(!p.skipped(), "skipped at leg " + leg + " step " + s + ": " + p.debug().info());
+            }
+        }
+        assertEquals(1, p.laps(), p.debug().info());
+    }
 }

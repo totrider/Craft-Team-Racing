@@ -16,6 +16,9 @@ public final class ModBlockEntities {
             () -> BlockEntityType.Builder.of(PickupSpotBlockEntity::new, ModBlocks.FRUIT_SPOT.get(), ModBlocks.FRUIT_CRATE_SPOT.get(),
                     ModBlocks.POWERUP_CRATE_SPOT.get(), ModBlocks.TRIGGER_CRATE_SPOT.get()).build(null));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.craftteamracing.spectate.ViewingConsoleBlockEntity>> VIEWING_CONSOLE = BLOCK_ENTITIES.register("viewing_console",
+            () -> BlockEntityType.Builder.of(com.craftteamracing.spectate.ViewingConsoleBlockEntity::new, ModBlocks.VIEWING_CONSOLE.get()).build(null));
+
     private ModBlockEntities() {}
 
     public static void register(IEventBus modEventBus) {

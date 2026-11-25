@@ -20,7 +20,7 @@ A NeoForge mod for **Minecraft 1.21.1** (NeoForge 21.1.x, Java 21). Standalone: 
 - **Smooth driving over Minecraft terrain.** One-block steps, slabs and stairs become ramps; two-block steps and fences are walls. No special road blocks are needed.
 - **Boost blocks** (pad, block, slab, stairs, plus a blue **Super Boost** family), with connected textures if Fusion is installed and support for Create's and Copycats+ copycat blocks.
 - **A track editor made of blocks and one tool**: Start and Checkpoint nodes, a Track Tool, and a test drive that validates the course, with support for branching paths and shortcuts.
-- **Races for you and your friends**: a gathering area, a camera pan over the grid, the four lamps, start rev, laps, positions, a track bar and respawn. Optional Podium nodes add a podium ceremony with confetti, and nodes and triggers can give redstone outputs.
+- **Races for you and your friends**: a gathering area, a camera pan over the grid, the four lamps, start rev, laps, positions, a track bar and respawn. Optional Podium nodes add a podium ceremony with confetti, a Viewing Console lets anyone who is not racing watch, and nodes and triggers can give redstone outputs.
 - **Crates and power-ups** with an authentic, place-based randomisation: Redstone Surge, Bomb, Rocket, TNT, Potion, Slime Shield, Totem, End Crystal and Clock, each with a stronger *charged* form at 10 Power Fruit.
 - **Rule items**: a Rulebook, a Drop Table and a Track Music Sheet decide the rules, the power-ups and the music of a track, as track defaults or per race.
 
@@ -61,13 +61,14 @@ A summary of what is in the mod. Everything is in the *Craft Team Racing* creati
 | Item | What it does |
 |---|---|
 | **Kart** | A rideable kart. Right-click the ground to place it, right-click it to get in, sneak to get out (not in a race). Dyes paint the frame; with one leather also the seat; a water cauldron washes it off. Picking it up with the Wrench keeps its upgrades, paint and tuning. |
-| **Wrench** | Right-click a kart for its screen (can it start races, its upgrades, its tuning). Right-click a power-up crate spot to choose what it gives. Crouch and hit a kart to pick it up. |
+| **Wrench** | Right-click a kart for its screen (can it start races, its upgrades, its tuning). Right-click a power-up crate spot to choose what it gives. Crouch and right-click any pickup spot to switch whether a race manages it or only redstone does. Crouch and hit a kart to pick it up. |
 | **Boost Pad / Block / Slab / Stairs** | A turbo boost whichever way you drive over it; the arrow is a marker. The pad has no collision. An empty-hand click turns the arrow. |
 | **Super Boost Pad / Block / Slab / Stairs** | An opt-in blue boost family: a longer, stronger boost with the blue flame. |
 | **Track Tool** | Links nodes, resizes their boxes, opens the Start Node's menu. |
 | **Kart Barrier** | An invisible wall that stops karts only, and only during a race. Shown as a ghost while you hold a track building item. |
 | **Start Node**, **Checkpoint Node** | Invisible markers that make the track. See [Building a race track](#building-a-race-track). |
 | **Podium Nodes** (1st, 2nd, 3rd) | Optional: where the winners stand for the podium ceremony. |
+| **Viewing Console** | Optional: a full block with a monitor that lets a player who is not racing watch the race of the Start Node it is hooked up to. See [Watching a race](#8-watching-a-race-optional). |
 | **Power Fruit Spot**, **Power Fruit Crate Spot**, **Power-up Crate Spot** | Where fruit, fruit crates and power-up crates appear in a race. Invisible unless you hold something to edit them. |
 | **Trigger Crate Spot**, **Redstone Linking Node** | A "!" crate that gives a redstone signal when it is broken, and the wireless far end of that signal. |
 | **Rulebook**, **Drop Table**, **Track Music Sheet** | Rules, power-up drops and music of a track. Right-click a Start Node to apply. |
@@ -79,7 +80,7 @@ A summary of what is in the mod. Everything is in the *Craft Team Racing* creati
 ### Fruit, crates and power-ups
 Spots are small marker blocks, invisible unless you hold something to edit them.
 - **In a race:** a pickup appears at a spot while a race is on a track near it (within 96 blocks of the track, configurable) and is gone when the race ends.
-- **With redstone (optional):** a redstone signal can arm a spot, so its pickup appears and stays without any race. Spots with and without redstone can share a track.
+- **With redstone (optional):** a redstone signal switches a spot on, so its pickup appears (and respawns) without any race for as long as the signal lasts. Spots with and without redstone can share a track.
 - **Power Fruit count and held power-up** belong to the kart; every race starts with nothing.
 - **Charged:** at 10 Power Fruit a kart is **charged** and its power-ups come in their stronger forms.
 - **Crates spin.** In the original a crate keeps a fixed orientation. Here crates spin and hover, which looks more alive, and the spots can be placed freely, in mid-air or against a block. This is a deliberate difference.
@@ -111,7 +112,7 @@ All of these can be rebound under Options > Controls > Craft Team Racing (the mo
 | Brake | `X` | With `W` held, a power-brake. |
 | Hop / powerslide / boost press | `Space` | Hop; land with it held and steering to powerslide; tap it in the red zone of the meter to boost. |
 | Second shoulder button | `C` | The same as `Space`; either one hops and boosts. |
-| Use the held power-up | `V` | Hold forward to throw a Potion, back to roll a Bomb backwards; use again to set a Bomb off early or throw a Slime Shield. |
+| Use the held power-up | `V` | The alternate way of firing is its own key (`Q` by default; the drop key does nothing in a kart): it throws a Potion forward and rolls a Bomb backwards. Use again to set a Bomb off early or throw a Slime Shield. |
 | Respawn at last checkpoint | `R` | Race only, with a short cooldown. |
 | Leave a race | hold `Backspace` | Two seconds, race only. |
 | Get out of the kart | `Shift` | Not during a race. |
@@ -157,6 +158,8 @@ A node linked to several others makes a **branch**: link a shortcut or alternati
 Sneak + right-click the **Start Node** with the tool for its menu and choose *Start test drive*. Drive a kart round the course through every box in order: the boxes you can reach next glow cyan and a gold line shows the recorded **main path**.
 Passing the start again closes the lap; then drive the branches back to the main path. The track is **valid** once every node is driven. The menu also sets the number of laps and can re-record the main lap.
 
+In a race, the rings next to a fork or a merge count in either order: after the node where a branch leaves, either the branch's first ring or the next main ring counts, and you can back out of a branch onto the main path (or the other way round) without driving back to the fork, because either route covers the same ground. A merge is a closed case: once all of a shortcut's rings are passed, the main ring before the node it merges into is where your line is, whichever lane you end up nearest.
+
 ### 6. Race
 Drive a kart into the **gathering area**, a box 16 blocks wide and deep behind the Start Node's line. With the default setting one kart is enough to begin; the 10 second countdown lets others drive in.
 Karts are put on the grid in random order and held; **hold the gas to rev while the four lamps count down and let go at the right time for the start boost** (rev into the red zone for a small boost, pump the gas to raise the target for a big one, hold it too long and you get nothing).
@@ -164,10 +167,19 @@ Then it is laps, positions and times; `R` takes you back to your last checkpoint
 
 ### 7. Podium (optional)
 A track works without this step. Place **Podium Nodes** (1st, 2nd, 3rd) where the winners should stand, facing the way their karts should face, and hook each one up to the Start Node (Track Tool: click the podium node, then the Start Node).
-With all three hooked up the first three finishers are put on their podiums, finished racers are *ethereal* (no collisions, no pickups), confetti and streamers rain over the occupied podiums, the camera sweeps over the winners,
+With all three hooked up the first three finishers are put on their podiums, finished racers are *ethereal* (no collisions, no pickups), confetti and streamers rain over the occupied podiums, everyone else is put back on the grid place they started in and watches the camera sweep over the winners (with a podium node in hand, the camera's paths are drawn: green for the group shot, a red cross where it has no room),
 the Start Node and podium nodes are **redstone sources** while active, and after the ceremony the track is closed for 15 seconds before the next race can start.
 
-### 8. Crates, rules, music
+### 8. Watching a race (optional)
+Place a **Viewing Console** anywhere (the monitor faces you as you place it) and hook it up to the Start Node with the Track Tool: select the Start Node, then click the console (click again to unhook).
+Right-clicking the console tunes in to that track at any time. You are put in spectator mode, so nothing can hurt or push you, and you take no part in the race; breaking or unhooking the console, or leaving, puts you back in your game mode and where you stood (also after a log out or a crash).
+- **No race on:** the camera hangs up and in front of the Start Node and sweeps over the grid, and you see what a racer waiting in the starting area sees: the race starting soon, the cool-down. The wheel zooms.
+- **Lamps and race:** you follow a racer, starting with the leader, and see the intro pan over the grid and that racer's screen: clock, lap times, places, track bar, item box, power fruit and speedometer. Left and right click switch to the next and the previous racer, the mouse turns the view round the kart, the wheel zooms. If your racer finishes you move to the one who is now in their place.
+- **Podium:** with the podium nodes set up, you watch the same group shot as the racers who are not on the podium.
+- **Leaving:** hold sneak for three seconds (a bar fills). Jade's pop-up is hidden while you watch, as it is in a race.
+The console is crafted from Power Ingots, Power Nuggets, a glass pane and redstone (see [docs/ITEMS.md](docs/ITEMS.md)).
+
+### 9. Crates, rules, music
 Place **Power Fruit Spots**, **Fruit Crate Spots** and **Power-up Crate Spots** along the road (within 96 blocks of the track). The **Wrench** on a power-up crate spot makes it give a particular power-up or a selection.
 The **Rulebook** sets which pickups and boost pads exist, the race's pace, driver damage and hunger, and which upgrades count for everyone; the **Drop Table** sets which power-ups crates give; the **Track Music Sheet** the music.
 Each is applied by right-clicking the Start Node, as the track's default or for the next race only.
@@ -176,7 +188,7 @@ Each is applied by right-clicking the Start Node, as the track's default or for 
 - **Gaps in the boxes.** A kart has to *touch* the next node's box. If the road is wider than the box, or a jump takes the kart more than 8 blocks above (or 3 below) the node, the checkpoint will not count. Widen the box or add a node before and after the jump.
 - **A box that covers more than its part of the track** (a hairpin, a parallel lane, a bridge over the track) lets players skip ahead. Keep boxes to the road they belong to.
 - **Forgotten nodes.** The track is only valid when every node, branch included, has been test driven. Changing nodes or links later invalidates it; a race cannot start on an invalid track.
-- **Unclosed loops.** Link the last node back to the Start. Branches must rejoin the main path at both ends.
+- **Unclosed loops.** Link the last node back to the Start. Branches must rejoin the main path at both ends (a branch may rejoin at the Start Node itself).
 - **A start line with no room.** Karts are placed on a grid behind the Start Node (two rows of four, 3.8 blocks apart along a row, rows 5 blocks apart, starting 2 blocks behind the line), so flat road about 12 blocks wide must be there.
 - **Two Start Nodes close together** overlap their gathering areas. Keep them well apart.
 - **Unloaded chunks.** The server follows a kart only in loaded chunks; keep this in mind for very large tracks.
@@ -204,7 +216,7 @@ Craft Team Racing is a **standalone mod**: everything above works without any ot
 | [**Open Parties and Claims**](https://github.com/thexaero/open-parties-and-claims) | Planned | Track building that respects claims. |
 
 ## Configuration
-- **Server** (`craftteamracing-server.toml` in the world's `serverconfig` folder): `trackEditing`, `raceMinRacers`, `pickupTrackRadius`, `speedScale`, `shrinkJumps`, `weaponSpeedScale`, `disabledTuningProfiles`, `entities` (`contact`, `damage`, `damagePlayers`, `damageScale`), `worldgen` (`powerPalms`, `powerPalmsPerChunk`, `oases`, `oasisRarity`).
+- **Server** (`craftteamracing-server.toml` in the world's `serverconfig` folder): `trackEditing`, `raceMinRacers`, `pickupTrackRadius`, `keepCourseLoaded`, `keepWeaponsLoaded`, `speedScale`, `shrinkJumps`, `weaponSpeedScale`, `disabledTuningProfiles`, `entities` (`contact`, `damage`, `damagePlayers`, `damageScale`), `worldgen` (`powerPalms`, `powerPalmsPerChunk`, `oases`, `oasisRarity`).
 - **Client** (`craftteamracing-client.toml` in `config`): sounds, animated boost pads, podium camera, wrong-way and skipped-checkpoint warnings, motion blur, the idle start grid, Jade hiding, the shield's dark layer. All have an in-game config screen (Mods > Craft Team Racing > Config).
 - **Data packs**: kart tuning profiles (`data/<namespace>/craftteamracing/kart_tuning/`, [docs/KART_TUNING.md](docs/KART_TUNING.md)), surfaces and boost pads (block tags), recipes and loot as usual.
 

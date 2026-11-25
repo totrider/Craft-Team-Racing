@@ -1,5 +1,8 @@
 {
+  "replace": false,
   "values": [
-    "craftteamracing:power_palm_stairs"
+    "craftteamracing:power_palm_stairs",
+    "craftteamracing:boost_stairs",
+    "craftteamracing:super_boost_stairs"
   ]
 }

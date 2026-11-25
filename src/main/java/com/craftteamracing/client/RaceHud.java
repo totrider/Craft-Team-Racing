@@ -88,7 +88,7 @@ public final class RaceHud {
             case RacePayload.LIGHTS -> {
                 if (RaceClient.introMsLeft() > 0) break;          // the camera pans over the grid first: the lamps come after
                 lights(g, sc, s.lights());
-                rev(g, mc, sc);
+                if (!SpectateCamera.viewing()) rev(g, mc, sc);          // a viewer does not rev an engine
             }
             case RacePayload.RACING, RacePayload.DONE -> {
                 // the green lamp (with the reds) stays up for 960 ms after GO
@@ -97,6 +97,11 @@ public final class RaceHud {
             }
             default -> { }
         }
+    }
+
+    /** The racer this screen is about: the player, or the racer a viewer at a console follows. */
+    private static UUID self(Minecraft mc) {
+        return SpectateCamera.viewing() ? SpectateCamera.racerId() : mc.player != null ? mc.player.getUUID() : null;
     }
 
     /** Text at a reference position: big font is 16 px tall on the reference screen, small 8. */
@@ -189,7 +194,7 @@ public final class RaceHud {
         for (int pass = 0; pass < 2; pass++) {
             for (int i = s.barIds().size() - 1; i >= 0; i--) {
                 UUID id = s.barIds().get(i);
-                boolean me = mc.player != null && id.equals(mc.player.getUUID());
+                boolean me = id.equals(self(mc));
                 if (me != (pass == 1)) continue;
                 int size = me ? head + Math.max(2, Math.round(sc.sy() * 0.6F)) : head;
                 int cx = x0 + Math.round(s.barPos().get(i) * width);
@@ -240,7 +245,6 @@ public final class RaceHud {
         for (int i = 0; i < s.order().size(); i++) {
             UUID id = s.order().get(i);
             int top = sc.y(57 + LEFT_SHIFT + CLOCK_GAP + LAP_GAP) + PORTRAIT_GAP + i * row;
-            boolean me = mc.player != null && id.equals(mc.player.getUUID());
             g.fill(sc.x(20) - 1, top - 1, sc.x(20) + head + 1, top + head + 1, 0x99000000);      // the original's dark, half-transparent box; nobody is marked
             PlayerInfo info = mc.getConnection() == null ? null : mc.getConnection().getPlayerInfo(id);
             PlayerSkin skin = info != null ? info.getSkin() : DefaultPlayerSkin.get(id);

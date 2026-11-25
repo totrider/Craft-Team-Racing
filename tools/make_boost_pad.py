@@ -561,7 +561,10 @@ def main():
 
     # ---- tags: the pad tags are per family (a normal pad, a super pad), the rest cover all of them
     def tag(kind, ns, path, values):
-        dump(os.path.join(DATA, ns, "tags", kind, path + ".json"), {"replace": False, "values": values})
+        full = os.path.join(DATA, ns, "tags", kind, path + ".json")
+        if ns == "minecraft" and os.path.exists(full):        # the vanilla tags are shared with tools/make_survival_assets.py (the palm): add to what is there
+            values = list(dict.fromkeys(list(json.load(open(full, encoding="utf-8")).get("values", [])) + list(values)))
+        dump(full, {"replace": False, "values": values})
     every = [f"{NS}:{b}" for fam in FAMILIES for b in all_blocks[fam["key"]]]
     tag("block", NS, "turbo_pad", [f"{NS}:{b}" for b in all_blocks["boost"]])
     tag("block", NS, "super_turbo_pad", [f"{NS}:{b}" for b in all_blocks["super_boost"]])

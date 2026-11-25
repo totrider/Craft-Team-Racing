@@ -6,8 +6,8 @@ What each power-up does in the mod today, and where that differs from the origin
 - **Getting one:** break a power-up crate while holding nothing. The roulette spins for 3 seconds, then the draw is made from a table. By default the table is the original's, which depends on the number of karts and your place in the race (last place gets the strongest items; on lap 1 the last place's table is replaced by the third's). A Drop Table item, or a crate spot set with the Wrench, replaces it (see [ITEMS.md](ITEMS.md)).
 - **Quantity:** how many shots a power-up gives is not fixed. The original's table has "stack of three" entries for the Bomb and the Rocket and the default table keeps them. A crate spot can give any power-up in any quantity from 1 to 10, or a random number in a range. Every use takes one shot off the stack, with a short cooldown between shots, and the HUD shows how many are left.
 - **Charged:** at **10 Power Fruit** the kart is charged: the effect is stronger, as listed below, and a shining burst sits behind the held power-up in the HUD.
-- **Using:** the use key (`V`). Hold forward or back for the throw direction where a power-up has one.
-- **Placed weapons** (TNT crate, Potion) share a pool of 10 per race, cleared when the race ends, and before the lights every bomb, missile, potion, TNT crate and warp orb within the pickup radius of the track is removed, whoever threw it (a driver outside the race too); a new one when the pool is full bursts the oldest. Outside a race each player has a pool of 10, and one nobody touches goes away after five minutes.
+- **Using:** the use key (`V`). A power-up with another way of firing (a Potion thrown forward, a Bomb rolled backwards) uses the **alternate key** (`Q` by default, its own binding). The drop key never drops items while you are in a kart, whatever it is bound to.
+- **Placed weapons** (TNT crate, Potion) share a pool of 10 per race, cleared when the race ends, and before the lights every bomb, missile, potion, TNT crate and warp orb within the pickup radius of the track is removed, whoever threw it (a driver outside the race too); a new one when the pool is full bursts the oldest. Outside a race each player has a pool of 10, and one nobody touches goes away after five minutes. A placed or flying weapon keeps the chunks round it loaded for as long as it exists (the server's `keepWeaponsLoaded`), so a trap does not vanish when nobody is near it and a Missile or Warp Orb does not freeze at the edge of the loaded world; weapons are not saved, so without that a trap would be lost with its chunk.
 - **Shields and the Totem:** a Slime Shield or a Totem takes any hostile power-up effect. Damage from the rain cloud, a blast, a spin and the Clock is stopped.
 
 ## The power-ups
@@ -25,7 +25,7 @@ A speed burst.
 
 <img src="img/powerups/bomb.png" width="160" alt="Bomb">
 
-Rolls along the ground in the kart's heading, or backwards at a slower speed when back is held while using it. Follows slopes, climbs a block, explodes on a wall, a kart, a placed weapon or after a long fall, or when you press use again. The blast spins out the karts it reaches (and costs them Power Fruit), and also hurts and throws other entities. Breaks crates it rolls into.
+Rolls along the ground in the kart's heading, or backwards at a slower speed when fired with the alternate key (`Q`). Follows slopes, climbs a block, explodes on a wall, a kart, a placed weapon or after a long fall, or when you press use again. The blast spins out the karts it reaches (and costs them Power Fruit), and also hurts and throws other entities. Breaks crates it rolls into.
 
 **Charged:** A bigger blast.
 
@@ -49,7 +49,7 @@ Dropped behind you. The first other kart to touch it gets it on its head and is 
 
 <img src="img/powerups/potion.png" width="160" alt="Potion">
 
-Dropped behind you, or thrown in an arc when forward is held. A kart that touches it spins out and **loses Power Fruit**.
+Dropped behind you, or thrown in an arc when fired with the alternate key (`Q`). A kart that touches it spins out and **loses Power Fruit**.
 
 **Charged:** A red potion that also puts a **rain cloud** over the kart for about 8 seconds: it **slows the kart down**, or swaps the power-up it is holding for a new one. A second red potion restarts the cloud.
 

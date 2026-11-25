@@ -39,7 +39,7 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
  * The podium camera: while the podium is on display the camera drifts across the front of the racer's own kart, looking at the driver. A racer who is not on a podium sees all three places: the
  * camera moves round the group and its look-at point glides from the third place to the second and the first, so there is never a cut however far apart the nodes are. Both stay inside the
  * world the player has loaded (the server only sends chunks round the player, so a podium too far away has no shot) and are pulled in by blocks like a third person camera, or give up for the
- * normal view when the space is too tight. Client side only; switched off with the {@code podiumCamera} client setting. While a podium node is held, the area the camera sweeps is drawn.
+ * normal view when the space is too tight. Client side only; switched off with the {@code podiumCamera} client setting. While a podium node is held, the area the camera sweeps is drawn, and the path of the group shot.
  */
 @EventBusSubscriber(modid = CraftTeamRacingMod.MODID, value = Dist.CLIENT)
 public final class PodiumCamera {
@@ -67,6 +67,11 @@ public final class PodiumCamera {
     private static float yawNow;
     private static float pitchNow;
 
+    /** Whether the podium camera has the view right now. */
+    public static boolean active() {
+        return camera != null;
+    }
+
     public static void setScene(List<PodiumScenePayload.Spot> spots) {
         scene = spots;
         sceneAt = System.currentTimeMillis();
@@ -79,7 +84,8 @@ public final class PodiumCamera {
     @SubscribeEvent
     public static void onFrame(RenderFrameEvent.Pre event) {
         Minecraft mc = Minecraft.getInstance();
-        if (unlimited(mc) || !RaceClient.active()) {
+        boolean viewer = SpectateCamera.isIdle();          // somebody at a viewing console watches the ceremony from the group shot
+        if (unlimited(mc) || (!RaceClient.active() && !viewer)) {
             scene = List.of();
             ownAt = 0;
             stop(mc);
@@ -87,8 +93,10 @@ public final class PodiumCamera {
         }
         if (!RaceClient.podium()) ownAt = 0;
         else if (ownAt == 0) ownAt = System.currentTimeMillis();
-        boolean mine = RaceClient.podium() && mc.player.getVehicle() instanceof KartEntity;
-        boolean spectate = !RaceClient.podium() && !scene.isEmpty() && mc.player.getVehicle() instanceof KartEntity;
+        // held for the ceremony: on a podium (the front of the racer's own kart), or parked on the grid by the server (all three places from a distance)
+        boolean riding = mc.player.getVehicle() instanceof KartEntity;
+        boolean mine = RaceClient.podium() && riding && onAPodium(mc.player.getVehicle());
+        boolean spectate = (RaceClient.podium() && riding && !mine && !scene.isEmpty()) || (viewer && !scene.isEmpty());
         if (!CtrClientConfig.PODIUM_CAMERA.get() || !(mine || spectate) || System.currentTimeMillis() < suppressedUntil) {
             stop(mc);
             return;
@@ -101,7 +109,7 @@ public final class PodiumCamera {
         }
         if (camera == null) {
             camera = new Marker(EntityType.MARKER, mc.level);
-            previous = mc.getCameraEntity();
+            previous = SpectateCamera.isCamera(mc.getCameraEntity()) ? mc.player : mc.getCameraEntity();
             previousType = mc.options.getCameraType();
             mc.options.setCameraType(CameraType.FIRST_PERSON);
             mc.setCameraEntity(camera);
@@ -116,6 +124,14 @@ public final class PodiumCamera {
         pitchNow = Mth.lerp(0.2F, pitchNow, (float) pose[4]);
         camera.moveTo(smooth.x, smooth.y, smooth.z, yawNow, pitchNow);
         camera.setOldPosAndRot();
+    }
+
+    /** Whether the kart stands on one of the podium places of the scene. */
+    private static boolean onAPodium(Entity kart) {
+        for (PodiumScenePayload.Spot s : scene) {
+            if (Math.abs(kart.getX() - s.x()) < 1.0 && Math.abs(kart.getZ() - s.z()) < 1.0 && Math.abs(kart.getY() - s.y()) < 2.0) return true;
+        }
+        return false;
     }
 
     private static void stop(Minecraft mc) {
@@ -155,29 +171,42 @@ public final class PodiumCamera {
     private static double[] groupShot(Minecraft mc) {
         List<PodiumScenePayload.Spot> spots = new ArrayList<>(scene);
         if (spots.isEmpty()) return null;
+        // only a podium inside what this client has loaded can be seen: the chunks (and the winners) are sent round the player, not round the camera
+        return groupShotAt(mc, spots, (System.currentTimeMillis() - sceneAt) / 1000.0, true);
+    }
+
+    private static Vec3 centreOf(List<PodiumScenePayload.Spot> spots) {
         Vec3 centre = Vec3.ZERO;
+        for (PodiumScenePayload.Spot s : spots) centre = centre.add(s.x(), s.y() + FOCUS_Y, s.z());
+        return centre.scale(1.0 / spots.size());
+    }
+
+    /** The point the group shot looks at {@code t} seconds into the ceremony: from the third place to the first over eight seconds, then it stays on the winner. */
+    private static Vec3 groupLook(List<PodiumScenePayload.Spot> spots, double t) {
+        double u = Mth.clamp(t / 8.0, 0.0, 1.0);
+        u = u * u * (3.0 - 2.0 * u) * 2.0;
+        return lookPoint(spots, u);
+    }
+
+    /** The group shot {@code t} seconds into the ceremony: {x, y, z, yaw, pitch}, or null when there is no room (or, with {@code checkReach}, when it is out of the loaded world). */
+    private static double[] groupShotAt(Minecraft mc, List<PodiumScenePayload.Spot> spots, double t, boolean checkReach) {
+        Vec3 centre = centreOf(spots);
         double fx = 0.0;
         double fz = 0.0;
         for (PodiumScenePayload.Spot s : spots) {
-            centre = centre.add(s.x(), s.y() + FOCUS_Y, s.z());
             fx += -Math.sin(Math.toRadians(s.yaw()));
             fz += Math.cos(Math.toRadians(s.yaw()));
         }
-        centre = centre.scale(1.0 / spots.size());
         double radius = 0.0;
         for (PodiumScenePayload.Spot s : spots) radius = Math.max(radius, centre.distanceTo(new Vec3(s.x(), s.y() + FOCUS_Y, s.z())));
         double facing = Math.toDegrees(Math.atan2(-fx, fz));
-        // only a podium inside what this client has loaded can be seen: the chunks (and the winners) are sent round the player, not round the camera
-        double reach = (mc.options.getEffectiveRenderDistance() - 1) * 16.0;
-        if (mc.player.position().distanceTo(centre) + radius > reach) return null;
-        double t = (System.currentTimeMillis() - sceneAt) / 1000.0;
+        if (checkReach) {
+            double reach = (mc.options.getEffectiveRenderDistance() - 1) * 16.0;
+            if (mc.player.position().distanceTo(centre) + radius > reach) return null;
+        }
         double base = facing + 35.0 * Math.sin(t / SWEEP_SECONDS * Math.PI * 2.0);
-        // the look-at point goes from the third place to the first over eight seconds and stays on the winner
-        double u = Mth.clamp(t / 8.0, 0.0, 1.0);
-        u = u * u * (3.0 - 2.0 * u) * 2.0;
-        Vec3 look = lookPoint(spots, u);
         double distance = Math.max(7.0, radius * 1.5 + 5.0);
-        return bestShot(mc, look.multiply(1.0, 1.0, 1.0), base, facing, distance, 2.0 + radius * 0.1, centre);
+        return bestShot(mc, groupLook(spots, t), base, facing, distance, 2.0 + radius * 0.1, centre);
     }
 
     /** The point on the way from the third place (u = 0) through the second (1) to the first (2). */
@@ -217,6 +246,11 @@ public final class PodiumCamera {
                 Vec3 want = centre.add(-Math.sin(Math.toRadians(yaw)) * distance * scale, height, Math.cos(Math.toRadians(yaw)) * distance * scale);
                 Vec3 from = centre;
                 var hit = mc.level.clip(new ClipContext(from, want, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, mc.player));
+                if (hit.getType() == HitResult.Type.BLOCK && hit.isInside()) {
+                    // the point the shot is measured from is inside a solid block (a podium node is one): measure from above it instead
+                    from = centre.add(0.0, height, 0.0);
+                    hit = mc.level.clip(new ClipContext(from, want, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, mc.player));
+                }
                 Vec3 at = want;
                 if (hit.getType() == HitResult.Type.BLOCK) {
                     Vec3 dir = want.subtract(from).normalize();
@@ -288,8 +322,107 @@ public final class PodiumCamera {
             }
             line(p, lines, cx, cy, cz, cx - Math.sin(Math.toRadians(yaw)) * RADIUS, cy + HEIGHT, cz + Math.cos(Math.toRadians(yaw)) * RADIUS, c[0], c[1], c[2], 0.35F);
         }
-        pose.popPose();
         buffers.endBatch(RenderType.lines());
+        drawGroupPath(mc, p, buffers.getBuffer(OnTopTypes.LINES));          // over the terrain: the camera's route often runs behind the walls round the podium
+        buffers.endBatch(OnTopTypes.LINES);
+        pose.popPose();
+    }
+
+    private static java.util.Map<Long, List<double[]>> pathCache = java.util.Map.of();
+    private static long pathCacheAt;
+
+    /**
+     * The path the group camera (what the racers who are not on a podium see) takes through one full sweep, as the camera would take it with the blocks round the podium as they are now: a green
+     * line for the camera, thin cyan lines to what it looks at every second or so, and a red cross where there is no room for a shot (the camera would give up for the normal view there).
+     * One for every Start Node that has a podium node of each place hooked up to it (the nodes are told apart by the Start Node they are hooked to, so several tracks can stand side by side).
+     * Worked out again once a second, not every frame.
+     */
+    private static void drawGroupPath(Minecraft mc, PoseStack.Pose p, VertexConsumer lines) {
+        java.util.Map<Long, NodeView> byPos = new java.util.HashMap<>();
+        for (NodeView n : TrackClient.nodes()) byPos.put(n.pos(), n);
+        // the podium nodes by the Start Node they are hooked up to
+        java.util.Map<Long, java.util.Map<Integer, NodeView>> byStart = new java.util.LinkedHashMap<>();
+        int podiumNodes = 0;
+        int hooked = 0;
+        for (NodeView n : byPos.values()) {
+            if (!n.kind().isPodium()) continue;
+            podiumNodes++;
+            Long start = null;
+            if (n.links() != null) for (long l : n.links()) {
+                NodeView o = byPos.get(l);
+                if (o != null && o.kind() == com.craftteamracing.track.TrackGraph.Kind.START) start = l;
+            }
+            if (start == null) continue;
+            hooked++;
+            int place = n.kind() == com.craftteamracing.track.TrackGraph.Kind.PODIUM_1 ? 1 : n.kind() == com.craftteamracing.track.TrackGraph.Kind.PODIUM_2 ? 2 : 3;
+            byStart.computeIfAbsent(start, k -> new java.util.HashMap<>()).put(place, n);
+        }
+        java.util.Map<Long, List<PodiumScenePayload.Spot>> groups = new java.util.LinkedHashMap<>();
+        for (var e : byStart.entrySet()) {
+            if (e.getValue().size() != 3) continue;
+            List<PodiumScenePayload.Spot> spots = new ArrayList<>();
+            for (var pe : e.getValue().entrySet()) {
+                NodeView n = pe.getValue();
+                double yaw = Math.toDegrees(Math.atan2(-NodeGeometry.facingX(n.rotation()), NodeGeometry.facingZ(n.rotation())));
+                spots.add(new PodiumScenePayload.Spot(NodeGeometry.x(n.pos()) + 0.5, NodeGeometry.y(n.pos()), NodeGeometry.z(n.pos()) + 0.5, (float) yaw, pe.getKey()));
+            }
+            groups.put(e.getKey(), spots);
+        }
+        long now = System.currentTimeMillis();
+        boolean refresh = now - pathCacheAt > 1000L;
+        if (groups.isEmpty()) {
+            if (refresh) {
+                pathCacheAt = now;
+                mc.player.displayClientMessage(net.minecraft.network.chat.Component.literal("Group camera path: no Start Node has all three podium nodes hooked up (" + podiumNodes + " podium nodes known, " + hooked + " hooked to a Start Node)"), true);
+            }
+            return;
+        }
+        if (refresh) {
+            java.util.Map<Long, List<double[]>> all = new java.util.HashMap<>();
+            String report = null;
+            double nearest = Double.MAX_VALUE;
+            for (var e : groups.entrySet()) {
+                List<double[]> path = new ArrayList<>();
+                for (double t = 0.0; t <= SWEEP_SECONDS + 1e-6; t += 0.25) {
+                    double[] shot = groupShotAt(mc, e.getValue(), t, false);
+                    Vec3 look = groupLook(e.getValue(), t);
+                    path.add(new double[] { shot == null ? Double.NaN : shot[0], shot == null ? 0.0 : shot[1], shot == null ? 0.0 : shot[2], look.x, look.y, look.z });
+                }
+                all.put(e.getKey(), path);
+                Vec3 centre = centreOf(e.getValue());
+                double d = mc.player.position().distanceTo(centre);
+                if (d < nearest) {
+                    nearest = d;
+                    long blocked = path.stream().filter(q -> Double.isNaN(q[0])).count();
+                    report = "Group camera path (the podium " + (int) d + " blocks away): " + (path.size() - blocked) + " of " + path.size() + " points have room"
+                            + (blocked > 0 ? " (red crosses: no room for a shot)" : "") + (groups.size() > 1 ? "; " + groups.size() + " tracks with a podium" : "");
+                }
+            }
+            pathCache = all;
+            pathCacheAt = now;
+            if (report != null) mc.player.displayClientMessage(net.minecraft.network.chat.Component.literal(report), true);
+        }
+        for (List<double[]> path : pathCache.values()) {
+            double[] prev = null;
+            for (int i = 0; i < path.size(); i++) {
+                double[] q = path.get(i);
+                if (Double.isNaN(q[0])) {
+                    prev = null;          // no shot at this moment: a red cross at what it would look at, and the path goes on after it
+                    line(p, lines, q[3] - 0.5, q[4] + 1.0, q[5], q[3] + 0.5, q[4] + 2.0, q[5], 1.0F, 0.15F, 0.15F, 0.9F);
+                    line(p, lines, q[3] - 0.5, q[4] + 2.0, q[5], q[3] + 0.5, q[4] + 1.0, q[5], 1.0F, 0.15F, 0.15F, 0.9F);
+                    continue;
+                }
+                if (prev != null) line(p, lines, prev[0], prev[1], prev[2], q[0], q[1], q[2], 0.3F, 1.0F, 0.4F, 1.0F);
+                if (i % 4 == 0) {
+                    line(p, lines, q[0], q[1], q[2], q[3], q[4], q[5], 0.3F, 0.9F, 1.0F, 0.35F);
+                    double m = i == 0 ? 0.6 : 0.3;          // a mark on the route every second, a bigger one where the shot begins
+                    line(p, lines, q[0] - m, q[1], q[2], q[0] + m, q[1], q[2], 0.3F, 1.0F, 0.4F, 1.0F);
+                    line(p, lines, q[0], q[1] - m, q[2], q[0], q[1] + m, q[2], 0.3F, 1.0F, 0.4F, 1.0F);
+                    line(p, lines, q[0], q[1], q[2] - m, q[0], q[1], q[2] + m, 0.3F, 1.0F, 0.4F, 1.0F);
+                }
+                prev = q;
+            }
+        }
     }
 
     private static void line(PoseStack.Pose pose, VertexConsumer vc, double x1, double y1, double z1, double x2, double y2, double z2, float r, float g, float b, float a) {

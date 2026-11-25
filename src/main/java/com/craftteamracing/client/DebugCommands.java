@@ -69,6 +69,11 @@ public final class DebugCommands {
     public static void register(RegisterClientCommandsEvent event) {
         event.getDispatcher().register(Commands.literal("ctr").then(Commands.literal("debug").then(shieldCommands())));
         event.getDispatcher().register(Commands.literal("ctr").then(Commands.literal("debug").then(hudCommands())));
+        event.getDispatcher().register(Commands.literal("ctr").then(Commands.literal("debug").then(Commands.literal("chunks").executes(ctx -> {
+            ChunkDebugRenderer.enabled = !ChunkDebugRenderer.enabled;
+            ctx.getSource().sendSuccess(() -> Component.literal("Chunks a race would keep loaded: " + (ChunkDebugRenderer.enabled ? "shown as tiles at the height of the course (green: the course, yellow: the ring round it)" : "off")), false);
+            return 1;
+        }))));
         event.getDispatcher().register(Commands.literal("ctr").then(Commands.literal("debug").then(Commands.literal("flame")
                 .then(Commands.literal("off").executes(ctx -> {
                     flameSize = 0;

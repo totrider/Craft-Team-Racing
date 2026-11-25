@@ -73,6 +73,8 @@ public final class RaceManager {
         int lastRespawnTick = -1000;
         int placeSeq;
         RaceGrid.Slot slot;
+        /** Where the racer started the race (their grid place): the racers who are not on a podium go back there for the ceremony. */
+        RaceGrid.Slot gridSlot;
         /** Put on a podium: locked in place, out of the race's way. */
         boolean podium;
         /** 1 to 3 once put on a podium. */
@@ -233,6 +235,19 @@ public final class RaceManager {
         return null;
     }
 
+    /** The racers of the race on this Start node's track who are still on the course, in the order of the race (null when no race is racing there): what a viewing console can follow. */
+    public static List<ServerPlayer> racersAt(ServerLevel level, long start) {
+        Race r = RACES.get(new Key(level.dimension(), start));
+        if (r == null || (r.phase != RacePayload.RACING && r.phase != RacePayload.LIGHTS)) return null;
+        List<ServerPlayer> out = new ArrayList<>();
+        for (Racer rc : ranking(r)) {
+            if (rc.finishPlace != 0 || rc.out || rc.podium) continue;
+            ServerPlayer p = level.getServer().getPlayerList().getPlayer(rc.id);
+            if (p != null && p.getVehicle() instanceof com.craftteamracing.kart.KartEntity) out.add(p);
+        }
+        return out;
+    }
+
     /** Whether a race on the track of this Start node has started (the lights are out): until then the grid and the gathering area stay shown. */
     public static boolean raceRunning(ServerLevel level, long start) {
         Race r = RACES.get(new Key(level.dimension(), start));
@@ -260,6 +275,7 @@ public final class RaceManager {
         Race created = new Race(key, routes.laps(), starter.getUUID(), data.graph().version(), true, data.effectiveRules(start));
         created.music = data.music(start);
         RACES.put(key, created);
+        ChunkKeeper.holdCourse(level, key.dimension().location() + "@" + key.start(), data.graph(), start);
         broadcastGather(level, RACES.get(key), startPos);
         return null;
     }
@@ -422,6 +438,7 @@ public final class RaceManager {
             Racer rc = new Racer(p.getUUID(), p.getName());
             rc.progress = new RaceProgress(data.graph(), routes);
             rc.slot = RaceGrid.slot(r.key.start(), startNode.rotation, i);
+            rc.gridSlot = rc.slot;
             rc.placeSeq = ++placeCounter;
             r.racers.put(p.getUUID(), rc);
             com.craftteamracing.physics.WorldScale.setTrack(r.rules.speedPercent());          // the race's pace, for the weapons the server moves (one race at a time sets it)
@@ -478,6 +495,7 @@ public final class RaceManager {
             // the podium is full, or the time is up: whoever is next in the race takes the places that are left, and the race ends a moment later
             fillPodium(level, r);
             sendScene(level, r);
+            parkOthers(level, r);
             r.podiumFilled = true;
             r.endTick = now + PODIUM_END_TICKS;
         }
@@ -659,6 +677,25 @@ public final class RaceManager {
         }
     }
 
+    /**
+     * The ceremony starts: every racer who is not on a podium goes back to the grid place they started the race in (that is near the start, so the podium is inside what their client has loaded),
+     * locked there and out of the race's way, to watch the podium. They are held like the winners are (the same "podium" lock) but are on no place, so no confetti falls on them.
+     */
+    private static void parkOthers(ServerLevel level, Race r) {
+        for (Racer rc : r.racers.values()) {
+            if (rc.podium || rc.out || rc.gridSlot == null) continue;
+            ServerPlayer p = level.getServer().getPlayerList().getPlayer(rc.id);
+            if (p == null) continue;
+            rc.slot = rc.gridSlot;
+            rc.placeSeq = ++placeCounter;
+            rc.podium = true;
+            rc.podiumPlace = 0;
+            if (p.getVehicle() instanceof KartEntity kart) kart.setEthereal(true);
+            put(level, p, rc);
+            sendOne(level, r, rc, level.getServer().getTickCount());
+        }
+    }
+
     /** The kart is the driver's again: no more locked, no more ethereal. */
     private static void releaseKart(ServerPlayer p) {
         if (p.getVehicle() instanceof KartEntity kart) kart.setEthereal(false);
@@ -731,6 +768,7 @@ public final class RaceManager {
         Race race = new Race(key, routes.laps(), null, data.graph().version(), false, data.effectiveRules(key.start()));
         race.music = data.music(key.start());
         RACES.put(key, race);
+        ChunkKeeper.holdCourse(level, key.dimension().location() + "@" + key.start(), data.graph(), key.start());
         broadcastGather(level, race, BlockPos.of(key.start()));
     }
 
@@ -812,9 +850,50 @@ public final class RaceManager {
         sendOne(level, r, rc, now, ranking(r));
     }
 
+    /** Where the podium places are while the ceremony of the race on this Start node's track is on (the group shot's scene, for a viewer at a console), or null when it is not. */
+    public static PodiumScenePayload podiumView(ServerLevel level, long start) {
+        Race r = RACES.get(new Key(level.dimension(), start));
+        if (r == null || !r.podiumFilled) return null;
+        List<PodiumScenePayload.Spot> spots = new ArrayList<>();
+        for (int place = 1; place <= 3; place++) {
+            RaceGrid.Slot s = podiumSlot(level, r, place);
+            if (s != null) spots.add(new PodiumScenePayload.Spot(s.x(), s.y(), s.z(), s.yaw(), place));
+        }
+        return spots.isEmpty() ? null : new PodiumScenePayload(spots);
+    }
+
+    /**
+     * What a viewer at a console with no racer to follow is shown: the countdown of a race that is gathering ("starting soon", with the karts counted in the starting area), the track's
+     * cool-down after a race, or nothing (the screen is cleared).
+     */
+    public static RacePayload idleView(ServerLevel level, long start) {
+        Key key = new Key(level.dimension(), start);
+        Race r = RACES.get(key);
+        if (r != null && r.phase == RacePayload.GATHER) {
+            int in = inArea(level, BlockPos.of(start), r.manual).size();
+            return new RacePayload(RacePayload.GATHER, r.ticks, 0, r.laps, 0, 0, 0, 0, 0, 0, false, 0, 0, 0, 0, 0, 0, in, List.of(), List.of(), List.of(), List.of(), false, false, false, false);
+        }
+        Integer end = COOLDOWN.get(key);
+        int left = end == null ? 0 : end - level.getServer().getTickCount();
+        return left > 0 ? cooldownPayload(left) : RacePayload.off();
+    }
+
+    /** What the racer's own screen is told, for a viewer who watches the race through that racer (a viewing console): null when there is no such racer. */
+    public static RacePayload viewOf(ServerLevel level, long start, UUID racer) {
+        Race r = RACES.get(new Key(level.dimension(), start));
+        Racer rc = r == null ? null : r.racers.get(racer);
+        if (rc == null || rc.out) return null;
+        return payloadFor(r, rc, level.getServer().getTickCount(), ranking(r));
+    }
+
     private static void sendOne(ServerLevel level, Race r, Racer rc, int now, List<Racer> rank) {
         ServerPlayer p = level.getServer().getPlayerList().getPlayer(rc.id);
         if (p == null || rc.out) return;
+        if (DEBUG.contains(rc.id) && (r.phase == RacePayload.RACING || r.phase == RacePayload.LIGHTS)) sendDebug(level, r, p, rc);
+        PacketDistributor.sendToPlayer(p, payloadFor(r, rc, now, rank));
+    }
+
+    private static RacePayload payloadFor(Race r, Racer rc, int now, List<Racer> rank) {
         int place = rank.indexOf(rc) + 1;
         int timeMs = r.phase == RacePayload.RACING ? (now - r.goTick) * TICK_MS : 0;
         if (rc.finishPlace != 0) timeMs = rc.finishMs;
@@ -822,13 +901,12 @@ public final class RaceManager {
         int phase = rc.finishPlace != 0 ? RacePayload.DONE : r.phase;
         boolean racing = phase == RacePayload.RACING && !rc.podium;
         int lap = Math.min(r.laps, rc.progress.laps() + 1);
-        if (DEBUG.contains(rc.id) && (r.phase == RacePayload.RACING || r.phase == RacePayload.LIGHTS)) sendDebug(level, r, p, rc);
-        PacketDistributor.sendToPlayer(p, new RacePayload(phase, r.ticks, r.lastLights, r.laps, lap, place, r.racers.size(), timeMs, rc.lastLapMs,
+        return new RacePayload(phase, r.ticks, r.lastLights, r.laps, lap, place, r.racers.size(), timeMs, rc.lastLapMs,
                 rc.bestLapMs, hold, rc.placeSeq, rc.slot.x(), rc.slot.y(), rc.slot.z(), rc.slot.yaw(), rc.finishPlace, 0,
                 rank.stream().limit(4).map(o -> o.id).toList(), List.copyOf(rc.lapTimes),
                 rank.stream().filter(o -> o.finishPlace == 0 && !o.podium).map(o -> o.id).toList(),          // a racer who has finished is not on the track bar
                 rank.stream().filter(o -> o.finishPlace == 0 && !o.podium).map(o -> o.progress.barFraction()).toList(), rc.podium,
-                racing && rc.progress.wrongWay(), racing && rc.progress.skipped(), false));
+                racing && rc.progress.wrongWay(), racing && rc.progress.skipped(), false);
     }
 
     /** An id for the race the player is in (its track), or null. */
@@ -839,6 +917,7 @@ public final class RaceManager {
 
     private static void end(MinecraftServer server, Race r, String reasonKey, boolean results) {
         RACES.remove(r.key);
+        ChunkKeeper.releaseCourse(r.key.dimension().location() + "@" + r.key.start());
         if (RACES.isEmpty()) com.craftteamracing.physics.WorldScale.setTrack(0);
         ServerLevel level = server.getLevel(r.key.dimension());
         if (level != null) {
@@ -894,5 +973,6 @@ public final class RaceManager {
         BY_PLAYER.clear();
         INSIDE.clear();
         com.craftteamracing.pickup.MinePool.clearAll();
+        ChunkKeeper.forgetAll();
     }
 }

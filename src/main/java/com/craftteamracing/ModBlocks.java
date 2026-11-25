@@ -78,15 +78,15 @@ public final class ModBlocks {
             () -> new com.craftteamracing.pickup.PickupSpotBlock(spotProps(), com.craftteamracing.pickup.PickupKind.FRUIT_CRATE));
     public static final DeferredBlock<com.craftteamracing.pickup.PickupSpotBlock> POWERUP_CRATE_SPOT = BLOCKS.register("powerup_crate_spot",
             () -> new com.craftteamracing.pickup.PickupSpotBlock(spotProps(), com.craftteamracing.pickup.PickupKind.POWERUP_CRATE));
-    public static final DeferredItem<BlockItem> FRUIT_SPOT_ITEM = item("fruit_spot", FRUIT_SPOT);
-    public static final DeferredItem<BlockItem> FRUIT_CRATE_SPOT_ITEM = item("fruit_crate_spot", FRUIT_CRATE_SPOT);
+    public static final DeferredItem<BlockItem> FRUIT_SPOT_ITEM = airItem("fruit_spot", FRUIT_SPOT);
+    public static final DeferredItem<BlockItem> FRUIT_CRATE_SPOT_ITEM = airItem("fruit_crate_spot", FRUIT_CRATE_SPOT);
     public static final DeferredItem<BlockItem> POWERUP_CRATE_SPOT_ITEM = ModItems.ITEMS.register("powerup_crate_spot",
             () -> new com.craftteamracing.pickup.PowerupCrateSpotItem(POWERUP_CRATE_SPOT.get(), new Item.Properties()));
 
     /** The "!" crate's spot: breaking its crate gives a redstone signal (settings by Wrench), anywhere, race or not. */
     public static final DeferredBlock<com.craftteamracing.pickup.PickupSpotBlock> TRIGGER_CRATE_SPOT = BLOCKS.register("trigger_crate_spot",
             () -> new com.craftteamracing.pickup.PickupSpotBlock(spotProps(), com.craftteamracing.pickup.PickupKind.TRIGGER_CRATE));
-    public static final DeferredItem<BlockItem> TRIGGER_CRATE_SPOT_ITEM = item("trigger_crate_spot", TRIGGER_CRATE_SPOT);
+    public static final DeferredItem<BlockItem> TRIGGER_CRATE_SPOT_ITEM = airItem("trigger_crate_spot", TRIGGER_CRATE_SPOT);
     /** The far end of a wireless redstone line from Trigger Crate Spots. */
     public static final DeferredBlock<com.craftteamracing.pickup.RedstoneLinkNodeBlock> REDSTONE_LINK_NODE = BLOCKS.register("redstone_link_node",
             () -> new com.craftteamracing.pickup.RedstoneLinkNodeBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(0.5F).sound(SoundType.METAL)
@@ -111,6 +111,11 @@ public final class ModBlocks {
     public static final DeferredItem<BlockItem> PODIUM_3_NODE_ITEM = ModItems.ITEMS.register("podium_3_node",
             () -> new com.craftteamracing.track.TrackNodeItem(PODIUM_3_NODE.get(), new Item.Properties()));
 
+    /** The viewing console: right-click it to watch the race of the Start node it is hooked up to (Track Tool). */
+    public static final DeferredBlock<com.craftteamracing.spectate.ViewingConsoleBlock> VIEWING_CONSOLE = BLOCKS.register("viewing_console",
+            () -> new com.craftteamracing.spectate.ViewingConsoleBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(1.5F).sound(SoundType.METAL)));
+    public static final DeferredItem<BlockItem> VIEWING_CONSOLE_ITEM = item("viewing_console", VIEWING_CONSOLE);
+
     private static BlockBehaviour.Properties nodeProps() {
         return BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).strength(0.5F).sound(SoundType.METAL)
                 .noCollission().noOcclusion();
@@ -120,6 +125,11 @@ public final class ModBlocks {
 
     private static DeferredItem<BlockItem> item(String name, Supplier<? extends Block> block) {
         return ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
+    }
+
+    /** A block item that can also be placed in mid-air (the pickup spots): see {@link com.craftteamracing.pickup.AirPlaceBlockItem}. */
+    private static DeferredItem<BlockItem> airItem(String name, Supplier<? extends Block> block) {
+        return ModItems.ITEMS.register(name, () -> new com.craftteamracing.pickup.AirPlaceBlockItem(block.get(), new Item.Properties()));
     }
 
     public static void register(IEventBus modEventBus) {

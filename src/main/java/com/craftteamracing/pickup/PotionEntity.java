@@ -95,6 +95,7 @@ public class PotionEntity extends Entity implements MinePool.Mine {
         super.tick();
         if (!(level() instanceof ServerLevel level)) return;
         if (debug) return;
+        com.craftteamracing.track.ChunkKeeper.keep(this, 2);
         if (pool == null) {
             pool = MinePool.poolOf(owner != null ? owner : getUUID());
             MinePool.add(pool, this, level);

@@ -64,8 +64,21 @@ public final class KartHud {
     public static void render(GuiGraphics g, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
         KartSim sim = KartDriver.activeSim();
-        if (sim == null || mc.options.hideGui) {
-            return;
+        // the meters of the driver's kart: from the driver's own sim, or (for a viewer at a console, read only) from what the kart says its driver's meters are
+        int angle;
+        int jump;
+        int room;
+        if (SpectateCamera.viewing()) {
+            com.craftteamracing.kart.KartEntity kart = SpectateCamera.viewedKart();
+            if (kart == null || mc.options.hideGui) return;
+            angle = kart.speedometerAngle();
+            jump = kart.jumpMeter();
+            room = kart.slideRoom();
+        } else {
+            if (sim == null || mc.options.hideGui) return;
+            angle = sim.speedometerAngle();
+            jump = sim.jumpMeterShown();
+            room = sim.slideMeterRoomLeft();
         }
         Screen s = Screen.of(g);
         VertexConsumer vc = g.bufferSource().getBuffer(RenderType.gui());
@@ -73,12 +86,12 @@ public final class KartHud {
 
         // the dial's dark fan and band at the back, then the meters and the readout, and only the needle over them
         dialBackground(vc, m, s);
-        slideMeter(vc, m, s, sim);
-        jumpMeter(vc, m, s, sim.jumpMeterShown());
+        slideMeter(vc, m, s, room);
+        jumpMeter(vc, m, s, jump);
         g.flush();
-        jumpReadout(g, mc, s, sim.jumpMeterShown());
+        jumpReadout(g, mc, s, jump);
         vc = g.bufferSource().getBuffer(RenderType.gui());
-        needle(vc, m, s, sim.speedometerAngle());
+        needle(vc, m, s, angle);
         g.flush();
     }
 
@@ -191,12 +204,11 @@ public final class KartHud {
 
     // ---- the powerslide meter: box 49 x 7 ending at (490, 206) ----
 
-    private static void slideMeter(VertexConsumer vc, Matrix4f m, Screen s, KartSim sim) {
+    private static void slideMeter(VertexConsumer vc, Matrix4f m, Screen s, int room) {
         float x1 = s.x(490);
         float x0 = s.x(490 - 49);
         float y1 = s.y(206);
         float y0 = s.y(206 - 7);
-        int room = sim.slideMeterRoomLeft();
         float length = room != 0 ? 49.0F - room * 49.0F / KartSim.slideMeterMaxRoom() : 0.0F;
         rect(vc, m, x0, y0, x1, y1, 0xFF808080);                                   // empty
         if (length > 0) {

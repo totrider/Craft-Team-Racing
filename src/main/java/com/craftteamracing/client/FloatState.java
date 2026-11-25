@@ -19,7 +19,11 @@ public final class FloatState {
 
     /** The Floater the kart has: in a race the rules' (for the racers), otherwise its own. */
     public static int mode(KartEntity kart) {
-        return RaceClient.active() && kart.getControllingPassenger() != null ? RaceClient.rules().floater() : kart.floaterMode();
+        net.minecraft.world.entity.Entity driver = kart.getControllingPassenger();
+        if (driver == null) return kart.floaterMode();
+        // somebody else's kart: what its driver's client really runs (in a race the rules', which a viewer outside the race cannot know)
+        if (driver != net.minecraft.client.Minecraft.getInstance().player) return kart.reportedFloater();
+        return RaceClient.active() ? RaceClient.rules().floater() : kart.floaterMode();
     }
 
     /** The kart is on the surface of a fluid it floats on (not up in the air over it, not deep under it). */

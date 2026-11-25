@@ -33,10 +33,12 @@ public class PickupSpotBlockEntity extends BlockEntity {
     private int respawn;
     /** A fruit that was taken stays gone until the spot has been inactive. */
     private boolean spent;
-    /** A redstone signal switched the spot on: it keeps its pickup (and respawns a crate) after the signal is gone, until a race takes over or the block is removed. */
+    /** A redstone signal is on the spot (kept in the save only for old worlds; the spot is active exactly while the signal lasts, or a race is on). */
     private boolean armed;
     private boolean signal;
     private boolean raceActive;
+    /** Whether a race on a track near the spot manages its pickup (the default). Off: the race leaves the spot alone and only a redstone signal brings its pickup. */
+    private boolean raceManaged = true;
     // ---- the trigger crate ("!"): it gives a redstone signal when it is broken
     /** The timers' steps (see {@link TriggerTime}): respawn (0 is the crates' usual delay), redstone duration (0 is always), and how many times it can be used (0 is without end). */
     private int respawnStep;
@@ -57,6 +59,16 @@ public class PickupSpotBlockEntity extends BlockEntity {
 
     public String itemId() {
         return itemId;
+    }
+
+    public boolean raceManaged() {
+        return raceManaged;
+    }
+
+    public void setRaceManaged(boolean managed) {
+        if (managed == raceManaged) return;
+        raceManaged = managed;
+        setChanged();
     }
 
     /** The power-ups this spot gives, one of them at random per crate (none: the general drop table). */
@@ -235,10 +247,13 @@ public class PickupSpotBlockEntity extends BlockEntity {
         // RB_CrateAny_ThTick_Grow: the respawn waits while a kart or a mine (a TNT crate...) sits in the way
         boolean blocked = blocked(server, pos);
         if (be.respawn > 0 && !blocked) be.respawn--;
-        // a redstone signal arriving arms the spot and brings back what was taken (a pulse again brings back a fruit that was taken)
+        // a redstone signal arriving brings back what was taken (a pulse again brings back a fruit that was taken); the spot is active while the signal lasts
         boolean signal = server.hasNeighborSignal(pos);
+        if (signal != be.armed) {
+            be.armed = signal;
+            be.setChanged();
+        }
         if (signal && !be.signal) {
-            be.armed = true;
             be.spent = false;
             be.respawn = 0;
             be.setChanged();
@@ -247,7 +262,7 @@ public class PickupSpotBlockEntity extends BlockEntity {
         if (server.getGameTime() % 10 == 0) {
             com.craftteamracing.items.RuleSet rules = RaceManager.rulesNear(server, pos, CtrConfig.PICKUP_TRACK_RADIUS.get());
             // the race's rules say which pickups it has (RuleSet: fruit, fruit crates, power-up crates)
-            boolean race = rules != null && switch (be.kind()) {
+            boolean race = be.raceManaged && rules != null && switch (be.kind()) {
                 case FRUIT -> rules.fruit();
                 case FRUIT_CRATE -> rules.fruitCrates();
                 case POWERUP_CRATE -> rules.powerupCrates();
@@ -258,7 +273,7 @@ public class PickupSpotBlockEntity extends BlockEntity {
                 be.respawn = 0;
             }
             be.raceActive = race;
-            boolean now = race || be.armed;
+            boolean now = race || signal;
             if (now != be.active) {
                 be.active = now;
                 if (!now) {
@@ -297,6 +312,7 @@ public class PickupSpotBlockEntity extends BlockEntity {
         super.saveAdditional(tag, registries);
         tag.putString("Item", itemId);
         tag.putBoolean("Armed", armed);
+        tag.putBoolean("RaceManaged", raceManaged);
         tag.putInt("RespawnStep", respawnStep);
         tag.putInt("DurationStep", durationStep);
         tag.putInt("Uses", uses);
@@ -311,6 +327,7 @@ public class PickupSpotBlockEntity extends BlockEntity {
         super.loadAdditional(tag, registries);
         itemId = tag.getString("Item");
         armed = tag.getBoolean("Armed");
+        raceManaged = !tag.contains("RaceManaged") || tag.getBoolean("RaceManaged");
         if (tag.contains("DurationStep")) {
             respawnStep = tag.getInt("RespawnStep");
             durationStep = tag.getInt("DurationStep");

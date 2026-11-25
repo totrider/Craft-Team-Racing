@@ -84,6 +84,8 @@ public class CraftTeamRacingMod {
                 com.craftteamracing.track.RespawnPayload::handle);
         registrar.playToServer(com.craftteamracing.track.TrackBoxPayload.TYPE, com.craftteamracing.track.TrackBoxPayload.STREAM_CODEC,
                 com.craftteamracing.track.TrackBoxPayload::handle);
+        registrar.playToClient(com.craftteamracing.spectate.SpectatePayload.TYPE, com.craftteamracing.spectate.SpectatePayload.STREAM_CODEC, com.craftteamracing.spectate.SpectatePayload::handle);
+        registrar.playToServer(com.craftteamracing.spectate.SpectateActionPayload.TYPE, com.craftteamracing.spectate.SpectateActionPayload.STREAM_CODEC, com.craftteamracing.spectate.SpectateActionPayload::handle);
         registrar.playToClient(com.craftteamracing.track.RacePayload.TYPE, com.craftteamracing.track.RacePayload.STREAM_CODEC,
                 com.craftteamracing.track.RacePayload::handle);
         registrar.playToClient(com.craftteamracing.track.TrackMenuPayload.TYPE, com.craftteamracing.track.TrackMenuPayload.STREAM_CODEC,

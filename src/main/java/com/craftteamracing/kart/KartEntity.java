@@ -33,6 +33,10 @@ public class KartEntity extends Entity {
     /** CTR's drawn yaw (heading + drift/spin offset), 4096ths of a turn, so other players see the drift angle. */
     private static final EntityDataAccessor<Integer> DATA_DRAWN_YAW =
             SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.INT);
+    /** What a viewer of the race needs to draw the driver's meters, from the driver's client: speedometer angle (bits 0-11), powerslide room (12-21), the Floater mode the driver really has (22-23). */
+    private static final EntityDataAccessor<Integer> DATA_METERS = SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.INT);
+    /** The hang-time meter of the driver, CTR-ms. */
+    private static final EntityDataAccessor<Integer> DATA_JUMP = SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_FLAGS =
             SynchedEntityData.defineId(KartEntity.class, EntityDataSerializers.INT);
 
@@ -102,6 +106,8 @@ public class KartEntity extends Entity {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(DATA_DRAWN_YAW, 0);
         builder.define(DATA_FLAGS, 0);
+        builder.define(DATA_METERS, 0);
+        builder.define(DATA_JUMP, 0);
         builder.define(DATA_ENGINE, 0x823C);
         builder.define(DATA_TILT, TILT_FLAT);
         builder.define(DATA_SHIELD, 0);
@@ -140,6 +146,31 @@ public class KartEntity extends Entity {
 
     public void setShield(int state) {
         if (entityData.get(DATA_SHIELD) != state) entityData.set(DATA_SHIELD, state);
+    }
+
+    public void setMeters(int meters, int jump) {
+        if (entityData.get(DATA_METERS) != meters) entityData.set(DATA_METERS, meters);
+        if (entityData.get(DATA_JUMP) != jump) entityData.set(DATA_JUMP, jump);
+    }
+
+    /** The driver's speedometer needle angle, 4096ths of a turn (see {@link com.craftteamracing.physics.Speedometer#angle}). */
+    public int speedometerAngle() {
+        return entityData.get(DATA_METERS) & 0xFFF;
+    }
+
+    /** The driver's powerslide meter room left, CTR-ms (0 when not sliding). */
+    public int slideRoom() {
+        return (entityData.get(DATA_METERS) >> 12) & 0x3FF;
+    }
+
+    /** The driver's hang-time meter, CTR-ms. */
+    public int jumpMeter() {
+        return entityData.get(DATA_JUMP);
+    }
+
+    /** The Floater mode the driver's own client runs (0 none, 1 water, 2 water and lava): in a race the rules' and not the kart's own, so other players see what the driver has. */
+    public int reportedFloater() {
+        return (entityData.get(DATA_METERS) >> 22) & 3;
     }
 
     public int getTilt() {

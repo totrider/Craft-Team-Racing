@@ -585,6 +585,12 @@ public final class ItemManager {
     /** HELD_ITEM_STACK_COUNT. */
     public static final int STACK_COUNT = com.craftteamracing.items.PowerupRegistry.stackCount(HeldItem.BOMB_3X.id());
 
+    /** What the driver's item box shows, for a viewer who watches through that driver (without the effect, which only the driver's own kart applies), or null when it is not in a kart. */
+    public static ItemStatePayload viewOf(ServerPlayer p) {
+        State s = state(p);
+        return s == null ? null : new ItemStatePayload(s.powerFruit, s.held, s.roll, EFFECT_NONE, 0, s.count);
+    }
+
     private static void sync(ServerPlayer p, State s) {
         PacketDistributor.sendToPlayer(p, new ItemStatePayload(s.powerFruit, s.held, s.roll, s.effect, s.effectSeq, s.count));
     }

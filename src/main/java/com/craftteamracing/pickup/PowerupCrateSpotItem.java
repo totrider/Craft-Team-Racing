@@ -8,7 +8,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
@@ -20,7 +19,7 @@ import net.minecraft.world.level.block.Block;
  * spot when it is placed. Crouching and right-clicking a placed power-up crate spot with this item copies that spot's setting onto the whole held stack. Crafting a spot item alone
  * (shapeless, one ingredient) gives a cleared one.
  */
-public class PowerupCrateSpotItem extends BlockItem {
+public class PowerupCrateSpotItem extends AirPlaceBlockItem {
     public PowerupCrateSpotItem(Block block, Properties properties) {
         super(block, properties);
     }

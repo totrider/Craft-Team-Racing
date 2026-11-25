@@ -54,7 +54,13 @@ public final class RaceProgress {
             } else if (from == 0 || to == 0) {
                 double len = branchLength(b);
                 int other = from == 0 ? to : from;
-                boolean leavesStart = Math.abs(arc(0, other) - len) <= Math.abs(arc(other, 0) - len);
+                // the stretch it replaces is the one it runs along: the rings' mean distance to the stretch from the start to the other node, against the one from it to the start
+                // (a branch that runs beside the main path is told by where it lies); the lengths only decide when they lie about as near to both
+                double toFirst = meanDistToStretch(b.nodes(), 0, other);
+                double toSecond = meanDistToStretch(b.nodes(), other, n);
+                boolean leavesStart;
+                if (Math.abs(toFirst - toSecond) > 1.5) leavesStart = toFirst < toSecond;
+                else leavesStart = Math.abs(arc(0, other) - len) <= Math.abs(arc(other, 0) - len);
                 forwardWay = leavesStart == (from == 0);
             } else {
                 forwardWay = from < to;
@@ -81,6 +87,33 @@ public final class RaceProgress {
         double sum = 0;
         for (int k = i; k != j; k = (k + 1) % n) sum += dist(main.get(k), main.get(k + 1));
         return sum;
+    }
+
+    /** The mean distance of some rings to the main path from main node {@code i} to main node {@code j} (j may be n, the closing start). */
+    private double meanDistToStretch(long[] rings, int i, int j) {
+        double sum = 0;
+        for (long r : rings) {
+            double px = NodeGeometry.x(r);
+            double py = NodeGeometry.y(r);
+            double pz = NodeGeometry.z(r);
+            double best = Double.MAX_VALUE;
+            for (int k = i; k < j; k++) {
+                double ax = NodeGeometry.x(main.get(k));
+                double ay = NodeGeometry.y(main.get(k));
+                double az = NodeGeometry.z(main.get(k));
+                double dx = NodeGeometry.x(main.get(k + 1)) - ax;
+                double dy = NodeGeometry.y(main.get(k + 1)) - ay;
+                double dz = NodeGeometry.z(main.get(k + 1)) - az;
+                double len2 = dx * dx + dy * dy + dz * dz;
+                double t = len2 > 0 ? Math.max(0.0, Math.min(1.0, ((px - ax) * dx + (py - ay) * dy + (pz - az) * dz) / len2)) : 0.0;
+                double ex = ax + dx * t - px;
+                double ey = ay + dy * t - py;
+                double ez = az + dz * t - pz;
+                best = Math.min(best, Math.sqrt(ex * ex + ey * ey + ez * ez));
+            }
+            sum += best;
+        }
+        return rings.length == 0 ? 0 : sum / rings.length;
     }
 
     private static double branchLength(TrackRoutes.Branch b) {
@@ -176,6 +209,21 @@ public final class RaceProgress {
         trackT = bt;
         // the branch the racer is on, by where they are (not only by the rings passed: driving a shortcut backwards, from its far end, counts too): the nearest line of the course wins,
         // main path or branch, with a block of give so it does not flicker where they meet
+        if (current != null && branchPos >= current.chain().length) {
+            // all the rings of the shortcut are passed and the racer is back on the main path it replaces, nearer that than the shortcut: either way round covers the same ground, so the line
+            // is the main path up to where they are (and goes back along it from there)
+            boolean onStretch = Math.floorMod(trackIdx - current.entryIdx(), n) < Math.floorMod(current.exitIdx() - current.entryIdx(), n);
+            if (onStretch && best < measure(current, x, y, z)[0]) {
+                // a merge is a closed case: the shortcut's last ring and the main ring before its exit both lead to the exit. Whichever of the two lanes the racer is nearest, the line is at that
+                // main ring (not at whichever main segment happens to be nearest where the lanes run side by side), and the exit is next.
+                at = Math.floorMod(current.exitIdx() - 1, n);
+                viaStretch = current;
+                current = null;
+                branchPos = 0;
+                branchT = -1.0;
+                via = null;
+            }
+        }
         Fwd pick = null;
         double pickShare = 0.0;
         if (current != null) {
@@ -192,7 +240,12 @@ public final class RaceProgress {
                 }
             }
             if (pick != null) {
-                double give = pick == onBranch ? 1.0 : -1.0;
+                // the nearest point is an end of the branch: that is a main node, where the racer is just as much on the main path (past the exit of a branch that runs beside the main path, say)
+                if (pickShare <= 0.001 || pickShare >= 0.999) pick = null;
+            }
+            if (pick != null) {
+                // a block of give for the line they are already on, so it does not flicker where they run side by side; the main path wins a tie
+                double give = pick == onBranch ? -1.0 : 1.0;
                 if (!(Math.sqrt(bestB) + give < Math.sqrt(best))) pick = null;
             }
         }
@@ -384,11 +437,15 @@ public final class RaceProgress {
         Set<Long> out = new LinkedHashSet<>();
         if (current != null) {
             out.add(branchPos < current.chain().length ? current.chain()[branchPos] : current.exit());
+            // the rings after the ring the shortcut leaves at are all one fork: backed out of the shortcut, the next main ring counts too (the line goes back to the fork)
+            if (branchPos < current.chain().length && at + 1 < n) out.add(main.get(at + 1));
             return out;
         }
         out.add(main.get(at + 1));
         for (Fwd f : branches) {
             if (f.entryIdx() == at) out.add(f.chain()[0]);
+            // the main ring right after a fork was passed (not by coming out of a shortcut): the first ring of the shortcut counts too
+            else if (f.entryIdx() + 1 == at && via == null) out.add(f.chain()[0]);
         }
         return out;
     }
@@ -463,7 +520,8 @@ public final class RaceProgress {
         if (onBranch != null) {
             // on a shortcut the line did not enter at its start: not when the line came out of this very shortcut (the racer is still nearest its end), or is at either end of it
             if (onBranch == via) return false;
-            return onBranch.entryIdx() != at && onBranch.exitIdx() != at;
+            // (the ring after the fork it leaves at is the same fork, and so is the ring before the merge it rejoins at)
+            return onBranch.entryIdx() != at && onBranch.exitIdx() != at && onBranch.entryIdx() + 1 != at && Math.floorMod(onBranch.exitIdx() - 1, n) != at;
         }
         int ahead = Math.floorMod(trackIdx - at, n);
         return ahead < n / 2 && (ahead >= 2 || (ahead == 1 && trackT > 0.15));
@@ -572,7 +630,17 @@ public final class RaceProgress {
      * The line of rings goes back with the racer: when they are behind the last ring of it by more than the ring's box (driving the course the wrong way), that ring is unmarked, and so on back,
      * through a shortcut's rings if the line came out of one and out of its start. Called with each report, after {@link #track}. Nothing here depends on which way a ring was touched.
      */
+    /**
+     * The shortcut whose rings were all passed and whose merge the racer is now past, on the main path (see {@link #track}): the line is at the main ring before the shortcut's exit, and while the
+     * racer is on the stretch the shortcut replaces it is not pulled back by where they are (the lane they took there may run beside the main rings: nothing was skipped).
+     */
+    private Fwd viaStretch;
+
     private void syncLine(double x, double y, double z) {
+        if (viaStretch != null) {
+            boolean within = Math.floorMod(trackIdx - viaStretch.entryIdx(), n) < Math.floorMod(viaStretch.exitIdx() - viaStretch.entryIdx(), n);
+            if (current != null || !within) viaStretch = null;
+        }
         if (current == null && via != null && onBranch == via && branchT >= 0) {
             // the line ends at the exit of a shortcut and the racer is back inside it
             double[] along = branchRingLengths(via);
@@ -583,6 +651,14 @@ public final class RaceProgress {
                 at = via.entryIdx();
                 via = null;
             }
+        }
+        if (current == null && via != null && onBranch != via && unwrappedSet && total > 0) {
+            // the line came out of a shortcut at its merge and the racer is now on the main path, behind the merge, on the stretch the shortcut replaces: either way round covers the same ground,
+            // so the line is the main path's up to the merge, and goes back along it from there
+            boolean wrapped = via.exitIdx() < via.entryIdx();
+            double exitShare = wrapped ? 0.0 : cum[via.exitIdx()] / total;
+            boolean onStretch = onBranch == null && Math.floorMod(trackIdx - via.entryIdx(), n) < Math.floorMod(via.exitIdx() - via.entryIdx(), n);
+            if (onStretch && unwrapped - laps < exitShare - reachOf(main.get(via.exitIdx())) / total) via = null;
         }
         if (current != null) {
             double[] along = branchRingLengths(current);
@@ -603,7 +679,7 @@ public final class RaceProgress {
             at = via.entryIdx();                     // back before the start of the shortcut the line came out of: those rings are unmarked
             via = null;
         }
-        if (via == null) {
+        if (via == null && viaStretch == null) {
             // the share of the lap alone can be wrong (it is a running sum): the line only goes back when the nearest segment of the course says the racer is behind the ring as well (or they are on a shortcut)
             while (at > 0 && f < cum[at] / total - reachOf(main.get(at)) / total && (onBranch != null || (Math.floorMod(at - trackIdx, n) >= 1 && Math.floorMod(at - trackIdx, n) < n / 2))) at--;
             if (at == 0 && !behind && f < -reachOf(main.get(0)) / total) behind = true;          // back before the start line
@@ -612,6 +688,7 @@ public final class RaceProgress {
 
     /** Applies "the racer passed the ring of {@code node}" (one of {@link #expected()}). */
     public Result reach(long node) {
+        viaStretch = null;
         // a lap only counts near the start line: the share of the lap the racer is really at (see track()) has to be close to a whole one, whatever the rings say
         boolean closes = current != null ? node == current.exit() && branchPos >= current.chain().length && current.exitIdx() < current.entryIdx() : node == main.get(at + 1) && at + 1 == n;
         if (closes && unwrappedSet) {
@@ -620,6 +697,12 @@ public final class RaceProgress {
                 com.craftteamracing.CraftTeamRacingMod.LOGGER.info("Race: lap not counted, the racer is at {} of the lap (ring at {}, branch {})", frac, at, current != null);
                 return Result.NONE;
             }
+        }
+        if (current != null && branchPos < current.chain().length && at + 1 < n && node == main.get(at + 1) && node != current.chain()[branchPos]) {
+            // backed out of the shortcut and on along the main path: the line goes back to the fork, then takes the main ring
+            current = null;
+            branchPos = 0;
+            branchT = -1.0;
         }
         if (current != null) {
             if (branchPos < current.chain().length) {
@@ -651,7 +734,8 @@ public final class RaceProgress {
             return new Result(Kind.NODE, node);
         }
         for (Fwd f : branches) {
-            if (f.entryIdx() == at && f.chain()[0] == node) {
+            if ((f.entryIdx() == at || (f.entryIdx() + 1 == at && via == null)) && f.chain()[0] == node) {
+                at = f.entryIdx();                       // the line goes back to the fork
                 current = f;
                 via = null;
                 branchT = -1.0;

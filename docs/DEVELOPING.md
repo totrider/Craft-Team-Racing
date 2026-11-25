@@ -73,7 +73,7 @@ the user's own disc with `tools/ctr_disc/`. The mod ships synthesised placeholde
 
 ## Known quirks
 - Python steps occasionally fail once with `OSError: [Errno 22]` when Windows briefly locks a file that was just written. `build-and-install.ps1` runs a failing generator again, up to four times.
-- `make_boost_pad.py` and `make_survival_assets.py` both write the vanilla tags `slabs`, `stairs` and `mineable/pickaxe`; the build runs the survival script last, so its version is the one that
-  stays and the boost blocks' entries are **not** in these tags (probably not intended: check before relying on it).
+- `make_boost_pad.py` and `make_survival_assets.py` both fill the vanilla tags `slabs`, `stairs` and `mineable/pickaxe`: each adds its entries to what is already in the file, in
+  whichever order they run. A block that is renamed or removed has to be taken out of those files by hand.
 - Scripts that rewrite `lang/en_us.json` may drop or add its trailing newline; the content is the same.
 - Hand edits to a generated PNG or JSON are lost at the next build.

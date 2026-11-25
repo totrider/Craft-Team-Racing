@@ -21,7 +21,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  * which a sphere-driven kart on blocks triggers now and then ("moved wrongly" in the log, then a snap back and a teleport on
  * dismount). The server here trusts the driver within sane limits, as the physics is client-side by design (docs/ROADMAP.md).
  */
-public record KartStatePayload(int entityId, double x, double y, double z, float yRot, int drawnYaw, int flags, int engine, int tilt)
+public record KartStatePayload(int entityId, double x, double y, double z, float yRot, int drawnYaw, int flags, int engine, int tilt, int meters, int jump)
         implements CustomPacketPayload {
     public static final Type<KartStatePayload> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(CraftTeamRacingMod.MODID, "kart_state"));
@@ -40,11 +40,13 @@ public record KartStatePayload(int entityId, double x, double y, double z, float
         b.writeVarInt(p.flags);
         b.writeVarInt(p.engine);
         b.writeVarInt(p.tilt);
+        b.writeVarInt(p.meters);
+        b.writeVarInt(p.jump);
     }
 
     private static KartStatePayload read(RegistryFriendlyByteBuf b) {
         return new KartStatePayload(b.readVarInt(), b.readDouble(), b.readDouble(), b.readDouble(), b.readFloat(),
-                b.readVarInt(), b.readVarInt(), b.readVarInt(), b.readVarInt());
+                b.readVarInt(), b.readVarInt(), b.readVarInt(), b.readVarInt(), b.readVarInt(), b.readVarInt());
     }
 
     /** The furthest one report may move the kart, blocks: top speed with a boost is about 2 blocks a tick. */
@@ -90,6 +92,7 @@ public record KartStatePayload(int entityId, double x, double y, double z, float
             kart.setVisualFlags(p.flags() & KartFlags.MASK);
             kart.setEngineData(p.engine() & 0x1FFFFF);
             kart.setTilt(p.tilt() & 0xFFFF);
+            kart.setMeters(p.meters() & 0xFFFFFF, Math.max(0, Math.min(0xFFF, p.jump())));
             // the rider goes with it, and the chunks around the player follow (vanilla does both after a vehicle move)
             kart.positionRider(player);
             level.getChunkSource().move(player);
