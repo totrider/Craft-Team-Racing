@@ -1,284 +1,194 @@
 {
- "meta": {
-  "format_version": "4.10",
-  "model_format": "java_block",
-  "box_uv": false
- },
- "name": "power_fruit_bag",
- "parent": "",
- "ambientocclusion": true,
- "front_gui_light": false,
- "visible_box": [
-  1,
-  1,
-  0
- ],
- "resolution": {
-  "width": 16,
-  "height": 16
- },
- "elements": [
-  {
-   "name": "body_0",
-   "box_uv": false,
-   "rescale": false,
-   "locked": false,
-   "light_emission": 0,
-   "render_order": "default",
-   "allow_mirror_modeling": true,
-   "from": [
-    2,
-    0,
-    2
-   ],
-   "to": [
-    14,
-    10,
-    14
-   ],
-   "autouv": 0,
-   "color": 0,
-   "origin": [
-    8,
-    8,
-    8
-   ],
-   "rotation": [
-    0,
-    0,
-    0
-   ],
-   "faces": {
-    "north": {
-     "uv": [
-      2,
-      6,
-      14,
-      16
-     ],
-     "texture": 0
-    },
-    "east": {
-     "uv": [
-      2,
-      6,
-      14,
-      16
-     ],
-     "texture": 0
-    },
-    "south": {
-     "uv": [
-      2,
-      6,
-      14,
-      16
-     ],
-     "texture": 0
-    },
-    "west": {
-     "uv": [
-      2,
-      6,
-      14,
-      16
-     ],
-     "texture": 0
-    },
-    "up": {
-     "uv": [
-      0,
-      0,
-      0,
-      0
-     ],
-     "texture": null
-    },
-    "down": {
-     "uv": [
-      2,
-      2,
-      14,
-      14
-     ],
-     "texture": 2
-    }
-   },
-   "type": "cube",
-   "uuid": "2e5e7cb6-4520-4c59-98a5-0296b2125a57"
+  "meta": {
+    "format_version": "4.10",
+    "model_format": "java_block",
+    "box_uv": false
   },
-  {
-   "name": "body_1",
-   "box_uv": false,
-   "rescale": false,
-   "locked": false,
-   "light_emission": 0,
-   "render_order": "default",
-   "allow_mirror_modeling": true,
-   "from": [
+  "name": "power_fruit_bag",
+  "parent": "",
+  "ambientocclusion": true,
+  "front_gui_light": false,
+  "visible_box": [
     1,
-    10,
-    1
-   ],
-   "to": [
-    15,
-    14,
-    15
-   ],
-   "autouv": 0,
-   "color": 0,
-   "origin": [
-    8,
-    8,
-    8
-   ],
-   "rotation": [
-    0,
-    0,
+    1,
     0
-   ],
-   "faces": {
-    "north": {
-     "uv": [
-      0,
-      3,
-      16,
-      7
-     ],
-     "texture": 0
-    },
-    "east": {
-     "uv": [
-      0,
-      3,
-      16,
-      7
-     ],
-     "texture": 0
-    },
-    "south": {
-     "uv": [
-      0,
-      3,
-      16,
-      7
-     ],
-     "texture": 0
-    },
-    "west": {
-     "uv": [
-      0,
-      3,
-      16,
-      7
-     ],
-     "texture": 0
-    },
-    "up": {
-     "uv": [
-      0,
-      0,
-      16,
-      16
-     ],
-     "texture": 1
-    },
-    "down": {
-     "uv": [
-      0,
-      0,
-      16,
-      16
-     ],
-     "texture": 2
+  ],
+  "resolution": {
+    "width": 16,
+    "height": 16
+  },
+  "elements": [
+    {
+      "name": "body",
+      "box_uv": false,
+      "rescale": false,
+      "locked": false,
+      "light_emission": 0,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "autouv": 0,
+      "color": 0,
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": 2
+        }
+      },
+      "type": "cube",
+      "uuid": "2e5e7cb6-4520-4c59-98a5-0296b2125a57"
     }
-   },
-   "type": "cube",
-   "uuid": "7682b030-a214-4569-b8df-685fe87c011b"
-  }
- ],
- "outliner": [
-  {
-   "name": "body",
-   "origin": [
-    8,
-    8,
-    8
-   ],
-   "color": 0,
-   "uuid": "66c6a4da-084f-4a70-99c9-074ac8b1adc9",
-   "export": true,
-   "isOpen": false,
-   "locked": false,
-   "visibility": true,
-   "autouv": 0,
-   "children": [
-    "2e5e7cb6-4520-4c59-98a5-0296b2125a57",
-    "7682b030-a214-4569-b8df-685fe87c011b"
-   ]
-  }
- ],
- "textures": [
-  {
-   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\craftteamracing\\textures\\block\\power_fruit_bag_side.png",
-   "name": "side.png",
-   "folder": "",
-   "namespace": "",
-   "id": "side",
-   "particle": false,
-   "render_mode": "default",
-   "render_sides": "auto",
-   "frame_time": 1,
-   "frame_order_type": "loop",
-   "frame_order": "",
-   "frame_interpolate": false,
-   "visible": true,
-   "mode": "bitmap",
-   "saved": true,
-   "uuid": "84df6597-71cf-4d1b-a17e-3431041311c9",
-   "relative_path": "../../src/main/resources/assets/craftteamracing/textures/block/power_fruit_bag_side.png",
-   "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABmklEQVR4nG1SS0tCURD+ztWuaahXxNoIQlFUYIuI2vRf2vc72rTuH/QfWrRv1cOFholhICiRr3xQ0kJvfOc6l0kaGGbmO3Pm8Z1jbq7OfQAo7BTQrDfpotvp4+j0EN+jERLptMVzG571KYI/3pVgnm8vfQHkkPJfLL4IMWc5mb6Oq5VGGHc/htYXS3GkKscUUHfeL27ZM6qsSSs55ulk1495wGrGBOoF1vUMkFxoKrA9OHifaY0gWp5M4QJwZ4D7YxD7MnDHBisDAyS4nwHW6BsMYdCbO+jPFnbuBCTq/YVxzY28jn4JWSUqO5OYbqWB3Hr2D+O0TNSx5skJC3T6ljAhiAU1scK+nMk0URmHH0evIiPrrmwin04wR++8/IT6w7ArmzBXrxONZzOo1VvI5ibod8f2IL+ZB9wIavU2gHaIlR6qoV++r+DguAhnOhkHFxZCv/XWQjyZQjaXwqD3aXFiPNOXiYWv8PrSxPZeQCCTWJgYE0U0xssUc31x5rOTFllFcMZSlJNJMUsiRyRIZSItMVmL8fJlPfUv0J8G5cT3ohoAAAAASUVORK5CYII="
-  },
-  {
-   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\craftteamracing\\textures\\block\\power_fruit_bag_top.png",
-   "name": "top.png",
-   "folder": "",
-   "namespace": "",
-   "id": "top",
-   "particle": false,
-   "render_mode": "default",
-   "render_sides": "auto",
-   "frame_time": 1,
-   "frame_order_type": "loop",
-   "frame_order": "",
-   "frame_interpolate": false,
-   "visible": true,
-   "mode": "bitmap",
-   "saved": true,
-   "uuid": "299ca922-e738-40be-8a05-9e49c4349fcd",
-   "relative_path": "../../src/main/resources/assets/craftteamracing/textures/block/power_fruit_bag_top.png",
-   "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAByUlEQVR4nKVTSy8DYRQ9/TINnVarKUoQCVE09cjEI8JCJMYfEAt/QOJH2NtIxNbGT7CwUJFYsBAyHhH1CFIsaCMe0VaDkPvN3M60dpzky5y5t+c+zvRzrS7OfDdFmkDIvrwg/fCMdOoRvcOajCXPk6gOV0pOOeZqICBzruO1ue+9LQN/ATVRqAphaXkDC3VVkicy75iY9qFM15GPx2XMuMmhccrsfnSSQfq0W3LBI5FY03XJO7zl8sliAokbesx8V9RbiAvahWE4BNSxlN8d2Hn2R/AKNDaDeG+fFyIscGDFaWwGczJb8Bfoj3hQUe9CUn3H5KwfbmsdrVmFCLngbg0g8aFg5ShfKFRdE4Lgl1ZLEAt65PPDsc7raAhjfWY+0uHF9adiFghX2gUunPtfZX/x9d3i/Qnkn1IaPH7KAWsAxk2hNuADMnkYZ1m8akGcJ2wv6I8n2EQS0hmMqfI8739JsXvE8qJNhd94wleLXx6GYBPnL9+ksNbyorvG8mLTHn0nVgV9SC9aQZSucO/04szhhcXj28VeKLQH4zCVK3QmjhRgwC5ye/qGxnZfUYF/XaZoZwsUEvPV5Wno2rI3DPodCfgaU54a/wA+P8lvSrQpngAAAABJRU5ErkJggg=="
-  },
-  {
-   "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\craftteamracing\\textures\\block\\power_fruit_bag_bottom.png",
-   "name": "bottom.png",
-   "folder": "",
-   "namespace": "",
-   "id": "bottom",
-   "particle": false,
-   "render_mode": "default",
-   "render_sides": "auto",
-   "frame_time": 1,
-   "frame_order_type": "loop",
-   "frame_order": "",
-   "frame_interpolate": false,
-   "visible": true,
-   "mode": "bitmap",
-   "saved": true,
-   "uuid": "2e3b7d28-2c68-4fe8-be68-495ae9efa29f",
-   "relative_path": "../../src/main/resources/assets/craftteamracing/textures/block/power_fruit_bag_bottom.png",
-   "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABKUlEQVR4nG2SsUpDQRBFN8srUgQlWkUQQbDQLj+Tb/FD8l/pkkIQRDBVEiIp0kXOkvO4PBx47O68uXNn7sxo+b64TO9vyngyKefTqRx2v4U3hg/bfv2UjPH8/PgunT/SfBOEHfbHMnt66P8Jnt7dlk6QwST0rj2/PPZ3qsHe5q/trAkmOy1o3LO6JPFduVCOpVkqYO72rOHjn8kqD8vRWn8hJMHZlkn4qj0bsF5tmjjJaluebVr7YyOpBnKqrOw5wmGFVA2mGzL3TFc2wbKTMKdSVR6nAgLiS0FNlAvVpnC+Ki9DgmxNA+wE9Fez5az/20R9EORK1wSgQwaaBG2SBB36CnIpUNZVzQXLtiBxwZoG9qXTYAKHCyaJyVoLCc5FYSq5YDkJBYXkD94wARnhO60EAAAAAElFTkSuQmCC"
-  }
- ],
- "ctr_craft_note": "The bag of power fruit (own sack pictures; with Farm & Charm installed a built-in resource pack puts its sack model and side/bottom pictures under our top picture). Slots: side, top (the heap of fruit with a two pixel burlap edge), bottom."
+  ],
+  "outliner": [
+    {
+      "name": "body",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 0,
+      "uuid": "66c6a4da-084f-4a70-99c9-074ac8b1adc9",
+      "export": true,
+      "isOpen": false,
+      "locked": false,
+      "visibility": true,
+      "autouv": 0,
+      "children": [
+        "2e5e7cb6-4520-4c59-98a5-0296b2125a57"
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\craftteamracing\\textures\\block\\power_fruit_bag_side.png",
+      "name": "side.png",
+      "folder": "",
+      "namespace": "",
+      "id": "side",
+      "particle": false,
+      "render_mode": "default",
+      "render_sides": "auto",
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "mode": "bitmap",
+      "saved": true,
+      "uuid": "84df6597-71cf-4d1b-a17e-3431041311c9",
+      "relative_path": "../../src/main/resources/assets/craftteamracing/textures/block/power_fruit_bag_side.png",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABmklEQVR4nG1SS0tCURD+ztWuaahXxNoIQlFUYIuI2vRf2vc72rTuH/QfWrRv1cOFholhICiRr3xQ0kJvfOc6l0kaGGbmO3Pm8Z1jbq7OfQAo7BTQrDfpotvp4+j0EN+jERLptMVzG571KYI/3pVgnm8vfQHkkPJfLL4IMWc5mb6Oq5VGGHc/htYXS3GkKscUUHfeL27ZM6qsSSs55ulk1495wGrGBOoF1vUMkFxoKrA9OHifaY0gWp5M4QJwZ4D7YxD7MnDHBisDAyS4nwHW6BsMYdCbO+jPFnbuBCTq/YVxzY28jn4JWSUqO5OYbqWB3Hr2D+O0TNSx5skJC3T6ljAhiAU1scK+nMk0URmHH0evIiPrrmwin04wR++8/IT6w7ArmzBXrxONZzOo1VvI5ibod8f2IL+ZB9wIavU2gHaIlR6qoV++r+DguAhnOhkHFxZCv/XWQjyZQjaXwqD3aXFiPNOXiYWv8PrSxPZeQCCTWJgYE0U0xssUc31x5rOTFllFcMZSlJNJMUsiRyRIZSItMVmL8fJlPfUv0J8G5cT3ohoAAAAASUVORK5CYII="
+    },
+    {
+      "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\craftteamracing\\textures\\block\\power_fruit_bag_top.png",
+      "name": "top.png",
+      "folder": "",
+      "namespace": "",
+      "id": "top",
+      "particle": false,
+      "render_mode": "default",
+      "render_sides": "auto",
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "mode": "bitmap",
+      "saved": true,
+      "uuid": "299ca922-e738-40be-8a05-9e49c4349fcd",
+      "relative_path": "../../src/main/resources/assets/craftteamracing/textures/block/power_fruit_bag_top.png",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAByUlEQVR4nKVTSy8DYRQ9/TINnVarKUoQCVE09cjEI8JCJMYfEAt/QOJH2NtIxNbGT7CwUJFYsBAyHhH1CFIsaCMe0VaDkPvN3M60dpzky5y5t+c+zvRzrS7OfDdFmkDIvrwg/fCMdOoRvcOajCXPk6gOV0pOOeZqICBzruO1ue+9LQN/ATVRqAphaXkDC3VVkicy75iY9qFM15GPx2XMuMmhccrsfnSSQfq0W3LBI5FY03XJO7zl8sliAokbesx8V9RbiAvahWE4BNSxlN8d2Hn2R/AKNDaDeG+fFyIscGDFaWwGczJb8Bfoj3hQUe9CUn3H5KwfbmsdrVmFCLngbg0g8aFg5ShfKFRdE4Lgl1ZLEAt65PPDsc7raAhjfWY+0uHF9adiFghX2gUunPtfZX/x9d3i/Qnkn1IaPH7KAWsAxk2hNuADMnkYZ1m8akGcJ2wv6I8n2EQS0hmMqfI8739JsXvE8qJNhd94wleLXx6GYBPnL9+ksNbyorvG8mLTHn0nVgV9SC9aQZSucO/04szhhcXj28VeKLQH4zCVK3QmjhRgwC5ye/qGxnZfUYF/XaZoZwsUEvPV5Wno2rI3DPodCfgaU54a/wA+P8lvSrQpngAAAABJRU5ErkJggg=="
+    },
+    {
+      "path": "H:\\Craft Team Racing\\src\\main\\resources\\assets\\craftteamracing\\textures\\block\\power_fruit_bag_bottom.png",
+      "name": "bottom.png",
+      "folder": "",
+      "namespace": "",
+      "id": "bottom",
+      "particle": false,
+      "render_mode": "default",
+      "render_sides": "auto",
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "mode": "bitmap",
+      "saved": true,
+      "uuid": "2e3b7d28-2c68-4fe8-be68-495ae9efa29f",
+      "relative_path": "../../src/main/resources/assets/craftteamracing/textures/block/power_fruit_bag_bottom.png",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABKUlEQVR4nG2SsUpDQRBFN8srUgQlWkUQQbDQLj+Tb/FD8l/pkkIQRDBVEiIp0kXOkvO4PBx47O68uXNn7sxo+b64TO9vyngyKefTqRx2v4U3hg/bfv2UjPH8/PgunT/SfBOEHfbHMnt66P8Jnt7dlk6QwST0rj2/PPZ3qsHe5q/trAkmOy1o3LO6JPFduVCOpVkqYO72rOHjn8kqD8vRWn8hJMHZlkn4qj0bsF5tmjjJaluebVr7YyOpBnKqrOw5wmGFVA2mGzL3TFc2wbKTMKdSVR6nAgLiS0FNlAvVpnC+Ki9DgmxNA+wE9Fez5az/20R9EORK1wSgQwaaBG2SBB36CnIpUNZVzQXLtiBxwZoG9qXTYAKHCyaJyVoLCc5FYSq5YDkJBYXkD94wARnhO60EAAAAAElFTkSuQmCC"
+    }
+  ],
+  "ctr_craft_note": "The bag of power fruit (own sack pictures; with Farm & Charm installed a built-in resource pack puts its sack model and side/bottom pictures under our top picture). Slots: side, top (the heap of fruit with a two pixel burlap edge), bottom."
 }

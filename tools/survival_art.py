@@ -569,10 +569,10 @@ def bag_textures():
         band[x, 4] = three[k] + (255,)
         band[x, 5] = shade(three[k], 0.78) + (255,)
     lower = side.layer("lower shade")
-    for y in range(11, 16):
+    for y in range(8, 16):                                        # a gradual darkening towards the bottom (one step a row), so the lower half melts into the upper one
         for x in range(16):
             c = side_sack.getpixel((x, y))
-            lower[x, y] = shade(c[:3], 0.9) + (255,)
+            lower[x, y] = shade(c[:3], 1.0 - 0.14 * (y - 7) / 8) + (255,)
     bottom = kra_layers.Sheet(16, 16)
     bottom.add("burlap", sack(16, 16, True))
     top = kra_layers.Sheet(16, 16)

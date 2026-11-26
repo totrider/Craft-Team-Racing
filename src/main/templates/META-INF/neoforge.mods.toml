@@ -9,7 +9,7 @@ displayName="${mod_name}"
 logoFile="logo.png"
 logoBlur=false
 authors="DragonKing"
-credits="AI-assisted: much of the code, tools and documentation was written together with Claude (Anthropic). The design, direction and playtesting are by the author."
+credits="Written with Claude (Anthropic): most of the code, the asset-generating scripts, the documentation and the page text. The design, direction and playtesting are by the author."
 description='''
 Drive kart-racing-game karts through your Minecraft world. Build race tracks from ordinary blocks and a few nodes, race your friends with crates and power-ups, and play it all from a fresh survival world: craft a kart from a Power Palm's fruit.
 

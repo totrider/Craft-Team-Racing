@@ -16,8 +16,8 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  * Client to server: move one side of a node's box by one block (the Track Tool: right-click a side to extend it, left-click to retract it). The server checks the node, the distance and the permission, then changes the box.
  */
 public record TrackBoxPayload(long node, int side, int delta) implements CustomPacketPayload {
-    /** How far from the node the player may be: the longest pick range of the client. */
-    public static final double MAX_DISTANCE = 160.0;
+    /** How far from the node the player may be: the client's pick range (BoxPicker.RANGE) plus the largest node half size, with some slack. */
+    public static final double MAX_DISTANCE = 112.0;
 
     public static final Type<TrackBoxPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(CraftTeamRacingMod.MODID, "track_box"));
 

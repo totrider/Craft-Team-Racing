@@ -107,11 +107,13 @@ def ensure_pods_bbmodel():
 
 def leaf_plane(z, angle, along="z", span=32, lift=-6):
     """A plane of the fluffy fronds, both sides, tilted by {angle} about the vertical through its middle; along "z" it faces north/south at depth z, along "x" east/west at depth z."""
-    face = {"uv": [0, 0, 16, 16], "texture": "#all"}
+    # kept inside the block's own height (0 to 16): planes reaching into the block above or below coincided with that block's own planes (z-fighting); the picture is cut to the part that is kept
+    v0, v1 = round(-lift / 28 * 16, 4), round((16 - lift) / 28 * 16, 4)
+    face = {"uv": [0, v0, 16, v1], "texture": "#all"}
     if along == "z":
-        el = {"from": [-8, lift, z], "to": [-8 + span, lift + 28, z], "faces": {"north": dict(face), "south": dict(face)}, "rotation": {"origin": [8, 8, z], "axis": "y", "angle": angle}}
+        el = {"from": [-8, 0, z], "to": [-8 + span, 16, z], "faces": {"north": dict(face), "south": dict(face)}, "rotation": {"origin": [8, 8, z], "axis": "y", "angle": angle}}
     else:
-        el = {"from": [z, lift, -8], "to": [z, lift + 28, -8 + span], "faces": {"east": dict(face), "west": dict(face)}, "rotation": {"origin": [z, 8, 8], "axis": "y", "angle": angle}}
+        el = {"from": [z, 0, -8], "to": [z, 16, -8 + span], "faces": {"east": dict(face), "west": dict(face)}, "rotation": {"origin": [z, 8, 8], "axis": "y", "angle": angle}}
     return el
 
 
@@ -137,15 +139,13 @@ def ensure_bag_bbmodel():
     if not os.path.exists(path):
         def face(uv, tex):
             return {"uv": uv, "texture": "#" + tex}
-        lower = {"from": [2, 0, 2], "to": [14, 10, 14], "faces": {f: face([2, 6, 14, 16], "side") for f in ("north", "east", "south", "west")}}
-        lower["faces"]["down"] = face([2, 2, 14, 14], "bottom")
-        rim = {"from": [1, 10, 1], "to": [15, 14, 15], "faces": {f: face([0, 3, 16, 7], "side") for f in ("north", "east", "south", "west")}}
-        rim["faces"]["up"] = face([0, 0, 16, 16], "top")
-        rim["faces"]["down"] = face([0, 0, 16, 16], "bottom")
+        cube = {"from": [0, 0, 0], "to": [16, 16, 16], "faces": {f: face([0, 0, 16, 16], "side") for f in ("north", "east", "south", "west")}}
+        cube["faces"]["up"] = face([0, 0, 16, 16], "top")
+        cube["faces"]["down"] = face([0, 0, 16, 16], "bottom")
         tex = lambda n: os.path.join(ASSETS, "textures", "block", n + ".png")
         bbmodel.write(path, "power_fruit_bag", {"side": tex("power_fruit_bag_side"), "top": tex("power_fruit_bag_top"), "bottom": tex("power_fruit_bag_bottom")},
-                      [("body", [lower, rim])], gui_light_front=False,
-                      comment="The bag of power fruit (own sack pictures; with Farm & Charm installed a built-in resource pack puts its sack model and side/bottom pictures under our top picture). "
+                      [("body", [cube])], gui_light_front=False,
+                      comment="The bag of power fruit, a plain full block (own sack pictures; with Farm & Charm installed a built-in resource pack puts its sack model and side/bottom pictures under our top picture). "
                               "Slots: side, top (the heap of fruit with a two pixel burlap edge), bottom.")
     return bbmodel.read(path)
 

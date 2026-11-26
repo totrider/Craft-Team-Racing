@@ -71,14 +71,9 @@ public class PickupSpotBlockEntity extends BlockEntity {
         setChanged();
     }
 
-    /** The power-ups this spot gives, one of them at random per crate (none: the general drop table). */
-    public String pick(java.util.Random random) {
-        return com.craftteamracing.items.CrateItems.pick(itemId, random);
-    }
-
-    /** The power-up and how many of it a kart gets from this crate (null: the general drop table). */
-    public com.craftteamracing.items.CrateItems.Entry pickEntry(java.util.Random random) {
-        return com.craftteamracing.items.CrateItems.pickEntry(itemId, random);
+    /** The power-up and how many of it a kart in this place gets from this crate, drawn like the drop table does from the crate's own list (null: the general drop table). */
+    public com.craftteamracing.items.PowerupTable.Drop pickDrop(int field, int rank, int lapIndex, java.util.Random random) {
+        return com.craftteamracing.items.CrateItems.pickDrop(itemId, field, rank, lapIndex, random);
     }
 
     public void setItemId(String id) {
@@ -167,6 +162,11 @@ public class PickupSpotBlockEntity extends BlockEntity {
         return true;
     }
 
+    /** Drops the links to nodes that are gone (broken or replaced): only loaded positions are judged, an unloaded node is left alone until it is there to look at. */
+    private void pruneLinks(ServerLevel server) {
+        if (links.removeIf(node -> server.isLoaded(node) && !(server.getBlockState(node).getBlock() instanceof RedstoneLinkNodeBlock))) changed();
+    }
+
     private void changed() {
         setChanged();
         if (level != null) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);          // the builder's client draws the links
@@ -215,6 +215,7 @@ public class PickupSpotBlockEntity extends BlockEntity {
 
     /** The trigger crate does not need a race, and a signal reaching it does nothing (it gives one): it is simply there, until its uses are spent. */
     private static void triggerTick(ServerLevel server, BlockPos pos, PickupSpotBlockEntity be) {
+        if (!be.links.isEmpty() && server.getGameTime() % 20 == 0) be.pruneLinks(server);
         boolean blocked = blocked(server, pos);
         if (be.respawn > 0 && !blocked) be.respawn--;
         if (be.on && be.outputUntil != Long.MAX_VALUE && server.getGameTime() >= be.outputUntil) be.setOutput(server, false);

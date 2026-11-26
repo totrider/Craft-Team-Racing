@@ -134,6 +134,58 @@ class ItemTablesTest {
     }
 
     @Test
+    void a_table_lists_one_item_at_several_quantities_and_leans_with_the_place() {
+        PowerupTable flat = PowerupTable.custom(Map.of("craftteamracing:bomb", 1, "craftteamracing:bomb*3", 1));
+        Random r = new Random(3);
+        int three = 0;
+        for (int i = 0; i < 2000; i++) {
+            PowerupTable.Drop d = flat.drawDrop(8, 0, 1, r);
+            assertTrue(d.id().equals("craftteamracing:bomb"));
+            if (d.count() == 3) three++; else assertTrue(d.count() == 1);
+        }
+        assertTrue(three > 850 && three < 1150, "three " + three);
+        PowerupTable ranged = PowerupTable.custom(Map.of("craftteamracing:bomb*1-3", 1), true, 0, 100);
+        double front = 0;
+        double back = 0;
+        for (int i = 0; i < 3000; i++) {
+            front += ranged.drawDrop(8, 0, 1, r).count();
+            back += ranged.drawDrop(8, 7, 1, r).count();
+        }
+        assertTrue(front / 3000 < 1.9 && back / 3000 > 2.1, front / 3000 + " " + back / 3000);
+        assertTrue(PowerupTable.ctr().drawDrop(8, 7, 1, r).count() == 1);
+    }
+
+    @Test
+    void weights_follow_the_place_between_the_first_and_the_last() {
+        PowerupTable t = PowerupTable.custom(Map.of("a:front", 90, "a:back", 10), Map.of("a:front", 10, "a:back", 90), false, 0, 100);
+        Random r = new Random(5);
+        int frontFirst = 0;
+        int frontLast = 0;
+        for (int i = 0; i < 4000; i++) {
+            if (t.draw(8, 0, 1, r).equals("a:front")) frontFirst++;
+            if (t.draw(8, 7, 1, r).equals("a:front")) frontLast++;
+        }
+        assertTrue(frontFirst > 3400 && frontLast < 600, frontFirst + " " + frontLast);
+        assertThrows(IllegalArgumentException.class, () -> PowerupTable.custom(Map.of("a:x", 5), Map.of("a:x", 0), false, 0, 100));
+    }
+
+    @Test
+    void a_crate_keeps_the_same_item_several_times_with_weights_by_place() {
+        String text = "bomb@40-5,bomb*3@2-30,turbo|20-80";
+        assertTrue(CrateItems.entries(text).size() == 3);
+        assertTrue(CrateItems.normalize(text).equals(text));
+        assertTrue(CrateItems.settings(text).byPlace() && CrateItems.settings(text).high() == 80);
+        assertTrue(CrateItems.normalize("bomb,turbo*2").equals("bomb,turbo*2"));
+        assertTrue(CrateItems.fromTable(CrateItems.table(text)).equals(text));
+        Random r = new Random(9);
+        int threeBack = 0;
+        for (int i = 0; i < 2000; i++) {
+            if (CrateItems.pickDrop(text, 8, 7, 1, r).count() == 3) threeBack++;
+        }
+        assertTrue(threeBack > 900, "three " + threeBack);
+    }
+
+    @Test
     void the_ctr_table_draws_from_the_place_based_sets() {
         Random r = new Random(1);
         for (int i = 0; i < 500; i++) {

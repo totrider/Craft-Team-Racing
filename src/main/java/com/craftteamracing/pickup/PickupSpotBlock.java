@@ -149,6 +149,10 @@ public class PickupSpotBlock extends Block implements EntityBlock {
         if (kind == PickupKind.TRIGGER_CRATE) {
             // a Redstone Linking Node picked with the Wrench is linked (or unlinked) by the next click here; otherwise the click opens the settings
             BlockPos node = RedstoneLinks.selected(sp.getUUID(), level.dimension());
+            if (node != null && level.isLoaded(node) && !(level.getBlockState(node).getBlock() instanceof RedstoneLinkNodeBlock)) {
+                RedstoneLinks.clear(sp.getUUID());                      // the picked node was broken since
+                node = null;
+            }
             if (node != null) {
                 // with a node picked: a click links it, a crouching click takes the link away again
                 boolean done = sp.isShiftKeyDown() ? be.unlink(node) : be.link(node);

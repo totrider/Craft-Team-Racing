@@ -58,6 +58,7 @@ public class PickupSpotRenderer implements BlockEntityRenderer<PickupSpotBlockEn
             com.mojang.blaze3d.vertex.VertexConsumer lines = buffers.getBuffer(OnTopTypes.LINES);
             PoseStack.Pose p = pose.last();
             for (net.minecraft.core.BlockPos node : be.links()) {
+                if (mc.level != null && mc.level.isLoaded(node) && !(mc.level.getBlockState(node).getBlock() instanceof com.craftteamracing.pickup.RedstoneLinkNodeBlock)) continue;      // the node is gone: no line (the server drops the link)
                 float dx = node.getX() - be.getBlockPos().getX();
                 float dy = node.getY() - be.getBlockPos().getY();
                 float dz = node.getZ() - be.getBlockPos().getZ();

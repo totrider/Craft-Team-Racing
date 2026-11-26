@@ -1,6 +1,6 @@
 {
   "name": "Balanced",
-  "description": "The original game's Balanced class: no strong points and no weak ones.",
+  "description": "The classic Balanced class: no strong points and no weak ones.",
   "official": true,
   "enabled": true,
   "stats": {

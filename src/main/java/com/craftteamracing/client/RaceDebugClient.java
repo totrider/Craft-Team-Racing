@@ -40,6 +40,12 @@ public final class RaceDebugClient {
     public static boolean nodes() {
         return nodes;
     }
+    private static volatile boolean podiumText;
+
+    /** Whether the text about the group camera's path shows while a podium node is held (/ctr debug podium; off by default, the drawn path is always there). */
+    public static boolean podiumText() {
+        return podiumText;
+    }
     private static volatile RaceDebugPayload last;
     private static volatile long lastAt;
     private static int resend;
@@ -67,6 +73,11 @@ public final class RaceDebugClient {
     public static void register(RegisterClientCommandsEvent event) {
         event.getDispatcher().register(Commands.literal("ctr").then(Commands.literal("debug").then(Commands.literal("rings").executes(ctx -> toggle(ctx, true)))
                 .then(Commands.literal("path").executes(ctx -> toggle(ctx, false)))
+                .then(Commands.literal("podium").executes(ctx -> {
+                    podiumText = !podiumText;
+                    ctx.getSource().sendSuccess(() -> Component.literal("Group camera path text while holding a podium node: " + (podiumText ? "on" : "off")), false);
+                    return 1;
+                }))
                 .then(Commands.literal("nodes").executes(ctx -> {
                     nodes = !nodes;
                     ctx.getSource().sendSuccess(() -> Component.literal("Track nodes, start grid and pickup spots drawn without an item in hand: " + (nodes ? "on" : "off")), false);

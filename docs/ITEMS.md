@@ -18,7 +18,7 @@ Shapeless recipes (no fixed pattern) have their ingredients laid out from the to
 
 <img src="img/recipes/wrench.png" width="292" alt="wrench recipe">
 
-**Track Tool**: Links nodes, resizes their boxes, and opens the Start Node menu with the test drive. See [Building a race track](../README.md#building-a-race-track).
+**Track Tool**: Links nodes, resizes their boxes (from up to 20 blocks away), and opens the Start Node menu with the test drive. See [Building a race track](../README.md#building-a-race-track).
 
 <img src="img/recipes/track_tool.png" width="292" alt="track tool recipe">
 
@@ -55,7 +55,7 @@ Power Palms grow on beaches (see [SURVIVAL.md](SURVIVAL.md)); their fronds drop 
 
 <img src="img/recipes/power_ingot_from_block.png" width="292" alt="power ingot from block recipe">
 
-**Bag of Power Fruit**: Nine fruit in a sack that stands on the ground. With Farm & Charm installed it uses that mod's sack look.
+**Bag of Power Fruit**: Nine fruit in a sack that stands on the ground. With Farm & Charm installed you can enable the optional *Farm & Charm Sacks* resource pack to give it that mod's sack look.
 
 <img src="img/recipes/power_fruit_bag.png" width="292" alt="power fruit bag recipe">
 
@@ -132,7 +132,7 @@ Invisible markers that make a track; you see them while you hold a node, the Tra
 
 <img src="img/recipes/race_barrier.png" width="292" alt="race barrier recipe">
 
-**Redstone Linking Node**: A small visible block that gives a redstone signal while any Trigger Crate Spot linked to it does. Link with the Wrench.
+**Redstone Linking Node**: A small visible block that gives a redstone signal while any Trigger Crate Spot linked to it does. Link with the Wrench: pick the node, then the Trigger Crate Spot. Crouch and right-click the air or any other block to let go of a picked node; a link to a node that was broken is dropped.
 
 <img src="img/recipes/redstone_link_node.png" width="292" alt="redstone link node recipe">
 
@@ -159,7 +159,7 @@ Spots are small markers: a pickup appears there while a race is on a track near 
 
 <img src="img/recipes/fruit_crate_spot.png" width="292" alt="fruit crate spot recipe">
 
-**Power-up Crate Spot**: An Item Crate and a Checkpoint Node. Gives a power-up by the original's place-based roulette, or what you set with the Wrench (one or several power-ups, each with a quantity). Crouch and right-click a placed spot with another spot item to copy its setting onto the whole stack.
+**Power-up Crate Spot**: An Item Crate and a Checkpoint Node. Gives a power-up from the drop table (the original's place-based roulette unless the track sets its own), or what you set with the Wrench: a list of its own in the same screen as the Drop Table (each entry with a weight for the first and for the last place, a quantity, and the same power-up may be listed several times; see Drop Table). Crouch and right-click a placed spot with another spot item to copy its setting onto the whole stack.
 
 <img src="img/recipes/powerup_crate_spot.png" width="292" alt="powerup crate spot recipe">
 
@@ -178,7 +178,7 @@ Right-click in the air to set one up in its screen, then right-click a Start Nod
 
 <img src="img/recipes/rulebook.png" width="292" alt="rulebook recipe">
 
-**Drop Table**: A book, a nugget and an Item Crate. A grid of power-ups with a weight each, or the classic roulette.
+**Drop Table**: A book, a nugget and an Item Crate. A grid of power-ups, or the classic roulette, which is left exactly as the original has it. Ctrl + click puts a power-up in the list (or adds another entry of one that is there, so a bomb can be listed once as 1 and once as 3); Ctrl + right click takes an entry out; the mark on a listed one opens its settings: a weight for the first place and one for the last (a driver in between gets it in proportion, so the drops lean with the race position; a new custom list starts from the classic first-place and last-place sets, plus a bomb and a missile at quantity 3 for the classic stacks; an item put back in the list gets its classic weights again) and a quantity, one number or a random range. With *Quantity by place* on, a range leans low in front and high at the back. The table only applies to crates that are not set to something themselves, in a race on a track it is applied to.
 
 <img src="img/recipes/drop_table.png" width="292" alt="drop table recipe">
 

@@ -236,7 +236,11 @@ public class KartTuningScreen extends Screen {
         int y = 36;
         g.drawString(font, p.name(), x, y, 0xFFD040, false);
         if (debugPicked()) {
-            g.drawString(font, Component.translatable("screen.craftteamracing.tuning.debug_hint"), x, y + 11, 0xFF9060, false);
+            int hy = y + 11;
+            for (FormattedCharSequence line : font.split(Component.translatable("screen.craftteamracing.tuning.debug_hint"), 250)) {
+                g.drawString(font, line, x, hy, 0xFF9060, false);
+                hy += 10;
+            }
             return;
         }
         KartStats s = p.stats();

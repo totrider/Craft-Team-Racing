@@ -1,6 +1,6 @@
 {
   "name": "Turning",
-  "description": "The original's Turning class: sharp handling and drifts, the lowest top speed, and a light bump.",
+  "description": "The classic Turning class: sharp handling and drifts, the lowest top speed, and a light bump.",
   "official": true,
   "enabled": true,
   "stats": {

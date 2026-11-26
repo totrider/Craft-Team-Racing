@@ -19,7 +19,7 @@ import net.minecraft.world.phys.Vec3;
 public final class BoxPicker {
     private BoxPicker() {}
 
-    public static final double RANGE = 128.0;
+    public static final double RANGE = 20.0;
 
     public record Pick(long node, int side, double distance) {}
 

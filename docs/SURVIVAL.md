@@ -44,8 +44,8 @@ as planks do. Recipes are the vanilla ones (a log gives four planks; four logs t
 - **Wheel**: the kart's wheel (`wheel_block.bbmodel`), placed on the ground. Right click with another wheel on it to add one, as with pink petals: **1** lies in the middle, **2** are stacked,
   **3** are two stacked with one leaning against them (towards the way the block faces), **4** lie in a two by two. Four black wool and an iron ingot make four wheels; the kart and the offroad
   tires are built from wheels (not wool).
-- **Bag of Power Fruit**: nine fruit, and back. It stands facing the way it was placed. With **Farm & Charm** installed, a built-in resource pack (`resourcepacks/farm_and_charm_compat`, active only
-  when that mod is loaded) gives it that mod's sack model with its side, bottom and knot pictures (referenced, not copied) under our own top picture, which has the same two pixel edge. Without
+- **Bag of Power Fruit**: nine fruit, and back. It stands facing the way it was placed. With **Farm & Charm** installed, a built-in resource pack (`resourcepacks/farm_and_charm_compat`, offered only
+  when that mod is loaded, and off until you enable it in Options > Resource Packs) gives it that mod's sack model with its side, bottom and knot pictures (referenced, not copied) under our own top picture, which has the same two pixel edge. Without
   it the bag has its own sack pictures (`power_fruit_bag.bbmodel`).
 - **Item Crate** and **Fruit Crate**: marked on every side as the race's crate spots are. The **Planked** kinds (oak caps, the first pass's pictures) are cut from one another at the stonecutter. They are ingredients of the crate spots, and are in `mineable/axe`.
 

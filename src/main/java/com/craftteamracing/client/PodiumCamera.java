@@ -373,7 +373,7 @@ public final class PodiumCamera {
         if (groups.isEmpty()) {
             if (refresh) {
                 pathCacheAt = now;
-                mc.player.displayClientMessage(net.minecraft.network.chat.Component.literal("Group camera path: no Start Node has all three podium nodes hooked up (" + podiumNodes + " podium nodes known, " + hooked + " hooked to a Start Node)"), true);
+                if (RaceDebugClient.podiumText()) mc.player.displayClientMessage(net.minecraft.network.chat.Component.literal("Group camera path: no Start Node has all three podium nodes hooked up (" + podiumNodes + " podium nodes known, " + hooked + " hooked to a Start Node)"), true);
             }
             return;
         }
@@ -400,7 +400,7 @@ public final class PodiumCamera {
             }
             pathCache = all;
             pathCacheAt = now;
-            if (report != null) mc.player.displayClientMessage(net.minecraft.network.chat.Component.literal(report), true);
+            if (report != null && RaceDebugClient.podiumText()) mc.player.displayClientMessage(net.minecraft.network.chat.Component.literal(report), true);
         }
         for (List<double[]> path : pathCache.values()) {
             double[] prev = null;

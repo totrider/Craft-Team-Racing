@@ -55,7 +55,7 @@ Craft Team Racing is a standalone mod. These optional mods add to it:
 - **Fusion:** connected textures for the boost blocks
 - **Create** and **Copycats+:** copycat blocks take on the block they copy, so a copycat of a boost block boosts and a copycat of ice is slippery
 - **Jade:** its pop-up is hidden while you race
-- **Farm & Charm:** the Bag of Power Fruit uses its sack look
+- **Farm & Charm:** the Bag of Power Fruit can use its sack look (optional resource pack)
 - **Every Compat:** the Power Palm is picked up as a wood type, so its furniture and wood-based blocks are generated
 - **Sodium** and **Iris:** tested together with shaders
 - **Planned:** Sable and Create Aeronautics (karts on sub-levels and airships), Xaero's maps (the track and racers on the map) and Open Parties and Claims (claim-aware track building)

@@ -53,7 +53,7 @@ Power Juice + Raw Iron --> 2 Raw Power Ore --smelt--> Power Ingot
 
 Every recipe also shows in a recipe viewer such as JEI or REI, and all of them are drawn out in [docs/ITEMS.md](docs/ITEMS.md).
 
-Worldgen of palms can be switched off in the server config (`worldgen`). Optional built-in resource packs (Options > Resource Packs): *Fluffy Palm Fronds* (fluffy leaves), *Farm & Charm Sacks* (active only with that mod) and *Still Boost Pad Arrows*.
+Worldgen of palms can be switched off in the server config (`worldgen`). Optional built-in resource packs (Options > Resource Packs): *Fluffy Palm Fronds* (fluffy leaves), *Farm & Charm Sacks* (offered only with that mod) and *Still Boost Pad Arrows*.
 
 ## Blocks and items
 A summary of what is in the mod. Everything is in the *Craft Team Racing* creative tab and has a survival recipe; the recipes, drawn as crafting grids, are in [docs/ITEMS.md](docs/ITEMS.md).
@@ -97,7 +97,7 @@ Spots are small marker blocks, invisible unless you hold something to edit them.
 | **End Crystal** | Follows the course after the kart in first place; every kart it touches is blasted. Charged: it goes through every kart ahead of you. |
 | **Clock** | Freezes, then slows, every other kart. |
 
-How many of a power-up a crate gives is set per crate spot (Wrench) or in the Drop Table. Placed weapons follow the original's mine pool (ten at a time, cleared when a race ends; any left on the track are also cleared before the lights, whoever placed them). What each one does and where it differs from the original is in [docs/POWERUPS.md](docs/POWERUPS.md).
+What a crate gives and how many is set per crate spot (Wrench) or in the Drop Table, with the same screen: entries with weights for the first and the last place, quantities and ranges. Placed weapons follow the original's mine pool (ten at a time, cleared when a race ends; any left on the track are also cleared before the lights, whoever placed them). What each one does and where it differs from the original is in [docs/POWERUPS.md](docs/POWERUPS.md).
 
 ## The race screen
 The HUD has the feel of the original's, adapted to sit with Minecraft's own interface instead of copying its layout: the clock and lap times, the first four racers, your place in big digits, the start lamps, the held power-up with the Power Fruit count, and the driving meters (speed dial, powerslide box, hang-time bar).
@@ -166,7 +166,7 @@ Karts are put on the grid in random order and held; **hold the gas to rev while 
 Then it is laps, positions and times; `R` takes you back to your last checkpoint. A kart you do not want to start races can be switched off with the Wrench.
 
 ### 7. Podium (optional)
-A track works without this step. Place **Podium Nodes** (1st, 2nd, 3rd) where the winners should stand, facing the way their karts should face, and hook each one up to the Start Node (Track Tool: click the podium node, then the Start Node).
+A track works without this step. Place **Podium Nodes** (1st, 2nd, 3rd) where the winners should stand, facing the way their karts should face, and hook each one up to the Start Node (Track Tool: click the podium node, then the Start Node; the selection is cleared after each hook-up so the next podium node can be picked at once).
 With all three hooked up the first three finishers are put on their podiums, finished racers are *ethereal* (no collisions, no pickups), confetti and streamers rain over the occupied podiums, everyone else is put back on the grid place they started in and watches the camera sweep over the winners (with a podium node in hand, the camera's paths are drawn: green for the group shot, a red cross where it has no room),
 the Start Node and podium nodes are **redstone sources** while active, and after the ceremony the track is closed for 15 seconds before the next race can start.
 
@@ -207,7 +207,7 @@ Craft Team Racing is a **standalone mod**: everything above works without any ot
 | [**Create**](https://github.com/Creators-of-Create/Create) | Works | **Copycat blocks** take on the block they copy: a copycat of a boost block boosts, a copycat of ice is slippery. |
 | **Copycats+** | Works | The same for its many shapes. |
 | **Jade** | Works | Its pop-up is hidden while you race (setting `hideJadeInRace`). |
-| **Farm & Charm** | Works | The Bag of Power Fruit uses its sack look (built-in resource pack). |
+| **Farm & Charm** | Works | The Bag of Power Fruit can use its sack look (optional built-in resource pack). |
 | **Every Compat** | Works | The Power Palm is picked up as a wood type, so its furniture and wood-based blocks are generated. |
 | **Harvest with Ease** | Supported, untested | Fruit clusters use an `age` property (1 to 4) so it can harvest them. Add `craftteamracing:power_fruit_cluster` to the `crops` list in its config (`harvest_with_ease-common.toml`). Right-click harvesting of a full cluster also works without it. |
 | [**Sable**](https://github.com/ryanhcode/sable) | Planned | Karts driving on sub-levels. Declared optional; never required, never bundled. |
@@ -246,8 +246,8 @@ gradlew build
 makes `build/libs/craftteamracing-<version>.jar`. `gradlew test` runs the unit tests (physics, terrain, tracks, upgrades). `build-and-install.bat` also runs the generators in `tools/` (Python 3 with Pillow and numpy) and copies the jar into test instances; edit the paths in `build-and-install.ps1`.
 
 ## How it is being made (please read)
-This project is built by one developer **together with Claude** (Anthropic's AI model, through Claude Code), as *curated vibe coding*: the developer decides what the mod should be and how it should feel and plays every change in the game; Claude writes much of the code, tools and documentation.
-- The code is AI-assisted. It is tested (unit tests for the physics, terrain and track logic) and played a lot, but it has not had a traditional human code review, and bugs are to be expected.
+This project is built by one developer **together with Claude** (Anthropic's AI model, through Claude Code), as *curated vibe coding*: the developer directs the game design, the intended look and feel and the feature decisions in detail, and tests and iterates on every change in the game; Claude writes most of the code, the Python scripts that generate the textures, sprites, models and placeholder sounds, and the documentation and page text, and helps debug.
+- The code is written by Claude under that direction. It is tested (unit tests for the physics, terrain and track logic) and played a lot, but it has not had a traditional human code review, and bugs are to be expected.
 - Where the original game's behaviour matters, the numbers are checked against the decompilation rather than remembered; what is *not* verified is marked as such in [docs/PHYSICS_PORT.md](docs/PHYSICS_PORT.md).
 - **Playtesting:** features are vetted through closed, informal playtesting. Progress is streamed and demonstrated live to a small group of friends, who try each feature, ask questions and give feedback along the way. This is community playtesting, not a formal peer review.
 - The docs split into guides that describe what is implemented, and design notes that record how and why it was planned; [docs/README.md](docs/README.md) says which is which.

@@ -80,9 +80,9 @@ public class TrackToolItem extends Item {
             long podium = clickedNode.kind.isPodium() ? pos.asLong() : selected.pos().asLong();
             long start = clickedNode.kind.isPodium() ? selected.pos().asLong() : pos.asLong();
             TrackGraph.PodiumResult pr = graph.togglePodium(podium, start);
-            stack.set(ModComponents.SELECTED_NODE.get(), clicked);
             switch (pr) {
                 case HOOKED, UNHOOKED -> {
+                    stack.remove(ModComponents.SELECTED_NODE.get());                 // done with this podium node: the next one can be picked at once
                     data.setDirty();
                     int place = graph.get(podium).kind.place();
                     player.displayClientMessage(Component.translatable(pr == TrackGraph.PodiumResult.HOOKED ? "message.craftteamracing.podium.hooked" : "message.craftteamracing.podium.unhooked", place), true);

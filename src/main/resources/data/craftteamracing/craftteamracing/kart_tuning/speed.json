@@ -1,6 +1,6 @@
 {
   "name": "Speed",
-  "description": "The original's Speed class: the highest top speed, slow to turn, and a heavy bump.",
+  "description": "The classic Speed class: the highest top speed, slow to turn, and a heavy bump.",
   "official": true,
   "enabled": true,
   "stats": {

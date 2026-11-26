@@ -1,6 +1,6 @@
 {
   "name": "Acceleration",
-  "description": "The original's Acceleration class: quick off the line and out of a turn, but it gives up top speed and loses a lot of it when it steers.",
+  "description": "The classic Acceleration class: quick off the line and out of a turn, but it gives up top speed and loses a lot of it when it steers.",
   "official": true,
   "enabled": true,
   "stats": {

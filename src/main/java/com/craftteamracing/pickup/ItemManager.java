@@ -374,9 +374,10 @@ public final class ItemManager {
                 // RB_Crate: a received Clock suppresses the reward, but the crate is still used up
                 if (s.clockTicks == 0 && s.held.isEmpty() && s.roll == 0) {
                     s.roll = ROLL_TICKS;
-                    com.craftteamracing.items.CrateItems.Entry picked = spot.pickEntry(RANDOM);
+                    RaceManager.Standing place = RaceManager.standing(driver);
+                    com.craftteamracing.items.PowerupTable.Drop picked = place == null ? spot.pickDrop(1, 0, 1, RANDOM) : spot.pickDrop(place.field(), place.rank(), place.lapIndex(), RANDOM);
                     s.fixed = picked == null ? "" : picked.id();
-                    s.fixedCount = picked == null ? 1 : picked.roll(RANDOM);         // the roulette's sound is the driver's client's (RouletteSound): a loop for as long as it runs
+                    s.fixedCount = picked == null ? 1 : picked.count();         // the roulette's sound is the driver's client's (RouletteSound): a loop for as long as it runs
                 }
                 crateBreak(level, pickup);
             }
@@ -635,13 +636,18 @@ public final class ItemManager {
             if (s.clockDelay > 0 && --s.clockDelay == 0) applyEffect(p, s.clockPending);
             if (s.cloudDelay > 0 && --s.cloudDelay == 0) applyEffect(p, s.cloudPending);
             if (s.roll > 0 && --s.roll == 0) {
+                int dropCount = 0;
                 if (!s.fixed.isEmpty()) {
                     s.held = s.fixed;
+                    dropCount = s.fixedCount > 1 ? s.fixedCount : 0;
                 } else {
                     RaceManager.Standing st = RaceManager.standing(p);
-                    s.held = st == null ? rules(p).powerups().draw(1, 0, 1, RANDOM) : rules(p).powerups().draw(st.field(), st.rank(), st.lapIndex(), RANDOM);
+                    // the drop table (this crate is not set to anything itself); its quantity may lean with the driver's place
+                    com.craftteamracing.items.PowerupTable.Drop drop = st == null ? rules(p).powerups().drawDrop(1, 0, 1, RANDOM) : rules(p).powerups().drawDrop(st.field(), st.rank(), st.lapIndex(), RANDOM);
+                    s.held = drop.id();
+                    dropCount = drop.count() > 1 ? drop.count() : s.held.equals(HeldItem.BOMB_3X.id()) || s.held.equals(HeldItem.MISSILE_3X.id()) ? STACK_COUNT : 0;       // VehPhysGeneral: numHeldItems = HELD_ITEM_STACK_COUNT
                 }
-                s.count = !s.fixed.isEmpty() ? (s.fixedCount > 1 ? s.fixedCount : 0) : s.held.equals(HeldItem.BOMB_3X.id()) || s.held.equals(HeldItem.MISSILE_3X.id()) ? STACK_COUNT : 0;       // VehPhysGeneral: numHeldItems = HELD_ITEM_STACK_COUNT
+                s.count = dropCount;
                 // VehPhysProc: the item is announced with OtherFX 0x5E, or 0x41 for a kart with ten power fruit
                 p.serverLevel().playSound(null, p.blockPosition(), s.powerFruit >= CHARGED ? ModSounds.ITEM_GET_CHARGED.get() : ModSounds.ITEM_GET.get(),
                         SoundSource.PLAYERS, 0.8F, 1.0F);

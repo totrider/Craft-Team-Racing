@@ -25,6 +25,11 @@ public final class RedstoneLinks {
         return g != null && g.dimension().equals(dimension) ? g.pos() : null;
     }
 
+    /** Whether the player has a node picked (server side only: the client has no list, so there it is always false and the first click is left to the server). */
+    public static boolean hasPicked(UUID player) {
+        return SELECTED.containsKey(player);
+    }
+
     public static void clear(UUID player) {
         SELECTED.remove(player);
     }

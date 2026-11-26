@@ -205,7 +205,7 @@ public final class ModSurvival {
         });
     }
 
-    /** With Farm &amp; Charm installed the bag of power fruit wears its sack (resourcepacks/farm_and_charm_compat: a model that borrows that mod's side and bottom pictures). */
+    /** With Farm &amp; Charm installed the bag of power fruit can wear its sack: an optional pack (resourcepacks/farm_and_charm_compat: a model that borrows that mod's side and bottom pictures), off until chosen in the resource packs screen. */
     private static void addPacks(AddPackFindersEvent event) {
         // optional (off until chosen in the resource packs screen): the fluffy fronds, crossed planes round each leaf block
         if (event.getPackType() == PackType.CLIENT_RESOURCES) {
@@ -214,7 +214,7 @@ public final class ModSurvival {
         }
         if (event.getPackType() == PackType.CLIENT_RESOURCES && ModList.get().isLoaded("farm_and_charm")) {
             event.addPackFinders(ResourceLocation.fromNamespaceAndPath(CraftTeamRacingMod.MODID, "resourcepacks/farm_and_charm_compat"), PackType.CLIENT_RESOURCES,
-                    Component.literal("CTR: Farm & Charm Sacks"), PackSource.BUILT_IN, true, Pack.Position.TOP);
+                    Component.literal("CTR: Farm & Charm Sacks"), PackSource.BUILT_IN, false, Pack.Position.TOP);
         }
     }
 
