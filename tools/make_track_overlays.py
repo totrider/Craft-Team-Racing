@@ -106,7 +106,7 @@ def main():
         if kra_stamp.stale(path, inputs):
             layers = make()
             w, h = layers[0][1].size
-            write_kra(path, w, h, [Layer(n, im) for n, im in layers], name=name)
+            write_kra(path, w, h, [Layer(n, im) for n, im in layers], name=name, info=kra_stamp.provenance(inputs, __file__))
             kra_stamp.record(path, inputs)
             print("wrote", path)
     print("track overlay sprites ok")

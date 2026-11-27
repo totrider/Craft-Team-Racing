@@ -21,6 +21,12 @@ import json
 import os
 import uuid
 
+# --- kra-pipeline 1.0.0 ------------------------------------------------------------------------------------------
+# PER-PROJECT SETTINGS (the only two settings meant to be edited here):
+NOTE_KEY = "ctr_craft_note"      # the key write(comment=...) stores in a .bbmodel. Keep it as it is: existing models use this key.
+KEEP_ELEMENT_NAMES = True       # True: read() keeps each element's Blockbench name in the result ("name"); False: leave it out (keeps generated JSON unchanged)
+# ------------------------------------------------------------------------------------------------------------------
+
 FACES = ("north", "east", "south", "west", "up", "down")
 
 
@@ -90,7 +96,7 @@ def write(path, name, slots, groups, display=None, gui_light_front=False, ambien
     if display:
         model["display"] = display
     if comment:
-        model["ctr_craft_note"] = comment
+        model[NOTE_KEY] = comment
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         json.dump(model, f, indent=1)
@@ -100,7 +106,7 @@ def _placeholder(sid):
     """A small flat swatch for a texture slot whose real texture is not in the project (a vanilla texture)."""
     import io
     from PIL import Image
-    colour = {"wood": (190, 150, 100), "particle": (190, 150, 100), "mat": (240, 240, 240)}.get(sid, (200, 200, 200))
+    colour = {"wood": (190, 150, 100), "particle": (190, 150, 100), "mat": (240, 240, 240), "sand": (219, 207, 163), "water": (63, 118, 228)}.get(sid, (200, 200, 200))
     buf = io.BytesIO()
     Image.new("RGBA", (16, 16), colour + (255,)).save(buf, "PNG")
     return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
@@ -155,8 +161,6 @@ def read(path):
                     continue                                   # a group with export off (guides) is left out whole
                 collect(node.get("children", []), node.get("name", info.get("name")) if not group else group)
     collect(model.get("outliner", []), "")
-    for gname in list(groups):
-        pass
     return {"groups": groups, "slots": slots, "display": model.get("display"), "name": model.get("name", "")}
 
 
@@ -176,7 +180,7 @@ def _from_bb_element(e, slot_ids):
             out["rotation"] = f["rotation"]
         faces[face] = out
     el = {"from": [_clean(c) for c in e["from"]], "to": [_clean(c) for c in e["to"]], "faces": faces}
-    if e.get("name"):
+    if KEEP_ELEMENT_NAMES and e.get("name"):
         el["name"] = str(e["name"])
     rot = e.get("rotation") or [0, 0, 0]
     if any(rot):
@@ -190,3 +194,41 @@ def elements(model, *group_names):
     """All the elements of the given groups, in the order of the groups asked for (all groups if none are named)."""
     names = group_names or list(model["groups"])
     return [el for name in names for el in model["groups"][name]]
+
+
+def add_groups(path, groups, new_slots=None):
+    """Patches a bbmodel IN PLACE: adds the given groups [(name, [JSON model elements])] (replacing the group of the same name) and,
+    if `new_slots` {slot id: png path} are not in the file yet, those texture slots. Everything else in the file stays as it is."""
+    with open(path, encoding="utf-8") as f:
+        model = json.load(f)
+    slot_ids = [t.get("id") or str(i) for i, t in enumerate(model.get("textures", []))]
+    for sid, png in (new_slots or {}).items():
+        if sid in slot_ids:
+            continue
+        entry = {"path": os.path.abspath(png), "name": sid + ".png", "folder": "", "namespace": "", "id": sid, "particle": False,
+                 "render_mode": "default", "render_sides": "auto", "frame_time": 1, "frame_order_type": "loop", "frame_order": "",
+                 "frame_interpolate": False, "visible": True, "mode": "bitmap", "saved": True, "uuid": str(uuid.uuid4()),
+                 "relative_path": os.path.relpath(png, os.path.dirname(os.path.abspath(path))).replace("\\", "/"),
+                 "source": _png_source(png)}
+        model["textures"].append(entry)
+        slot_ids.append(sid)
+    names = {n for n, _ in groups}
+    drop = set()
+    keep = []
+    for node in model["outliner"]:
+        if isinstance(node, dict) and node.get("name") in names:
+            drop.update(node.get("children", []))
+        else:
+            keep.append(node)
+    model["outliner"] = keep
+    model["elements"] = [e for e in model["elements"] if e["uuid"] not in drop]
+    for group_name, els in groups:
+        ids = []
+        for i, el in enumerate(els):
+            bb = _to_bb_element(el, f"{group_name}_{i}", slot_ids)
+            model["elements"].append(bb)
+            ids.append(bb["uuid"])
+        model["outliner"].append({"name": group_name, "origin": [8, 8, 8], "color": 0, "uuid": str(uuid.uuid4()), "export": True,
+                                  "isOpen": False, "locked": False, "visibility": True, "autouv": 0, "children": ids})
+    with open(path, "w", encoding="utf-8", newline=chr(10)) as f:
+        json.dump(model, f, indent=1)

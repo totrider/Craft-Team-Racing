@@ -10,7 +10,7 @@ In a script that owns a .kra:
     import kra_stamp
     INPUTS = [__file__, "tools/kra_writer.py", "tools/sprite_outline.py"]     # relative to the project folder, or absolute
     if kra_stamp.stale("krita/items/care_items.kra", INPUTS):
-        ...build the layers and write_kra(...)...
+        ...build the layers and write_kra(..., info=kra_stamp.provenance(INPUTS, __file__))...
         kra_stamp.record("krita/items/care_items.kra", INPUTS)
 
   python tools/kra_stamp.py --status    list every .kra in the manifest: scripted (and up to date / stale) or not yet scripted
@@ -51,6 +51,15 @@ def digest(inputs):
         with open(p, "rb") as f:
             h.update(f.read())
     return h.hexdigest()
+
+
+def provenance(inputs, script=None):
+    """The text stored in a generated .kra's document info: which script made it and the stamp it was made from, so anyone can tell whether a .kra is current
+    without running anything (compare the stamp with `python tools/kra_stamp.py --status`). Deliberately NO version number, date or machine path: those would
+    change every release and make git store a new copy of every .kra. Only the script's file name goes in. `script` is the owning script's path (the caller of
+    write_if_stale); `inputs` is sorted, so its first entry is NOT reliably the script."""
+    script = os.path.basename(script) if script else "?"
+    return f"Generated template. Script: {script}. Stamp: {digest(inputs)[:12]}. Edit a copy of it, not this file."
 
 
 def stale(kra_rel, inputs):
@@ -104,7 +113,7 @@ def _status():
     for a in manifest["assets"]:
         k = a["kra"]
         state = "not yet scripted" if k not in stamps else "scripted"
-        print(f"  {state:17} {k}")
+        print(f"  {state:17} {stamps.get(k, '')[:12]:12} {k}")     # the stamp matches the one in the .kra's document info
 
 
 if __name__ == "__main__":

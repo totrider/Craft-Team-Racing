@@ -11,6 +11,7 @@ Layers are drawn bottom to top in the order they are made, like the script's own
 exactly what the old script drew straight to a PNG. Every layer is named "base: <name>": tools/build_art.py puts all of the "base" group in the PNG.
 """
 import os
+import sys
 
 from PIL import Image, ImageDraw
 
@@ -83,10 +84,11 @@ def write_if_stale(kra_rel, sheet, inputs):
         return False
     os.makedirs(os.path.dirname(kra_rel) or ".", exist_ok=True)
     name = os.path.splitext(os.path.basename(kra_rel))[0]
-    write_kra(kra_rel, sheet.width, sheet.height, [Layer(n, im) for n, im in reversed(sheet.layers)], name=name)   # the .kra lists the top layer first
+    wrote = write_kra(kra_rel, sheet.width, sheet.height, [Layer(n, im) for n, im in reversed(sheet.layers)], name=name,   # the .kra lists the top layer first
+                      info=kra_stamp.provenance(inputs, sys._getframe(1).f_code.co_filename))     # the caller is the script that owns this .kra
     kra_stamp.record(kra_rel, inputs)
-    print("wrote", kra_rel)
-    return True
+    print("wrote" if wrote else "unchanged", kra_rel)     # unchanged: the rebuild gave identical bytes, so git sees nothing
+    return wrote
 
 
 def export_png(kra_rel):
